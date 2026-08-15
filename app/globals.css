@@ -1021,19 +1021,16 @@ th { color: var(--birincil); }
 .cerceve-svg { z-index: 2; }
 .cerceve-ic  { z-index: 3; }
 /* Kart uzerindeki metin renkleri — kapak-metin DEGIL, murekkep */
-/* KREM HALE: kart yari saydam ve altindaki fotograf yer yer koyu.
-   Koyu metni fotografın uzerinden kaldirmanin en etkili yolu, harflerin
-   cevresine kartin kendi zemin renginden ince bir hale koymak. Beyaz
-   katmani yukseltmeye gerek kalmiyor, fotograf da bogulmuyor. */
+/* Beyaz hale KALDIRILDI (kullanici karari) — harflerin etrafi
+   beyazlıyordu. Kontrast artik yalnizca renkten geliyor. */
 .kapak-dis .cerceve-ic {
   color: var(--murekkep);
-  text-shadow:
-    0 1px 2px color-mix(in srgb, var(--kart-zemin) 92%, transparent),
-    0 0 7px  color-mix(in srgb, var(--kart-zemin) 78%, transparent);
+  text-shadow: none;
 }
-/* Butonlarin kendi zemini var — halenin orada isi yok */
-.kapak-dis .btn { text-shadow: none; }
-.kapak-dis .isimler { text-shadow: none; color: var(--murekkep); }
+/* Isimler simsiyah (kullanici karari) — davetiyenin en baskin ogesi.
+   --murekkep (#2c352d) yesile calan koyu bir ton; burada duz siyah
+   isteniyor. */
+.kapak-dis .isimler { text-shadow: none; color: #000; }
 /* Kart uzerinde de ALTIN kalsin. Bu kural (0,3,0) daha spesifik oldugu
    icin .isimler .ve (0,2,0) uzerindeki altin gradyani eziyordu. */
 .kapak-dis .isimler .ve {
