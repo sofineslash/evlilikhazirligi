@@ -12,7 +12,12 @@ const nextConfig: NextConfig = {
      konumlarindan hesapliyor. Bundle edilirlerse o konum degisiyor ve
      ikili bulunamiyor: ffmpeg/ffprobe icin bu "her video acilamadi"
      hatasi olarak geri donuyordu. */
-  serverExternalPackages: ["better-sqlite3", "sharp", "ffmpeg-static", "@ffprobe-installer/ffprobe"],
+  serverExternalPackages: [
+    "better-sqlite3", "sharp", "ffmpeg-static", "@ffprobe-installer/ffprobe",
+    /* libheif-js 6 MB WASM tasiyor; bundle edilince cozucu bulunamiyor
+       ve HEIC sessizce cop goruntuye donusuyordu. */
+    "heic-convert", "heic-decode", "libheif-js",
+  ],
 };
 
 export default nextConfig;

@@ -27,6 +27,18 @@ const DESTEKLENEN = new Set(["jpeg", "png", "webp", "avif", "gif", "tiff"]);
 /** Kesme figurun uzun kenar tavani — kartta kucuk gorunuyor, buyuk olmasina gerek yok. */
 const PNG_UZUN_KENAR = 700;
 
+/**
+ * HEIF/HEIC mi? SIHIRLI BAYTTAN bakiyoruz, sharp'in metadata'sindan DEGIL.
+ * sharp bazi HEIF turevlerinde format'i baska raporluyor ya da metadata
+ * okurken patliyor; ikisinde de HEIF yolu atlanip dosya cozulemeden
+ * "islenmis" gibi devam ediyordu.
+ */
+function heifMi(b: Buffer): boolean {
+  if (b.length < 12) return false;
+  if (b.subarray(4, 8).toString("ascii") !== "ftyp") return false;
+  return /heic|heix|heim|heis|hevc|mif1|msf1/i.test(b.subarray(8, 12).toString("ascii"));
+}
+
 /* `tur` bir AYRAC: video sonucuyla birlikte tek birlesimde kullaniliyor
    ve TypeScript hangi dalda oldugumuzu ancak boyle bilebiliyor. */
 export type IslemSonuc =
@@ -132,6 +144,16 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
     if (!m.width || !m.height || m.width < 16 || m.height < 16 || veri.length < 1024) {
       throw new Error(`bozuk cikti: ${m.width}x${m.height}, ${veri.length} bayt`);
     }
+    /* DUZ RENK KONTROLU. Cozulemeyen bir dosyada sharp (failOn:"none"
+       ile) hata firlatmak yerine TEK RENK bir goruntu uretebiliyor —
+       canlida HEIC'ler duz MAVI kare olarak kaydedildi ve "%100
+       kucultuldu" yazdi. Gercek bir fotografta gurultu her zaman vardir;
+       standart sapma sifira yakinsa cozme basarisiz olmus demektir. */
+    const ist = await sharp(veri).stats();
+    const enYuksekSapma = Math.max(...ist.channels.map((k) => k.stdev));
+    if (enYuksekSapma < 1) {
+      throw new Error(`duz renk cikti (sapma ${enYuksekSapma.toFixed(2)}) — cozulemedi`);
+    }
     return {
       ok: true as const, tur: "foto" as const, veri,
       bayt: veri.length, oncekiBayt: ham.length,
@@ -147,13 +169,18 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
      demek yerine sunucu isi hallediyor — Samsung ve iPhone paylasimlarinin
      buyuk kismi HEIF geliyor. */
   let girdi = ham;
-  try {
-    const meta = await sharp(ham, AYAR).metadata();
-    if (meta.format === "heif") {
+  if (heifMi(ham)) {
+    try {
       girdi = await heicCevir({ buffer: ham, format: "JPEG", quality: 0.92 });
+    } catch (e) {
+      /* HEIF cozulemediyse DEVAM ETME. Eskiden ham veriyle devam
+         ediliyordu ve sharp cop bir goruntu uretip kaydediyordu. */
+      console.error("an isleme: HEIF cozulemedi", (e as Error).message);
+      return {
+        ok: false,
+        mesaj: "Bu fotoğraf açılamadı. Telefon ayarlarından fotoğraf biçimini JPEG yapıp tekrar deneyin.",
+      };
     }
-  } catch (e) {
-    console.error("an isleme: HEIF cozme/ustveri hatasi", (e as Error).message);
   }
 
   /* Once sharp (hizli), olmazsa ffmpeg ile cozup tekrar dene. ffmpeg
