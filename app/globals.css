@@ -551,13 +551,46 @@ th { color: var(--birincil); }
   object-fit: cover; border-radius: 8px;
   background: var(--kagit-koyu);
 }
-.an-bilgi { display: flex; flex-direction: column; min-width: 0; }
+/* flex:1 SART: ilerleme cubugu kalemin genisligini doldursun diye. */
+.an-bilgi { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .an-durum { font-size: .92rem; font-weight: 600; }
 .an-tamam            { border-color: color-mix(in srgb, var(--birincil) 45%, transparent); }
 .an-tamam .an-durum  { color: var(--birincil); }
 .an-hata             { border-color: color-mix(in srgb, #a8462a 45%, transparent); }
 .an-hata .an-durum   { color: #a8462a; }
 .an-gonderiliyor .an-durum { color: var(--sessiz); }
+
+/* Onizlemesi cizilemeyen dosya (HEIC gibi). Kirik resim simgesi yerine
+   ayni olcude sakin bir kutu — dosya yine de yuklenebiliyor. */
+.an-yertutucu {
+  width: 56px; height: 56px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: var(--kagit-koyu);
+  color: var(--sessiz);
+  font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+}
+
+/* Yukleme ilerleme cubugu. Buyuk videolarda "Gönderiliyor…" tek basina
+   donmus izlenimi veriyordu; yuzde gorulunce bekleme anlasilir oluyor. */
+.an-bar {
+  display: block;
+  margin-top: .35rem;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--kagit-koyu);
+  overflow: hidden;
+}
+.an-bar-dolu {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--birincil);
+  transition: width .2s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .an-bar-dolu { transition: none; }
+}
 
 /* ---------- Admin: sekmeler ---------- */
 .admin-ozet {

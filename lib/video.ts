@@ -133,15 +133,24 @@ export async function goruntuyuCoz(ham: Buffer): Promise<Buffer | null> {
  * hesaplar ve 2'ye bolunebilir yapar (-2). H.264 tek sayili boyut kabul
  * etmiyor; -2 olmadan dikey videolarin yarisi hata veriyor.
  * `min(1080, ...)` kalibi: zaten kucuk olan video BUYUTULMEZ.
+ *
+ * Kaynak BUFFER ya da DOSYA YOLU olabilir. Parcali yuklemede dosya zaten
+ * diskte duruyor; yolu verilince 400 MB'lik video bellege okunmuyor ve
+ * ayni baytlar ikinci kez tmp'ye yazilmiyor. Yol verildiginde dosya
+ * CAGIRANA aittir — burada silinmez.
  */
-export async function videoIsle(ham: Buffer): Promise<VideoSonuc> {
+export async function videoIsle(kaynak: Buffer | string): Promise<VideoSonuc> {
   const gecici = path.join(os.tmpdir(), `nisan-${crypto.randomUUID()}`);
-  const girdi = `${gecici}-girdi`;
+  const disKaynak = typeof kaynak === "string";
+  const girdi = disKaynak ? kaynak : `${gecici}-girdi`;
   const cikti = `${gecici}-cikti.mp4`;
   const kapakYol = `${gecici}-kapak.jpg`;
 
   try {
-    await fsp.writeFile(girdi, new Uint8Array(ham));
+    if (!disKaynak) await fsp.writeFile(girdi, new Uint8Array(kaynak));
+    const girdiBayt = disKaynak
+      ? await fsp.stat(girdi).then((s) => s.size)
+      : kaynak.length;
 
     const bilgi = await videoBilgi(girdi);
     if (!bilgi) return { ok: false, mesaj: "Bu video açılamadı. Başka bir dosya deneyin." };
@@ -186,7 +195,7 @@ export async function videoIsle(ham: Buffer): Promise<VideoSonuc> {
       veri,
       kapak,
       bayt: veri.length,
-      oncekiBayt: ham.length,
+      oncekiBayt: girdiBayt,
       genislik: son?.genislik ?? 0,
       yukseklik: son?.yukseklik ?? 0,
       sure: Math.round(son?.sure ?? bilgi.sure),
@@ -197,7 +206,8 @@ export async function videoIsle(ham: Buffer): Promise<VideoSonuc> {
   } finally {
     // Gecici dosyalar HER durumda silinsin — hata yolunda birakirsak
     // /tmp yavas yavas doluyor ve sunucu bir gun yaziyamaz hale geliyor.
-    for (const f of [girdi, cikti, kapakYol]) {
+    // Disaridan gelen girdi CAGIRANIN dosyasi; ona dokunulmuyor.
+    for (const f of disKaynak ? [cikti, kapakYol] : [girdi, cikti, kapakYol]) {
       await fsp.rm(f, { force: true }).catch(() => {});
     }
   }
