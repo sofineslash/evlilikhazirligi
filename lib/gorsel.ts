@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import { CFG } from "./config";
 import { ORAN, type SahneTur } from "./sahneler";
+import { goruntuyuCoz } from "./video";
 
 /**
  * Sunucu tarafi gorsel isleme.
@@ -108,19 +109,13 @@ export async function sahneIsle(ham: Buffer, tur: SahneTur = "sahne"): Promise<I
  * konumu fotografin icinde bize gelmez.
  */
 export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
-  try {
-    const meta = await sharp(ham, { limitInputPixels: 80_000_000, failOn: "truncated" }).metadata();
-    if (!meta.format || !DESTEKLENEN.has(meta.format)) {
-      return {
-        ok: false,
-        mesaj:
-          meta.format === "heif"
-            ? "iPhone'unuzda Ayarlar → Kamera → Biçimler → 'En Uyumlu' seçip tekrar deneyin."
-            : "Bu görsel biçimi desteklenmiyor. JPG, PNG veya WebP gönderin.",
-      };
-    }
+  /* limitInputPixels: 200 MP. Onceki 80 MP degeri Samsung'un 108/200 MP
+     kiplerini reddediyordu ve misafir sebebini anlamadan "islenemedi"
+     goruyordu. */
+  const AYAR = { limitInputPixels: 200_000_000, failOn: "none" as const };
 
-    const veri = await sharp(ham, { limitInputPixels: 80_000_000, failOn: "truncated" })
+  const cevir = async (girdi: Buffer) => {
+    const veri = await sharp(girdi, AYAR)
       .rotate()                                   // EXIF yonelimini piksele gom (metadata dusmeden ONCE)
       .resize(CFG.FOTO_UZUN_KENAR, CFG.FOTO_UZUN_KENAR, {
         fit: "inside",
@@ -128,14 +123,49 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
       })
       .webp({ quality: Math.round(CFG.FOTO_WEBP_KALITE * 100), effort: 4 })
       .toBuffer();
-
     const m = await sharp(veri).metadata();
     return {
-      ok: true, tur: "foto", veri, bayt: veri.length, oncekiBayt: ham.length,
+      ok: true as const, tur: "foto" as const, veri,
+      bayt: veri.length, oncekiBayt: ham.length,
       genislik: m.width ?? 0, yukseklik: m.height ?? 0,
     };
+  };
+
+  /* HEIC'i ONCE ayikla: ne sharp ne ffmpeg cozebiliyor (ikisi de test
+     edildi — sharp "Decoder plugin generated an error", ffmpeg "moov atom
+     not found"). Genel hata mesaji vermek yerine ne yapmasi gerektigini
+     soyluyoruz. */
+  try {
+    const meta = await sharp(ham, AYAR).metadata();
+    if (meta.format === "heif") {
+      return {
+        ok: false,
+        mesaj:
+          "Bu fotoğraf HEIC biçiminde ve sunucu onu açamıyor. " +
+          "Telefon ayarlarından fotoğraf biçimini JPEG yapıp tekrar deneyin.",
+      };
+    }
+  } catch {
+    /* Ustveri okunamadiysa sorun degil — asagida cevirmeyi deniyoruz. */
+  }
+
+  /* Once sharp (hizli), olmazsa ffmpeg ile cozup tekrar dene. ffmpeg
+     sharp'in takildigi bazi bicimleri (bozuk EXIF, alisilmadik TIFF)
+     cozebiliyor. HEIC'te ikisi de cozemiyor, o yuzden yukarida ayrildi. */
+  try {
+    return await cevir(ham);
   } catch (e) {
-    console.error("an isleme hatasi", e);
+    console.error("an isleme: sharp basarisiz, ffmpeg deneniyor", (e as Error).message);
+  }
+
+  const cozulmus = await goruntuyuCoz(ham);
+  if (!cozulmus) {
+    return { ok: false, mesaj: "Fotoğraf işlenemedi. Başka bir dosya deneyin." };
+  }
+  try {
+    return await cevir(cozulmus);
+  } catch (e) {
+    console.error("an isleme: ffmpeg ciktisi da islenemedi", (e as Error).message);
     return { ok: false, mesaj: "Fotoğraf işlenemedi. Başka bir dosya deneyin." };
   }
 }

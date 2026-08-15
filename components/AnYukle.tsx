@@ -16,7 +16,7 @@ type Kalem = {
 /* Ham dosya tavanlari — sunucudakiyle AYNI olmali, yoksa 413 alip
    sasiriyoruz. Video icin ayri: 1 dakikalik 4K kayit rahat 300 MB. */
 const FOTO_MAX_BAYT = 25 * 1024 * 1024;
-const VIDEO_MAX_BAYT = 400 * 1024 * 1024;
+const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
 const videoMu = (d: File) => d.type.startsWith("video/");
 
 const boyut = (b: number) =>
@@ -60,7 +60,7 @@ export default function AnYukle() {
         video: vid,
         durum: d.size > tavan ? "hata" : "bekliyor",
         mesaj: d.size > tavan
-          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "400 MB" : "25 MB"}.`
+          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "600 MB" : "25 MB"}.`
           : undefined,
       });
     }

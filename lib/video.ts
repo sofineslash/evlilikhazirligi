@@ -93,6 +93,40 @@ export async function videoBilgi(yol: string): Promise<VideoBilgi | null> {
 }
 
 /**
+ * Herhangi bir goruntuyu ffmpeg ile PNG'ye cozer.
+ *
+ * NEDEN: sharp'in libvips derlemesinde HEVC cozucusu YOK — HEIC dosyanin
+ * ustverisini okuyor ama iceriğini cozemiyor ("Decoder plugin generated
+ * an error", olculdu). Android/iPhone paylasimlarinda HEIC sik geliyor ve
+ * misafire "telefon ayarlarini degistir" demek kabul edilebilir bir cozum
+ * degil.
+ *
+ * ffmpeg bu bicimleri cozebiliyor. Once sharp denenir (hizli), olmazsa
+ * buraya dusulur. Ciktiyi yine sharp isler; boylece kucultme, EXIF
+ * dusurme ve WebP'ye cevirme tek yerde kalir.
+ */
+export async function goruntuyuCoz(ham: Buffer): Promise<Buffer | null> {
+  const gecici = path.join(os.tmpdir(), `nisan-g-${crypto.randomUUID()}`);
+  const girdi = `${gecici}-girdi`;
+  const cikti = `${gecici}.png`;
+  try {
+    await fsp.writeFile(girdi, new Uint8Array(ham));
+    await calistir(FFMPEG, [
+      "-y", "-i", girdi,
+      "-frames:v", "1",         // hareketli HEIC/GIF olsa bile tek kare
+      "-update", "1",
+      cikti,
+    ], { maxBuffer: 8 * 1024 * 1024, timeout: 120_000 });
+    return await fsp.readFile(cikti);
+  } catch (e) {
+    console.error("goruntuyuCoz hatasi", (e as Error).message);
+    return null;
+  } finally {
+    for (const f of [girdi, cikti]) await fsp.rm(f, { force: true }).catch(() => {});
+  }
+}
+
+/**
  * Videoyu 1080p'ye indirir ve bir kapak karesi cikarir.
  *
  * scale filtresi KISA kenari 1080'e sabitler, uzun kenari orana gore

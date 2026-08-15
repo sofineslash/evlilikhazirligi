@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
    telefonda rahat 300 MB ediyor ve fotograf tavanina takilirsa misafir
    "neden yuklenmiyor" diye kaliyor. */
 const FOTO_MAX_BAYT = 25 * 1024 * 1024;
-const VIDEO_MAX_BAYT = 400 * 1024 * 1024;
+const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
 
 /**
  * Sihirli baytlardan gercek turu cikarir — istemcinin dedigi MIME'a GUVENILMEZ.
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 
   const uzunluk = Number(req.headers.get("content-length") ?? 0);
   if (uzunluk > VIDEO_MAX_BAYT) {
-    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 400 MB)." }, { status: 413 });
+    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 600 MB)." }, { status: 413 });
   }
 
   // Kota: diski doldurup sunucuyu kilitlemeyelim.
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ mesaj: "Fotoğraf çok büyük (en fazla 25 MB)." }, { status: 413 });
   }
   if (video && buf.length > VIDEO_MAX_BAYT) {
-    return NextResponse.json({ mesaj: "Video çok büyük (en fazla 400 MB)." }, { status: 413 });
+    return NextResponse.json({ mesaj: "Video çok büyük (en fazla 600 MB)." }, { status: 413 });
   }
 
   /* SUNUCUDA ISLE. Ham baytlar diske HIC yazilmaz — yalnizca turev.
