@@ -1,0 +1,12 @@
+services:
+  nisan:
+    build: .
+    container_name: nisan
+    restart: unless-stopped
+    ports:
+      - "2608:2608"
+    env_file:
+      - .env
+    volumes:
+      - /srv/nisan-data:/srv/data
+      - /srv/nisan-medya:/srv/medya

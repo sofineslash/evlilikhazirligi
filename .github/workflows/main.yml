@@ -5,11 +5,66 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Ust uste dagitim olmasin: ikisi ayni anda `docker compose up` calistirirsa
+# konteyner yaris haline giriyor ve biri yarim kalmis imajla ayaga kalkiyor.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: [self-hosted, evlilik]
+
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          ls -la
-          cat package.json
+
+      - name: .env dosyasini yaz
+        run: |
+          umask 077
+          cat > .env <<'EOF'
+          ADMIN_KULLANICI=${{ secrets.ADMIN_KULLANICI }}
+          ADMIN_PASSWORD_HASH_B64=${{ secrets.ADMIN_PASSWORD_HASH_B64 }}
+          AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+          DB_PATH=/srv/data/nisan.db
+          MEDYA_KOK=/srv/medya/scenes
+          TZ=Europe/Istanbul
+          EOF
+
+      # Konteyner `node` kullanicisi (uid 1000) olarak calisiyor, ama bind
+      # mount edilen klasorleri Docker yoksa ROOT olarak yaratir. O zaman
+      # SQLite yazamaz ve konteyner acilir acilmaz oluyor. Klasorleri
+      # onceden dogru sahiplikle kuruyoruz.
+      # sudo YOK: runner'in sudo hakki olmayabilir, kok yetkisini gecici
+      # bir konteynerden aliyoruz — docker zaten calistirabiliyor.
+      - name: Kalici klasorleri hazirla
+        run: |
+          docker run --rm \
+            -v /srv/nisan-data:/d \
+            -v /srv/nisan-medya:/m \
+            alpine:3 sh -c 'mkdir -p /m/scenes /m/anlar && chown -R 1000:1000 /d /m'
+
+      - name: Onceki konteyneri durdur
+        run: docker compose down --remove-orphans || true
+
+      # Migration'lar konteynerin CMD'sinde calisiyor (migrate && start).
+      # Hepsi `INSERT OR IGNORE` / `CREATE TABLE IF NOT EXISTS` — mevcut
+      # metinleri, aile isimlerini ve ayarlari EZMEZ.
+      - name: Derle ve baslat
+        run: docker compose up -d --build
+
+      - name: Sağlık kontrolü
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:2608/; then
+              echo "Ayakta (${i}. deneme)"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::Uygulama 120 saniyede ayağa kalkmadı"
+          docker compose logs --tail=80
+          exit 1
+
+      - name: Sırları temizle
+        if: always()
+        run: rm -f .env
