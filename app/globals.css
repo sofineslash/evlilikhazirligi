@@ -830,32 +830,27 @@ th { color: var(--birincil); }
   margin-inline: -.5cqw;      /* yapraklar harflere biraz yaklassin */
 }
 
-.zarf-satir {
+/* Iki satir AYNI cumlenin parcasi (kullanici karari): ayni el yazisi,
+   ayni ton, ayni agirlik. Tek kuralda tanimli — ayri yazilinca zamanla
+   ayrisiyorlar (daha once %82/%88 olup gozle secilir hale gelmisti).
+   nowrap YOK: metin admin panelinden degistirilebiliyor ve uzun bir
+   cumle yazildiginda zarftan tasip monogrami saga itiyordu. */
+.zarf-satir, .zarf-davet {
   font-family: "Nisan Script", "Snell Roundhand", "Apple Chancery",
                "Segoe Script", "Brush Script MT", var(--font-baslik);
   font-weight: 400;
   font-synthesis: none;
   font-size: 5.2cqw;
   line-height: 1.25;
-  margin-top: 2.5cqw;
   color: #8a6b2f;
-  /* nowrap KALDIRILDI: metin admin panelinden degistirilebiliyor ve
-     uzun bir cumle yazildiginda zarftan tasip duzeni bozuyordu. */
   max-width: 100%;
   text-wrap: balance;
 }
+.zarf-satir { margin-top: 2.5cqw; }
 .zarf-davet {
-  font-family: var(--font-baslik);
-  font-size: 4.6cqw;
-  letter-spacing: .2em;
-  /* letter-spacing sagda fazladan bosluk birakir — ortali dursun */
-  margin-inline-start: .2em;
-  margin-top: .8cqw;
-  color: #a8822f;
-  /* nowrap KALDIRILDI — yukaridaki ile ayni sebep. */
-  max-width: 100%;
-  line-height: 1.35;
-  text-wrap: balance;
+  /* Ust satirin DEVAMI: harf araligi ve ayri renk YOK, yalnizca
+     ustune az bir bosluk. */
+  margin-top: .6cqw;
 }
 
 .zarf-3b { container-type: inline-size; }
