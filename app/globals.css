@@ -926,6 +926,7 @@ th { color: var(--birincil); }
 }
 
 /* ---------- Davet cumlesi ve aile isimleri (ornek davetiye duzeni) ---------- */
+.kapak-dis .davet-cumlesi { font-weight: 500; }   /* soluk kalmasin */
 .davet-cumlesi {
   font-family: var(--font-baslik);
   font-size: 1rem; font-weight: 400; line-height: 1.55;
@@ -1020,7 +1021,18 @@ th { color: var(--birincil); }
 .cerceve-svg { z-index: 2; }
 .cerceve-ic  { z-index: 3; }
 /* Kart uzerindeki metin renkleri — kapak-metin DEGIL, murekkep */
-.kapak-dis .cerceve-ic { color: var(--murekkep); }
+/* KREM HALE: kart yari saydam ve altindaki fotograf yer yer koyu.
+   Koyu metni fotografın uzerinden kaldirmanin en etkili yolu, harflerin
+   cevresine kartin kendi zemin renginden ince bir hale koymak. Beyaz
+   katmani yukseltmeye gerek kalmiyor, fotograf da bogulmuyor. */
+.kapak-dis .cerceve-ic {
+  color: var(--murekkep);
+  text-shadow:
+    0 1px 2px color-mix(in srgb, var(--kart-zemin) 92%, transparent),
+    0 0 7px  color-mix(in srgb, var(--kart-zemin) 78%, transparent);
+}
+/* Butonlarin kendi zemini var — halenin orada isi yok */
+.kapak-dis .btn { text-shadow: none; }
 .kapak-dis .isimler { text-shadow: none; color: var(--murekkep); }
 /* Kart uzerinde de ALTIN kalsin. Bu kural (0,3,0) daha spesifik oldugu
    icin .isimler .ve (0,2,0) uzerindeki altin gradyani eziyordu. */
@@ -1033,9 +1045,12 @@ th { color: var(--birincil); }
   -webkit-text-fill-color: transparent;
 }
 .kapak-dis .saat { color: var(--birincil); }
+/* Bunlar --sessiz (#566356) kullaniyordu ve fotografin uzerinde SOLUK
+   kaliyordu. Kart yari saydam oldugu icin (beyaz katman panelden
+   dusurulebiliyor) gri bir ton yeterli kontrasti tutturamiyor. */
 .kapak-dis .salon,
 .kapak-dis .davet-cumlesi,
-.kapak-dis .yonlendirme { color: var(--sessiz); }
+.kapak-dis .yonlendirme { color: var(--murekkep); }
 .kapak-dis .aile-sutun { color: var(--murekkep); }
 .kapak-dis .btn { border-color: var(--cizgi); }
 
@@ -1290,7 +1305,8 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   margin: .15rem 0 0;
   font-size: .72rem;
   line-height: 1.45;
-  color: color-mix(in srgb, var(--kapak-metin) 72%, transparent);
+  /* %72 fotografin uzerinde soluk kaliyordu — kart yari saydam. */
+  color: color-mix(in srgb, var(--kapak-metin) 88%, transparent);
   text-align: center;
   text-wrap: pretty;
 }
