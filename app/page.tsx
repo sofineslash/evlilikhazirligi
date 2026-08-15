@@ -1,4 +1,4 @@
-import { CFG, TARIH_METNI, TARIH_KISA, SAAT_METNI, haritaLinkleri, gunModu } from "@/lib/config";
+import { CFG, TARIH_METNI, SAAT_METNI, haritaLinkleri, gunModu } from "@/lib/config";
 import { sahneYolu } from "@/lib/sahneler";
 import { metin, ebeveynSatirlari } from "@/lib/metin";
 import Zarf from "@/components/Zarf";
@@ -41,11 +41,11 @@ export default function Davetiye() {
   const gelinAd = metin("gelin_ad") || CFG.GELIN;
   const damatAd = metin("damat_ad") || CFG.DAMAT;
   const tel = metin("iletisim_tel");
-  const zarfNotu = metin("zarf_notu");
-  const zarfToren = metin("zarf_toren");
-  /* Buyuk harfe cevirirken TURKCE yerel SART: duz toUpperCase()
-     "i" -> "I" yapar, "İ" olmasi gerekir. */
-  const zarfIsimler = `${gelinAd} & ${damatAd}`.toLocaleUpperCase("tr");
+  /* Zarf yuzundeki iki bas harf. Buyuk harfe cevirirken TURKCE yerel
+     SART: duz toUpperCase() "i" -> "I" yapar, "İ" olmasi gerekir. */
+  const basHarf = (ad: string) => (ad.trim()[0] ?? "").toLocaleUpperCase("tr");
+  const zarfSatir = metin("zarf_toren");
+  const zarfDavet = metin("zarf_notu");
   const davetCumlesi = metin("davet_cumlesi");
   const yemek = metin("yemek_notu");
   const otopark = metin("otopark_notu");
@@ -65,10 +65,10 @@ export default function Davetiye() {
          sahnede, ayni merkezden olcekleniyor. Kartin ALTINDA hicbir bolum
          yok — sayfanin tamami bu tek sahne. */}
       <Zarf
-        not={zarfNotu}
-        isimler={zarfIsimler}
-        tarih={TARIH_KISA}
-        toren={zarfToren}
+        solHarf={basHarf(gelinAd)}
+        sagHarf={basHarf(damatAd)}
+        satir={zarfSatir}
+        davet={zarfDavet}
         fon={kapakYolu}
       >
       <div

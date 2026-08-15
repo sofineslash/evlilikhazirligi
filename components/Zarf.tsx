@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import ZarfYuz from "./ZarfYuz";
 
 /**
  * Kaydirmayla acilan zarf — ve ICINDEN cikan davetiye.
@@ -27,21 +28,21 @@ import { useEffect, useRef } from "react";
  * gorunurdu. Bu yuzden KARDES olarak duruyor — donmeyen kapta.
  */
 export default function Zarf({
-  not,
-  isimler,
-  tarih,
-  toren,
+  solHarf,
+  sagHarf,
+  satir,
+  davet,
   fon,
   children,
 }: {
-  /** En alt satir — el yazisiyla, TEK SATIR. */
-  not?: string;
-  /** En ust satir, buyuk harf: "KÜBRANUR & ÖMÜR" */
-  isimler?: string;
-  /** Orta satir: "29 Ekim 2026" */
-  tarih?: string;
-  /** Tarihin altindaki satir: "Nişan törenimizde" */
-  toren?: string;
+  /** Dalin solundaki bas harf, orn. "K" */
+  solHarf: string;
+  /** Dalin sagindaki bas harf, orn. "Ö" */
+  sagHarf: string;
+  /** El yazisi satir, orn. "29 Ekim'de güzel bir akşama…" */
+  satir?: string;
+  /** Arali buyuk harf satiri, orn. "DAVETLİSİNİZ…" */
+  davet?: string;
   fon?: string | null;
   children?: React.ReactNode;
 }) {
@@ -121,14 +122,7 @@ export default function Zarf({
           <div className="zarf-govde">
             <div className="zarf-arka" />
             <div className="zarf-on">
-              {/* Zarfin uzeri kucuk bir davetiye: isimler / tarih /
-                  toren / not. Bos birakilan satir hic cizilmez. */}
-              <div className="zarf-yazi">
-                {isimler && <span className="zarf-isim">{isimler}</span>}
-                {tarih && <span className="zarf-tarih">{tarih}</span>}
-                {toren && <span className="zarf-toren">{toren}</span>}
-                {not && <span className="zarf-uzeri">{not}</span>}
-              </div>
+              <ZarfYuz solHarf={solHarf} sagHarf={sagHarf} satir={satir} davet={davet} />
             </div>
             <div className="zarf-kanat">
               <div className="zarf-kanat-dis" />

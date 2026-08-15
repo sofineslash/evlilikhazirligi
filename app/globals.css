@@ -777,81 +777,112 @@ th { color: var(--birincil); }
 }
 /* Zarfin UZERINDEKI el yazisi not */
 /* Zarfin uzeri: isimler / tarih / toren / not — kucuk bir davetiye */
+/* Zarfin ON YUZU — monogram: dal + iki bas harf + iki satir yazi */
 .zarf-yazi {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  gap: 3.2cqw;
   width: 100%;
   text-align: center;
-  color: #3d2f21;
+  color: #a8822f;
+  /* JS-degiskeni yolu: zarf 90 dereceyi gecmeden yazi gitmis olmali,
+     yoksa on yuz arkaya donerken TERS gorunuyor. */
+  opacity: clamp(0, calc((.17 - var(--ilerleme)) / .17), 1);
 }
-/* DORT SATIRIN HEPSI el yazisi (kullanici karari). Great Vibes tek
-   agirlikta geliyor, o yuzden hepsinde font-weight 400 ve
-   font-synthesis: none — yoksa tarayici sahte kalin uretiyor.
-   Hiyerarsi PUNTO ile kuruluyor, kalinlikla degil. */
-.zarf-isim, .zarf-tarih, .zarf-toren, .zarf-uzeri {
+.zarf-monogram {
+  display: flex; align-items: center; justify-content: center;
+  /* Yapraklar harflere girmesin diye ayrik dursunlar */
+  gap: 3.5cqw;
+  width: 100%;
+}
+.zarf-harf {
+  font-family: var(--font-baslik);
+  /* cqw: kapsayici .zarf-3b (container-type asagida). Zarf 3:2 yatay
+     oldugu icin harfler dala gore genis kalmali. */
+  font-size: 19cqw;
+  /* "Ö" ekranda "O" gorunuyordu. Sebep line-height DEGIL, altin gradyan:
+     background-clip:text gradyani ogenin ARKA PLAN KUTUSUYLA sinirli
+     ciziyor ve Ö'nun noktalari o kutunun USTUNDE kaliyor — boyanacak
+     zemin bulamayip gorunmez oluyorlar (olculdu: kutu 66px, punto 62.7px).
+     line-height + padding kutuyu buyutuyor; padding arka plan kutusuna
+     DAHIL oldugu icin isaretler artik gradyanin icinde kaliyor. */
+  line-height: 1.3;
+  padding-top: .12em;
+  font-weight: 400;
+  color: #a8822f;
+  /* Altin varak — desteklemeyen tarayicida duz altina duser */
+  background: linear-gradient(160deg, #d9b45c 0%, #a8822f 48%, #e6c87e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.zarf-dal { width: 13cqw; height: auto; flex: none; }
+
+.zarf-satir {
   font-family: "Nisan Script", "Snell Roundhand", "Apple Chancery",
                "Segoe Script", "Brush Script MT", var(--font-baslik);
   font-weight: 400;
   font-synthesis: none;
-}
-/* Ilk uc satir tek satir kalir; alt not IKI satira kiriliyor
-   (tek satirda 12.75px'e dusuyordu, okunmuyordu — olculdu). */
-.zarf-isim, .zarf-tarih, .zarf-toren { white-space: nowrap; }
-.zarf-isim {
-  /* 6.2cqw: olculdu — 7.4cqw 24.4px veriyordu ve "KÜBRANUR & ÖMÜR"
-     zarfin ic genisligini (277px) 39px asiyordu, sagdaki R kesiliyordu.
-     Buyuk harf el yazisi cok genis; sigan en buyuk punto 20.8px. */
-  font-size: clamp(.85rem, 6.2cqw, 1.6rem);
-  /* El yazisinda harf araligi acmak baglari koparir — 0 birakiliyor. */
-  letter-spacing: 0;
-  line-height: 1.1;
-}
-.zarf-tarih {
-  font-size: clamp(.75rem, 5.4cqw, 1.3rem);
-  line-height: 1.15;
-  color: #6b4a2f;
-}
-.zarf-toren {
-  font-size: clamp(.68rem, 4.6cqw, 1.1rem);
-  line-height: 1.15;
-  color: color-mix(in srgb, #3d2f21 82%, transparent);
-}
-/* ALT NOT — TEK SATIR (kullanici karari).
-   42 karakter zarfin ic genisligine ancak kucuk puntoyla siğiyor;
-   3.4cqw olculerek bulundu. nowrap + kucuk punto olmadan ikinci
-   satira dusuyor. Bu satir destekleyici bir cumle oldugu icin en
-   kucuk olmasi hiyerarsiye de uygun. */
-.zarf-uzeri {
-  font-size: clamp(.78rem, 5.1cqw, 1.25rem);
+  font-size: 5.2cqw;
   line-height: 1.25;
-  color: color-mix(in srgb, #3d2f21 88%, transparent);
-  /* pre-line: kirilim yeri veritabanindaki satir sonundan gelir,
-     tarayicinin buldugu yerden degil. */
-  white-space: pre-line;
+  margin-top: 2.5cqw;
+  color: #8a6b2f;
+  white-space: nowrap;
+}
+.zarf-davet {
+  font-family: var(--font-baslik);
+  font-size: 4.6cqw;
+  letter-spacing: .2em;
+  /* letter-spacing sagda fazladan bosluk birakir — ortali dursun */
+  margin-inline-start: .2em;
+  margin-top: .8cqw;
+  color: #a8822f;
+  white-space: nowrap;
 }
 
-/* GERI KONULDU: bir blok silinirken bunlar da gitmisti.
-   container-type OLMADAN yukaridaki cqw birimleri zarfa degil EKRANA
-   gore cozuluyor — masaustunde zarf sabit genislikte kalirken yazi
-   devasa oluyordu. */
 .zarf-3b { container-type: inline-size; }
+
+/* GERI KONULDU — bunlar bir blok silinirken kaybolmustu ve kapagin
+   donme kurali hic uygulanmiyordu: zarf donuyor ama KAPAK ACILMIYORDU.
+   Yalnizca @supports icindeki animation-name'ler kalmisti, taban
+   transform/opacity kurallari yoktu. */
+.zarf-kanat {
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 62%;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg)
+             rotateX(calc(min(max(var(--ilerleme) - .3, 0), .32) / .32 * -172deg));
+  /* Kanat zarf donusunu bitirir bitirmez belirir; oncesinde on yuzu ortuyor. */
+  opacity: clamp(0, calc((var(--ilerleme) - .27) / .04), 1);
+}
+.zarf-kanat-dis, .zarf-kanat-ic {
+  position: absolute; inset: 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 5px 5px 0 0;
+  /* backface-visibility BURADA CALISMAZ: clip-path ogeyi DUZLESTIRIYOR
+     (spec davranisi). Yuz secimi asagida ilerlemeye bagli. */
+}
+.zarf-kanat-dis {
+  background: linear-gradient(180deg, #e9d7b6 0%, #d8bf93 100%);
+  filter: drop-shadow(0 3px 7px rgba(0,0,0,.25));
+  /* Iki bant AYNI araliкta, ters yonde: toplam her noktada 1.
+     Uc uca konulsaydi gecis aninda kanat bir kare kayboluyordu. */
+  opacity: clamp(0, calc((.475 - var(--ilerleme)) / .015), 1);
+}
+.zarf-kanat-ic {
+  /* Gradyan TERS: ebeveyn donunce yuzey de donuyor, isik yonu korunsun.
+     rotateX(180deg) YOK — duzlesmis ogede dikey ayna gorevi goruyordu. */
+  background: linear-gradient(0deg, #fdf6e8 0%, #f2e3ca 100%);
+  opacity: clamp(0, calc((var(--ilerleme) - .46) / .015), 1);
+}
 .zarf-on::before {
   content: "";
   position: absolute; inset: 9px;
   border: 1px solid color-mix(in srgb, var(--ikincil) 45%, transparent);
   border-radius: 3px;
 }
-/* Altin muhur — zarfin altinda kucuk imza */
-.zarf-on::after {
-  content: "";
-  position: absolute; bottom: 7%; left: 50%;
-  transform: translateX(-50%);
-  width: 1.1rem; height: 1.1rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f6dca0, #b8860b 72%);
-  box-shadow: 0 2px 6px rgba(0,0,0,.25);
-}
+/* Altin muhur KALDIRILDI: monogram tasariminda yeri yok ve
+   "DAVETLİSİNİZ" satirinin uzerine biniyordu. */
 
 /* Ust yazi ve ipucu — acilirken solar */
 .zarf-ipucu {
@@ -1036,7 +1067,7 @@ th { color: var(--birincil); }
   .zarf-sahne { view-timeline-name: --zarf; view-timeline-axis: block; }
 
   .zarf-3b, .zarf-kanat, .zarf-kanat-dis, .zarf-kanat-ic,
-  .zarf-govde, .zarf-ipucu, .zarf-uzeri {
+  .zarf-govde, .zarf-ipucu, .zarf-yazi {
     animation-timeline: --zarf;
     animation-range: contain 0% contain 100%;
     animation-fill-mode: both;
@@ -1053,7 +1084,9 @@ th { color: var(--birincil); }
   /* Zarfin uzerindeki yazi: zarf donerken silinir. Donus %0-30 arasinda
      oluyor, 90 dereceyi %15'te geciyor — yazi o ana kadar tamamen gitmis
      olmali, yoksa on yuz arkaya donerken yazi ters gorunur. */
-  .zarf-uzeri{ animation-name: zarf-yazi-sol; }
+  /* KAPSAYICIYA bagli (.zarf-uzeri'ye DEGIL): zarf uzeri artik dort satir;
+     yalnizca sonuncusu soluyor, ilk uc satir zarfla DONUP TERS gorunuyordu. */
+  .zarf-yazi{ animation-name: zarf-yazi-sol; }
 
   @keyframes zarf-don {
     0%   { transform: rotateY(0deg)   scale(1); }
@@ -1133,7 +1166,7 @@ th { color: var(--birincil); }
     .sahne-sarma, .kart, main h2, .dilek, .kapanis,
     .kapak-dis .cerceve, .kapak-gorsel,
     .zarf-3b, .zarf-kanat, .zarf-kanat-dis, .zarf-kanat-ic,
-    .zarf-govde, .zarf-ipucu, .zarf-uzeri,
+    .zarf-govde, .zarf-ipucu, .zarf-yazi,
     .zarf-sahne .kapak-dis {
       animation: none !important;
     }
