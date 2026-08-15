@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
      konumlarindan hesapliyor. Bundle edilirlerse o konum degisiyor ve
      ikili bulunamiyor: ffmpeg/ffprobe icin bu "her video acilamadi"
      hatasi olarak geri donuyordu. */
-  serverExternalPackages: ["better-sqlite3", "sharp", "ffmpeg-static", "ffprobe-static"],
+  serverExternalPackages: ["better-sqlite3", "sharp", "ffmpeg-static", "@ffprobe-installer/ffprobe"],
 };
 
 export default nextConfig;

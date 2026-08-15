@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import ffmpegYolu from "ffmpeg-static";
-import ffprobeStatic from "ffprobe-static";
+import ffprobeInstaller from "@ffprobe-installer/ffprobe";
 import { CFG } from "./config";
 
 const calistir = promisify(execFile);
@@ -20,9 +20,15 @@ const calistir = promisify(execFile);
  *
  * Ortam degiskeniyle sistem ikilisine gecilebilir (FFMPEG_YOLU/FFPROBE_YOLU) —
  * donanim hizlandirmasi gereken bir sunucuda ise yarar.
+ *
+ * ffprobe icin `ffprobe-static` DEGIL `@ffprobe-installer/ffprobe`:
+ * ffprobe-static linux'ta yalnizca ia32 ve x64 tasiyor, arm64 YOK.
+ * Docker imaji arm64 makinede arm64 uretiyor ve ffprobe yolu var olmayan
+ * bir dosyayi gosteriyordu — her video "acilamadi" hatasi aliyordu.
+ * Yerelde (darwin-arm64) calistigi icin ancak konteynerde ortaya cikti.
  */
 const FFMPEG = process.env.FFMPEG_YOLU || (ffmpegYolu as unknown as string);
-const FFPROBE = process.env.FFPROBE_YOLU || ffprobeStatic.path;
+const FFPROBE = process.env.FFPROBE_YOLU || ffprobeInstaller.path;
 
 /**
  * "1080p" KISA kenarin 1080 olmasi demektir, uzun kenarin degil:
