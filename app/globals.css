@@ -781,7 +781,12 @@ th { color: var(--birincil); }
 .zarf-yazi {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
+  /* max-width + min-width:0 SART: icerideki uzun bir satir bu blogu
+     zarftan genis yapiyordu ve ortalama tasan kutuya gore hesaplanip
+     monogrami saga itiyordu (olculdu: blok 421px, zarf ici 277px). */
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   text-align: center;
   color: #a8822f;
   /* JS-degiskeni yolu: zarf 90 dereceyi gecmeden yazi gitmis olmali,
@@ -790,6 +795,7 @@ th { color: var(--birincil); }
 }
 .zarf-monogram {
   display: flex; align-items: center; justify-content: center;
+  max-width: 100%; min-width: 0;
   /* Yapraklar harflere girmesin diye ayrik dursunlar */
   gap: 3.5cqw;
   width: 100%;
@@ -833,7 +839,10 @@ th { color: var(--birincil); }
   line-height: 1.25;
   margin-top: 2.5cqw;
   color: #8a6b2f;
-  white-space: nowrap;
+  /* nowrap KALDIRILDI: metin admin panelinden degistirilebiliyor ve
+     uzun bir cumle yazildiginda zarftan tasip duzeni bozuyordu. */
+  max-width: 100%;
+  text-wrap: balance;
 }
 .zarf-davet {
   font-family: var(--font-baslik);
@@ -843,7 +852,10 @@ th { color: var(--birincil); }
   margin-inline-start: .2em;
   margin-top: .8cqw;
   color: #a8822f;
-  white-space: nowrap;
+  /* nowrap KALDIRILDI — yukaridaki ile ayni sebep. */
+  max-width: 100%;
+  line-height: 1.35;
+  text-wrap: balance;
 }
 
 .zarf-3b { container-type: inline-size; }
