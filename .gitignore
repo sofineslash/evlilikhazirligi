@@ -1,0 +1,14 @@
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+data/
+yedek/
+.env
+.env.local
+.DS_Store
+medya/
+
+# Ucuncu taraf skill — kendi git reposu. Gomulu repo olarak eklenirse
+# klonlarda BOS klasor olarak gelir ve kimse icerigini alamaz.
+.cursor/skills/ui-ux-pro-max/
