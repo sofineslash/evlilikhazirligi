@@ -145,7 +145,8 @@ export default async function Admin() {
                 </p>
                 <GaleriYonet
                   anlar={anlar.map((a) => ({
-                    id: a.id, yukleyen: a.yukleyen, bayt: a.bayt, olusturuldu: a.olusturuldu,
+                    id: a.id, yukleyen: a.yukleyen, bayt: a.bayt,
+                    olusturuldu: a.olusturuldu, tur: a.tur, sure: a.sure,
                   }))}
                 />
               </>

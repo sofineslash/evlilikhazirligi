@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import FotoOnizle from "./FotoOnizle";
+import { anlariSil } from "@/lib/admin";
 
 export type AnOzet = {
   id: string;
   yukleyen: string | null;
   bayt: number;
   olusturuldu: string;
+  tur: "foto" | "video";
+  sure: number | null;
 };
+
+const sureMetni = (sn: number) =>
+  `${Math.floor(sn / 60)}:${String(Math.round(sn % 60)).padStart(2, "0")}`;
 
 const boyut = (b: number) =>
   b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`;
@@ -28,6 +34,19 @@ export default function GaleriYonet({ anlar }: { anlar: AnOzet[] }) {
   const [calisiyor, setCalisiyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
   const [onizleme, setOnizleme] = useState<number | null>(null);
+  const [siliniyor, basla] = useTransition();
+  const [onay, setOnay] = useState(false);
+
+  /* Silme GERI ALINAMAZ: dosya diskten, satir veritabanindan gidiyor.
+     Tek tikla silinmesin — once "Emin misin" adimi. */
+  const sil = () => {
+    const idler = [...secili];
+    basla(async () => {
+      await anlariSil(idler);
+      setSecili(new Set());
+      setOnay(false);
+    });
+  };
 
   const degistir = (id: string) =>
     setSecili((s) => {
@@ -98,7 +117,32 @@ export default function GaleriYonet({ anlar }: { anlar: AnOzet[] }) {
         >
           {calisiyor ? "Hazırlanıyor…" : `Tümünü indir (${anlar.length})`}
         </button>
+
+        {secili.size > 0 && (
+          onay ? (
+            <>
+              <button
+                type="button" className="btn btn-tehlike"
+                disabled={siliniyor} onClick={sil}
+              >
+                {siliniyor ? "Siliniyor…" : `Evet, ${secili.size} tanesini sil`}
+              </button>
+              <button type="button" className="btn" onClick={() => setOnay(false)}>
+                Vazgeç
+              </button>
+            </>
+          ) : (
+            <button type="button" className="btn btn-tehlike-ana" onClick={() => setOnay(true)}>
+              Seçilenleri sil ({secili.size})
+            </button>
+          )
+        )}
       </div>
+      {onay && (
+        <p className="hata kucuk">
+          {secili.size} dosya kalıcı olarak silinecek. Geri alınamaz.
+        </p>
+      )}
       {hata && <p className="hata">{hata}</p>}
 
       <ul className="galeri-izgara">
@@ -115,7 +159,15 @@ export default function GaleriYonet({ anlar }: { anlar: AnOzet[] }) {
                 aria-label={`Seç: ${a.yukleyen ?? "İsimsiz"} — ${tarih(a.olusturuldu)}`}
               />
               <button type="button" className="galeri-ac" onClick={() => setOnizleme(i)}>
-                <img src={`/api/an/${a.id}`} alt="" loading="lazy" />
+                <img
+                  src={a.tur === "video" ? `/api/an/${a.id}?kapak=1` : `/api/an/${a.id}`}
+                  alt="" loading="lazy"
+                />
+                {a.tur === "video" && (
+                  <span className="an-video-isaret" aria-hidden="true">
+                    ▶{a.sure ? ` ${sureMetni(a.sure)}` : ""}
+                  </span>
+                )}
               </button>
             </div>
             <div className="galeri-alt">
@@ -130,7 +182,7 @@ export default function GaleriYonet({ anlar }: { anlar: AnOzet[] }) {
       </ul>
 
       <FotoOnizle
-        ogeler={anlar.map((a) => ({ id: a.id, yukleyen: a.yukleyen }))}
+        ogeler={anlar.map((a) => ({ id: a.id, yukleyen: a.yukleyen, tur: a.tur, sure: a.sure }))}
         indeks={onizleme}
         setIndeks={setOnizleme}
       />

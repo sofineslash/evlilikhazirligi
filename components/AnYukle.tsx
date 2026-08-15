@@ -7,13 +7,17 @@ type Kalem = {
   anahtar: string;
   dosya: File;
   onizleme: string;
+  video: boolean;
   durum: Durum;
   mesaj?: string;
   kazanc?: number;
 };
 
-/** Ham dosya tavani — sunucudakiyle AYNI olmali, yoksa 413 alip sasiriyoruz. */
-const MAX_BAYT = 25 * 1024 * 1024;
+/* Ham dosya tavanlari — sunucudakiyle AYNI olmali, yoksa 413 alip
+   sasiriyoruz. Video icin ayri: 1 dakikalik 4K kayit rahat 300 MB. */
+const FOTO_MAX_BAYT = 25 * 1024 * 1024;
+const VIDEO_MAX_BAYT = 400 * 1024 * 1024;
+const videoMu = (d: File) => d.type.startsWith("video/");
 
 const boyut = (b: number) =>
   b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`;
@@ -47,12 +51,17 @@ export default function AnYukle() {
     for (const d of Array.from(dosyalar)) {
       const onizleme = URL.createObjectURL(d);
       urlRef.current.push(onizleme);
+      const vid = videoMu(d);
+      const tavan = vid ? VIDEO_MAX_BAYT : FOTO_MAX_BAYT;
       yeni.push({
         anahtar: `${d.name}-${d.size}-${d.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
         dosya: d,
         onizleme,
-        durum: d.size > MAX_BAYT ? "hata" : "bekliyor",
-        mesaj: d.size > MAX_BAYT ? `Çok büyük (${boyut(d.size)}). En fazla 25 MB.` : undefined,
+        video: vid,
+        durum: d.size > tavan ? "hata" : "bekliyor",
+        mesaj: d.size > tavan
+          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "400 MB" : "25 MB"}.`
+          : undefined,
       });
     }
     setKalemler((k) => [...k, ...yeni]);
@@ -103,11 +112,11 @@ export default function AnYukle() {
           ref={girdiRef}
           id="an-dosya"
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           multiple
           onChange={(e) => ekle(e.target.files)}
         />
-        <span className="btn btn-birincil">Fotoğraf seç</span>
+        <span className="btn btn-birincil">Fotoğraf veya video seç</span>
       </label>
 
       {kalemler.length > 0 && (
@@ -115,7 +124,11 @@ export default function AnYukle() {
           <ul className="an-liste">
             {kalemler.map((k) => (
               <li key={k.anahtar} className={`an-kalem an-${k.durum}`}>
-                <img src={k.onizleme} alt="" />
+                {/* Video onizlemesi de yerel dosyadan: <video> ilk kareyi
+                    kendisi cizer, sunucuya sormaya gerek yok. */}
+                {k.video
+                  ? <video src={k.onizleme} muted playsInline preload="metadata" />
+                  : <img src={k.onizleme} alt="" />}
                 <div className="an-bilgi">
                   <span className="an-durum">
                     {k.durum === "bekliyor" && "Hazır"}
@@ -142,7 +155,7 @@ export default function AnYukle() {
 
           {/* Ekran okuyucu icin: durum degisimi sessizce gecmesin */}
           <p className="kucuk" role="status" aria-live="polite">
-            {tamam > 0 && `${tamam} fotoğraf yüklendi. Teşekkür ederiz!`}
+            {tamam > 0 && `${tamam} dosya yüklendi. Teşekkür ederiz!`}
           </p>
         </>
       )}

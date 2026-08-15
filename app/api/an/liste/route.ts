@@ -26,6 +26,8 @@ export async function GET() {
   const anlar = (admin ? hepsi : hepsi.filter((a) => a.gizli === 0)).map((a) => ({
     id: a.id,
     yukleyen: a.yukleyen,
+    tur: a.tur,
+    sure: a.sure,
   }));
 
   return NextResponse.json(

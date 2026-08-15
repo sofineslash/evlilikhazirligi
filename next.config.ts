@@ -8,7 +8,11 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   devIndicators: false,
-  serverExternalPackages: ["better-sqlite3", "sharp"],
+  /* Bu paketler ikili (binary) tasiyor ve yollarini kendi modul
+     konumlarindan hesapliyor. Bundle edilirlerse o konum degisiyor ve
+     ikili bulunamiyor: ffmpeg/ffprobe icin bu "her video acilamadi"
+     hatasi olarak geri donuyordu. */
+  serverExternalPackages: ["better-sqlite3", "sharp", "ffmpeg-static", "ffprobe-static"],
 };
 
 export default nextConfig;

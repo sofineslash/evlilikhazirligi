@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { db, ayarOku, ayarYaz } from "./db";
 import { METIN_ALANLARI } from "./metin-alanlari";
 import { metinYaz } from "./metin";
+import { anSil } from "./anlar";
 import { adminJetonuUret, adminJetonuDogrula } from "./session";
 import { hizKontrol } from "./ratelimit";
 import { CFG } from "./config";
@@ -142,6 +143,18 @@ export async function kullaniciSil(id: string) {
   if (!(await adminMi())) return;
   kullaniciSilHam(id);
   revalidatePath("/admin");
+}
+
+/** Galeriden fotograf/video sil. Yalnizca giris yapmis yonetici. */
+export async function anlariSil(idler: string[]) {
+  if (!(await adminMi())) return { hata: "Oturum bitmiş. Tekrar giriş yapın." };
+  let n = 0;
+  for (const id of idler) {
+    if (typeof id === "string" && anSil(id)) n++;
+  }
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { ok: true, sayi: n };
 }
 
 /** Admin panelinden metin kaydetme. */

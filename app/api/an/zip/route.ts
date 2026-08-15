@@ -95,8 +95,10 @@ export async function POST(req: Request) {
     const veri = await fsp.readFile(yol);
     const kim = asciyeKatla(k.yukleyen ?? "");
     const damga = k.olusturuldu.slice(0, 19).replace(/[:T]/g, "-");
+    // Uzanti kayitta ne yaziyorsa o — video .mp4, fotograf .webp.
+    const uzanti = k.dosya.split(".").pop() || "webp";
     girdiler.push({
-      ad: `${damga}${kim ? " " + kim : ""} ${k.id.slice(0, 8)}.webp`,
+      ad: `${damga}${kim ? " " + kim : ""} ${k.id.slice(0, 8)}.${uzanti}`,
       veri,
       tarih: new Date(k.olusturuldu),
     });

@@ -329,6 +329,39 @@ th { color: var(--birincil); }
 /* Govdedeki sahneler biraz nefes alsin */
 .sahne-sarma { margin: 0 0 1.25rem; }
 
+/* ---------- Galeri: video isaretleri ve sekmeler ---------- */
+.galeri-sekme {
+  display: flex; gap: .35rem;
+  margin: 0 0 .8rem;
+  border-bottom: 2px solid var(--cizgi);
+}
+/* Kucuk resim butonu konumlandirma baglami olmali — sure rozeti
+   uzerine biniyor. */
+.an-kucuk, .galeri-ac { position: relative; }
+.an-video-isaret {
+  position: absolute; right: .3rem; bottom: .3rem;
+  padding: .1rem .35rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,.62);
+  color: #fff;
+  font-size: .68rem; font-weight: 700;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+
+/* Silme: yikici eylem, kazara basilmasin diye ayri renk */
+.btn-tehlike-ana { color: #a8462a; border-color: color-mix(in srgb, #a8462a 45%, transparent); }
+.btn-tehlike { background: #a8462a; border-color: #a8462a; color: #fff; }
+.btn-tehlike:hover { background: #8f3a22; }
+
+/* Onizleme penceresinde video */
+.foto-pencere-ic video {
+  max-width: 92vw;
+  max-height: calc(100vh - 7rem);
+  border-radius: 6px;
+  background: #000;
+}
+
 /* ---------- Fotograf onizleme penceresi ---------- */
 .foto-pencere {
   border: none; padding: 0; background: none;
@@ -477,7 +510,8 @@ th { color: var(--birincil); }
   border-radius: 10px;
   background: var(--yuzey);
 }
-.an-kalem img {
+.an-kalem img,
+.an-kalem video {
   width: 56px; height: 56px; flex: none;
   object-fit: cover; border-radius: 8px;
   background: var(--kagit-koyu);

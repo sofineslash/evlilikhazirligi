@@ -12,7 +12,12 @@ import { useEffect, useRef } from "react";
  * Hem misafir galerisinde hem yonetim panelinde AYNI bilesen kullaniliyor;
  * ikisinde ayri lightbox yazmak iki ayri hata kaynagi demekti.
  */
-export type OnizlemeOge = { id: string; yukleyen: string | null };
+export type OnizlemeOge = {
+  id: string;
+  yukleyen: string | null;
+  tur?: "foto" | "video";
+  sure?: number | null;
+};
 
 export default function FotoOnizle({
   ogeler,
@@ -57,6 +62,7 @@ export default function FotoOnizle({
      "İsimsiz" gibi bir yer tutucu koymak bos bir alani vurgulamaktan
      baska ise yaramiyor. */
   const kim = oge?.yukleyen?.trim() || null;
+  const video = oge?.tur === "video";
 
   return (
     <dialog
@@ -69,7 +75,22 @@ export default function FotoOnizle({
     >
       {id && (
         <div className="foto-pencere-ic">
-          <img src={`/api/an/${id}`} alt="" />
+          {video ? (
+            /* key={id}: id degisince React ayni <video> ogesini geri
+               kullanip eski kareyi gosteriyordu. key ile yeniden kuruluyor.
+               poster: kapak karesi ayri bir JPEG — videoyu indirmeden
+               ilk kare gorunsun. */
+            <video
+              key={id}
+              src={`/api/an/${id}`}
+              poster={`/api/an/${id}?kapak=1`}
+              controls
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img src={`/api/an/${id}`} alt="" />
+          )}
 
           {kim && <p className="foto-pencere-kim">{kim}</p>}
 

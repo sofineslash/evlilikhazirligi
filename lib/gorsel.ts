@@ -25,8 +25,11 @@ const DESTEKLENEN = new Set(["jpeg", "png", "webp", "avif", "gif", "tiff"]);
 /** Kesme figurun uzun kenar tavani — kartta kucuk gorunuyor, buyuk olmasina gerek yok. */
 const PNG_UZUN_KENAR = 700;
 
+/* `tur` bir AYRAC: video sonucuyla birlikte tek birlesimde kullaniliyor
+   ve TypeScript hangi dalda oldugumuzu ancak boyle bilebiliyor. */
 export type IslemSonuc =
-  | { ok: true; veri: Buffer; bayt: number; oncekiBayt: number; genislik: number; yukseklik: number }
+  | { ok: true; tur: "foto"; veri: Buffer; bayt: number; oncekiBayt: number;
+      genislik: number; yukseklik: number }
   | { ok: false; mesaj: string };
 
 export async function sahneIsle(ham: Buffer, tur: SahneTur = "sahne"): Promise<IslemSonuc> {
@@ -67,7 +70,7 @@ export async function sahneIsle(ham: Buffer, tur: SahneTur = "sahne"): Promise<I
         .webp({ quality: 88, effort: 4, alphaQuality: 100 })
         .toBuffer();
       const m = await sharp(veri).metadata();
-      return { ok: true, veri, bayt: veri.length, oncekiBayt: ham.length,
+      return { ok: true, tur: "foto", veri, bayt: veri.length, oncekiBayt: ham.length,
                genislik: m.width ?? 0, yukseklik: m.height ?? 0 };
     }
 
@@ -77,7 +80,7 @@ export async function sahneIsle(ham: Buffer, tur: SahneTur = "sahne"): Promise<I
       .toBuffer();
 
     return {
-      ok: true,
+      ok: true, tur: "foto",
       veri,
       bayt: veri.length,
       oncekiBayt: ham.length,
@@ -128,7 +131,7 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
 
     const m = await sharp(veri).metadata();
     return {
-      ok: true, veri, bayt: veri.length, oncekiBayt: ham.length,
+      ok: true, tur: "foto", veri, bayt: veri.length, oncekiBayt: ham.length,
       genislik: m.width ?? 0, yukseklik: m.height ?? 0,
     };
   } catch (e) {
