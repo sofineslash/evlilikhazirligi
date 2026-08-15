@@ -711,7 +711,10 @@ th { color: var(--birincil); }
   position: relative; z-index: 1;
   font-family: "Snell Roundhand", "Apple Chancery", "Segoe Script",
                "Brush Script MT", var(--font-baslik);
-  font-size: clamp(.95rem, 4.2cqw, 1.35rem);
+  /* TABAN onemli: zarf mobilde 292px, 4.2cqw ~12px cikip .95rem (15.2px)
+     tabanina dusuyordu. El yazisi fontlarinin x-yuksekligi dusuk oldugu
+     icin 15px okunmuyordu. Taban 1.15rem'e cikarildi. */
+  font-size: clamp(1.15rem, 6cqw, 1.7rem);
   line-height: 1.35;
   text-align: center;
   color: #4a3a2a;
