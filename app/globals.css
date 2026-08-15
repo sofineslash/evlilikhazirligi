@@ -352,6 +352,16 @@ th { color: var(--birincil); }
   border-radius: 6px;
   background: #000;
 }
+/* Gonderenin adi — gorselin hemen altinda, aractan once */
+.foto-pencere-kim {
+  margin: 0;
+  font-size: .95rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.92);
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
+}
+
 .foto-pencere-arac {
   display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
   justify-content: center;

@@ -12,15 +12,18 @@ import { useEffect, useRef } from "react";
  * Hem misafir galerisinde hem yonetim panelinde AYNI bilesen kullaniliyor;
  * ikisinde ayri lightbox yazmak iki ayri hata kaynagi demekti.
  */
+export type OnizlemeOge = { id: string; yukleyen: string | null };
+
 export default function FotoOnizle({
-  idler,
+  ogeler,
   indeks,
   setIndeks,
 }: {
-  idler: string[];
+  ogeler: OnizlemeOge[];
   indeks: number | null;
   setIndeks: (i: number | null) => void;
 }) {
+  const idler = ogeler.map((o) => o.id);
   const pencere = useRef<HTMLDialogElement>(null);
 
   // indeks <-> <dialog> acik/kapali durumunu esitle
@@ -48,7 +51,12 @@ export default function FotoOnizle({
     return () => window.removeEventListener("keydown", tus);
   }, [indeks, idler.length, setIndeks]);
 
-  const id = indeks !== null ? idler[indeks] : null;
+  const oge = indeks !== null ? ogeler[indeks] : null;
+  const id = oge?.id ?? null;
+  /* Gonderen adi ISTEGE BAGLI. Doldurulmadiysa hicbir sey yazilmaz —
+     "İsimsiz" gibi bir yer tutucu koymak bos bir alani vurgulamaktan
+     baska ise yaramiyor. */
+  const kim = oge?.yukleyen?.trim() || null;
 
   return (
     <dialog
@@ -62,6 +70,8 @@ export default function FotoOnizle({
       {id && (
         <div className="foto-pencere-ic">
           <img src={`/api/an/${id}`} alt="" />
+
+          {kim && <p className="foto-pencere-kim">{kim}</p>}
 
           <div className="foto-pencere-arac">
             {idler.length > 1 && (

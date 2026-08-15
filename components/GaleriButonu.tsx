@@ -96,7 +96,7 @@ export default function GaleriButonu({ anlar: ilkAnlar }: { anlar: AnKart[] }) {
                   Tek tek indirme onizleme penceresinde duruyor.
                   Sunucu tarafinda da /api/an/zip yalnizca admin'e aciktir,
                   yani buton kaldirilmis olmakla kalmiyor, uc da kapali. */}
-              <FotoOnizle idler={anlar.map((a) => a.id)} indeks={onizleme} setIndeks={setOnizleme} />
+              <FotoOnizle ogeler={anlar} indeks={onizleme} setIndeks={setOnizleme} />
             </>
           )}
         </div>

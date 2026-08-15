@@ -129,7 +129,11 @@ export default function GaleriYonet({ anlar }: { anlar: AnOzet[] }) {
         ))}
       </ul>
 
-      <FotoOnizle idler={anlar.map((a) => a.id)} indeks={onizleme} setIndeks={setOnizleme} />
+      <FotoOnizle
+        ogeler={anlar.map((a) => ({ id: a.id, yukleyen: a.yukleyen }))}
+        indeks={onizleme}
+        setIndeks={setOnizleme}
+      />
     </div>
   );
 }
