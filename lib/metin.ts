@@ -12,10 +12,16 @@ export function metin(anahtar: MetinAnahtar): string {
 }
 
 export function tumMetinler(): Record<string, string> {
-  const rows = db()
-    .prepare("SELECT anahtar, deger FROM ayarlar WHERE anahtar LIKE 'metin.%'")
-    .all() as { anahtar: string; deger: string }[];
-  return Object.fromEntries(rows.map((r) => [r.anahtar.slice(6), r.deger ?? ""]));
+  try {
+    const rows = db()
+      .prepare("SELECT anahtar, deger FROM ayarlar WHERE anahtar LIKE 'metin.%'")
+      .all() as { anahtar: string; deger: string }[];
+    return Object.fromEntries(rows.map((r) => [r.anahtar.slice(6), r.deger ?? ""]));
+  } catch (e) {
+    // Migration'dan once (derleme ani) tablo yok — bos donmek dogru.
+    if (e instanceof Error && /no such table/i.test(e.message)) return {};
+    throw e;
+  }
 }
 
 export function metinYaz(anahtar: string, deger: string): void {
