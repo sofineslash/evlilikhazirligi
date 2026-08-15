@@ -714,10 +714,13 @@ th { color: var(--birincil); }
   /* TABAN onemli: zarf mobilde 292px, 4.2cqw ~12px cikip .95rem (15.2px)
      tabanina dusuyordu. El yazisi fontlarinin x-yuksekligi dusuk oldugu
      icin 15px okunmuyordu. Taban 1.15rem'e cikarildi. */
-  font-size: clamp(1.15rem, 6cqw, 1.7rem);
-  line-height: 1.35;
+  font-size: clamp(1.4rem, 7.5cqw, 2.05rem);
+  /* El yazisi fontlarinin cogunda tek agirlik var; 600 verince tarayici
+     sentetik kalinlastirma yapiyor ve ince kalemi belirginlestiriyor. */
+  font-weight: 600;
+  line-height: 1.3;
   text-align: center;
-  color: #4a3a2a;
+  color: #3d2f21;              /* krem zeminde daha yuksek kontrast */
   text-wrap: balance;
 }
 .zarf-3b { container-type: inline-size; }
