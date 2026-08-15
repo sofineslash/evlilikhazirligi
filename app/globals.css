@@ -815,7 +815,14 @@ th { color: var(--birincil); }
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.zarf-dal { width: 13cqw; height: auto; flex: none; }
+.zarf-dal {
+  /* Dal harflerden UZUN olmali — referansta govde harflerin ustune ve
+     altina tasiyor. Genislik dar, yukseklik oranla geliyor. */
+  width: 11cqw;
+  height: auto;
+  flex: none;
+  margin-inline: -.5cqw;      /* yapraklar harflere biraz yaklassin */
+}
 
 .zarf-satir {
   font-family: "Nisan Script", "Snell Roundhand", "Apple Chancery",
