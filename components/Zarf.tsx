@@ -28,10 +28,20 @@ import { useEffect, useRef } from "react";
  */
 export default function Zarf({
   not,
+  isimler,
+  tarih,
+  toren,
   fon,
   children,
 }: {
+  /** En alt satir — el yazisiyla, TEK SATIR. */
   not?: string;
+  /** En ust satir, buyuk harf: "KÜBRANUR & ÖMÜR" */
+  isimler?: string;
+  /** Orta satir: "29 Ekim 2026" */
+  tarih?: string;
+  /** Tarihin altindaki satir: "Nişan törenimizde" */
+  toren?: string;
   fon?: string | null;
   children?: React.ReactNode;
 }) {
@@ -111,8 +121,14 @@ export default function Zarf({
           <div className="zarf-govde">
             <div className="zarf-arka" />
             <div className="zarf-on">
-              {/* Not zarfin UZERINDE — el yazisiyla, muhrun ustunde */}
-              {not && <span className="zarf-uzeri">{not}</span>}
+              {/* Zarfin uzeri kucuk bir davetiye: isimler / tarih /
+                  toren / not. Bos birakilan satir hic cizilmez. */}
+              <div className="zarf-yazi">
+                {isimler && <span className="zarf-isim">{isimler}</span>}
+                {tarih && <span className="zarf-tarih">{tarih}</span>}
+                {toren && <span className="zarf-toren">{toren}</span>}
+                {not && <span className="zarf-uzeri">{not}</span>}
+              </div>
             </div>
             <div className="zarf-kanat">
               <div className="zarf-kanat-dis" />

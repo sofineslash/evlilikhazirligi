@@ -1,4 +1,4 @@
-import { CFG, TARIH_METNI, SAAT_METNI, haritaLinkleri, gunModu } from "@/lib/config";
+import { CFG, TARIH_METNI, TARIH_KISA, SAAT_METNI, haritaLinkleri, gunModu } from "@/lib/config";
 import { sahneYolu } from "@/lib/sahneler";
 import { metin, ebeveynSatirlari } from "@/lib/metin";
 import Zarf from "@/components/Zarf";
@@ -42,6 +42,10 @@ export default function Davetiye() {
   const damatAd = metin("damat_ad") || CFG.DAMAT;
   const tel = metin("iletisim_tel");
   const zarfNotu = metin("zarf_notu");
+  const zarfToren = metin("zarf_toren");
+  /* Buyuk harfe cevirirken TURKCE yerel SART: duz toUpperCase()
+     "i" -> "I" yapar, "İ" olmasi gerekir. */
+  const zarfIsimler = `${gelinAd} & ${damatAd}`.toLocaleUpperCase("tr");
   const davetCumlesi = metin("davet_cumlesi");
   const yemek = metin("yemek_notu");
   const otopark = metin("otopark_notu");
@@ -60,7 +64,13 @@ export default function Davetiye() {
          Zarf geri cekilirken bu kart one dogru buyur; ikisi ayni sticky
          sahnede, ayni merkezden olcekleniyor. Kartin ALTINDA hicbir bolum
          yok — sayfanin tamami bu tek sahne. */}
-      <Zarf not={zarfNotu} fon={kapakYolu}>
+      <Zarf
+        not={zarfNotu}
+        isimler={zarfIsimler}
+        tarih={TARIH_KISA}
+        toren={zarfToren}
+        fon={kapakYolu}
+      >
       <div
         className="kapak-dis"
         style={{ "--kart-beyaz": kartBeyaz, "--kart-blur": kartBlur } as React.CSSProperties}

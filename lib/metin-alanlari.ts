@@ -9,8 +9,10 @@ export const METIN_ALANLARI = [
   { anahtar: "gelin_ad", etiket: "Gelinin adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "damat_ad", etiket: "Damadın adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "davet_cumlesi", etiket: "Davet cümlesi", ipucu: "Davetiyenin ana cümlesi", cok_satir: true },
-  { anahtar: "zarf_notu",     etiket: "Zarfın üstündeki not",
-    ipucu: "El yazısıyla görünür. Satır sonu koyduğun yerden kırılır.", cok_satir: true },
+  { anahtar: "zarf_toren",    etiket: "Zarf — tören satırı",
+    ipucu: "Tarihin altında görünür, örn. Nişan törenimizde", cok_satir: false },
+  { anahtar: "zarf_notu",     etiket: "Zarf — alt not",
+    ipucu: "En altta el yazısıyla. Satır sonu koyduğun yerden kırılır.", cok_satir: true },
 
   { anahtar: "damat_bicim", etiket: "Damadın ailesi nasıl yazılsın?", ipucu: "", cok_satir: false,
     secenekler: [

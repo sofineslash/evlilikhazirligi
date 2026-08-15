@@ -95,4 +95,6 @@ export function gunModu(simdi: Date = new Date()): GunModu {
 
 /** Ekranda gosterilecek tarih — sabit, locale bagimsiz. */
 export const TARIH_METNI = "29 Ekim 2026, Perşembe";
+/** Zarf uzeri icin kisa hali — gun adi zarfta yer kaplıyor. */
+export const TARIH_KISA = "29 Ekim 2026";
 export const SAAT_METNI = "19:00";

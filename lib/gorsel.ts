@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { CFG } from "./config";
 import { ORAN, type SahneTur } from "./sahneler";
 import { goruntuyuCoz } from "./video";
+import heicCevir from "heic-convert";
 
 /**
  * Sunucu tarafi gorsel isleme.
@@ -124,41 +125,47 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
       .webp({ quality: Math.round(CFG.FOTO_WEBP_KALITE * 100), effort: 4 })
       .toBuffer();
     const m = await sharp(veri).metadata();
+    /* failOn: "none" sharp'i toleransli yapiyor — bozuk girdide HATA
+       FIRLATMAK yerine bos/kirpik bir goruntu uretebiliyor. O zaman
+       yukleme "basarili" gorunup galeride bos kare cikiyor. Ciktiyi
+       akla yatkinlik kontrolunden geciriyoruz. */
+    if (!m.width || !m.height || m.width < 16 || m.height < 16 || veri.length < 1024) {
+      throw new Error(`bozuk cikti: ${m.width}x${m.height}, ${veri.length} bayt`);
+    }
     return {
       ok: true as const, tur: "foto" as const, veri,
       bayt: veri.length, oncekiBayt: ham.length,
-      genislik: m.width ?? 0, yukseklik: m.height ?? 0,
+      genislik: m.width, yukseklik: m.height,
     };
   };
 
-  /* HEIC'i ONCE ayikla: ne sharp ne ffmpeg cozebiliyor (ikisi de test
-     edildi — sharp "Decoder plugin generated an error", ffmpeg "moov atom
-     not found"). Genel hata mesaji vermek yerine ne yapmasi gerektigini
-     soyluyoruz. */
+  /* HEIF/HEIC AYRI YOL. Ne sharp ne ffmpeg cozebiliyor (ikisi de test
+     edildi: sharp "Decoder plugin generated an error", ffmpeg "moov atom
+     not found" — ffmpeg'in HEVC cozucusu var ama HEIF demuxer'i yok).
+     heic-convert saf JS bir cozucu; yavas ama her mimaride calisiyor
+     (~540 ms / 2 MP, olculdu). Misafire "telefon ayarlarini degistir"
+     demek yerine sunucu isi hallediyor — Samsung ve iPhone paylasimlarinin
+     buyuk kismi HEIF geliyor. */
+  let girdi = ham;
   try {
     const meta = await sharp(ham, AYAR).metadata();
     if (meta.format === "heif") {
-      return {
-        ok: false,
-        mesaj:
-          "Bu fotoğraf HEIC biçiminde ve sunucu onu açamıyor. " +
-          "Telefon ayarlarından fotoğraf biçimini JPEG yapıp tekrar deneyin.",
-      };
+      girdi = await heicCevir({ buffer: ham, format: "JPEG", quality: 0.92 });
     }
-  } catch {
-    /* Ustveri okunamadiysa sorun degil — asagida cevirmeyi deniyoruz. */
+  } catch (e) {
+    console.error("an isleme: HEIF cozme/ustveri hatasi", (e as Error).message);
   }
 
   /* Once sharp (hizli), olmazsa ffmpeg ile cozup tekrar dene. ffmpeg
      sharp'in takildigi bazi bicimleri (bozuk EXIF, alisilmadik TIFF)
      cozebiliyor. HEIC'te ikisi de cozemiyor, o yuzden yukarida ayrildi. */
   try {
-    return await cevir(ham);
+    return await cevir(girdi);
   } catch (e) {
     console.error("an isleme: sharp basarisiz, ffmpeg deneniyor", (e as Error).message);
   }
 
-  const cozulmus = await goruntuyuCoz(ham);
+  const cozulmus = await goruntuyuCoz(girdi);
   if (!cozulmus) {
     return { ok: false, mesaj: "Fotoğraf işlenemedi. Başka bir dosya deneyin." };
   }

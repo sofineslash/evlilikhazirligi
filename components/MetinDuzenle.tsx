@@ -32,7 +32,7 @@ const GRUPLAR: { sekme: MetinSekme; baslik: string; not?: string; anahtarlar: st
     anahtarlar: ["kart_beyaz", "kart_blur"],
   },
 
-  { sekme: "metinler", baslik: "Davetiye metni", anahtarlar: ["davet_cumlesi", "zarf_notu", "kapanis", "foto_notu"] },
+  { sekme: "metinler", baslik: "Davetiye metni", anahtarlar: ["davet_cumlesi", "zarf_toren", "zarf_notu", "kapanis", "foto_notu"] },
   { sekme: "metinler", baslik: "Salon ve iletişim", anahtarlar: ["yemek_notu", "otopark_notu", "iletisim_tel"] },
 
   {
