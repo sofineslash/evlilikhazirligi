@@ -18,6 +18,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Sirlari EN BASTA dogrula. Yoksa imaj 2 dakika derleniyor, konteyner
+      # ayaga kalkiyor, sonra her istek 500 veriyor ve saglik kontrolu
+      # 2 dakika daha bekleyip "ayaga kalkmadi" diyor — asil sebep
+      # (eksik AUTH_SECRET) ancak konteyner loglarinda gorunuyor.
+      - name: Gerekli sırlar tanımlı mı
+        env:
+          ADMIN_KULLANICI: ${{ secrets.ADMIN_KULLANICI }}
+          ADMIN_PASSWORD_HASH_B64: ${{ secrets.ADMIN_PASSWORD_HASH_B64 }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+        run: |
+          eksik=0
+          for ad in ADMIN_KULLANICI ADMIN_PASSWORD_HASH_B64 AUTH_SECRET; do
+            deger="${!ad}"
+            if [ -z "$deger" ]; then
+              echo "::error::GitHub secret eksik: $ad"
+              eksik=1
+            fi
+          done
+          # AUTH_SECRET en az 32 karakter olmali — lib/session.ts bunu
+          # zorunlu tutuyor ve kisa olursa HER istek 500 doner.
+          if [ -n "$AUTH_SECRET" ] && [ ${#AUTH_SECRET} -lt 32 ]; then
+            echo "::error::AUTH_SECRET ${#AUTH_SECRET} karakter, en az 32 olmalı."
+            echo "::error::Üretmek için: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+            eksik=1
+          fi
+          [ "$eksik" -eq 0 ] || exit 1
+          echo "Sırlar tamam."
+
       - name: .env dosyasini yaz
         run: |
           umask 077
@@ -54,15 +82,19 @@ jobs:
 
       - name: Sağlık kontrolü
         run: |
+          # curl ciktisi bastirilir: 40 basarisiz denemede 40 satir hata
+          # basmak asil sebebi (konteyner logu) ekranin disina itiyordu.
           for i in $(seq 1 40); do
-            if curl -fsS -o /dev/null http://127.0.0.1:2608/; then
+            kod=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:2608/ || echo 000)
+            if [ "$kod" = "200" ]; then
               echo "Ayakta (${i}. deneme)"
               exit 0
             fi
             sleep 3
           done
-          echo "::error::Uygulama 120 saniyede ayağa kalkmadı"
-          docker compose logs --tail=80
+          echo "::error::Uygulama ayağa kalkmadı — son HTTP kodu: $kod"
+          echo "--- konteyner logu ---"
+          docker compose logs --tail=40 nisan
           exit 1
 
       - name: Sırları temizle
