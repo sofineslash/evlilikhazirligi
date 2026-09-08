@@ -10,6 +10,12 @@ export type MetinSekme = "davetiye" | "metinler" | "genel";
 const GRUPLAR: { sekme: MetinSekme; baslik: string; not?: string; anahtarlar: string[] }[] = [
   {
     sekme: "davetiye",
+    baslik: "Tasarım ve Tema Seçimi",
+    not: "Davetiyenin misafirlere nasıl açılacağını ve hangi temayla sunulacağını buradan seçebilirsin. Tema 1: Mevcut 3B zarf açılışı. Tema 2: Saray kapısı açılışı ve fon müziği.",
+    anahtarlar: ["tema_secimi", "muzik_acik"],
+  },
+  {
+    sekme: "davetiye",
     baslik: "İsimler",
     not: "Davetiyenin en üstünde bu iki ad görünür. Soyisim yazma — aile soyadları aşağıdaki bölümlerde.",
     anahtarlar: ["gelin_ad", "damat_ad"],

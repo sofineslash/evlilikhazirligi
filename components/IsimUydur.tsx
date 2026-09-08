@@ -56,8 +56,8 @@ export default function IsimUydur() {
       const boy = Math.floor(iyi);
       h1.style.fontSize = boy + "px";
 
-      const cerceve = h1.closest(".cerceve") as HTMLElement | null;
-      /* Kose PNG'leri isimlerle birlikte olceklensin diye disari veriyoruz. */
+      const cerceve = (h1.closest(".cerceve") || h1.closest(".tema2-kart-cerceve")) as HTMLElement | null;
+      /* Kose PNG'leri ve figurler isimlerle birlikte olceklensin diye disari veriyoruz. */
       cerceve?.style.setProperty("--isim-boy", boy + "px");
 
       /* Her figuru KENDI isminin merkezine oturtmak icin isimlerin yatay

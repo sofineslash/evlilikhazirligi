@@ -10,6 +10,9 @@ import { yuklemeAcikMi, YUKLEME_MESAJI } from "@/lib/yukleme";
 import { galeriAcikMi } from "@/lib/galeri";
 import { anlariListele } from "@/lib/anlar";
 import GaleriButonu from "@/components/GaleriButonu";
+import MuzikCalar from "@/components/MuzikCalar";
+import KapiAcilis from "@/components/KapiAcilis";
+import Tema2Dizilim from "@/components/Tema2Dizilim";
 
 export const dynamic = "force-dynamic";
 
@@ -57,20 +60,45 @@ export default function Davetiye() {
     ? anlariListele(200).filter((a) => a.gizli === 0).map((a) => ({ id: a.id, yukleyen: a.yukleyen }))
     : [];
 
+  const tema = metin("tema_secimi") || "tema1";
+  const muzikAktif = metin("muzik_acik") !== "kapali";
 
   return (
     <>
-      {/* TEK SAYFA DAVETIYE: davetiye zarfin ICINDE — ayri bir bolum degil.
-         Zarf geri cekilirken bu kart one dogru buyur; ikisi ayni sticky
-         sahnede, ayni merkezden olcekleniyor. Kartin ALTINDA hicbir bolum
-         yok — sayfanin tamami bu tek sahne. */}
-      <Zarf
-        solHarf={basHarf(gelinAd)}
-        sagHarf={basHarf(damatAd)}
-        satir={zarfSatir}
-        davet={zarfDavet}
-        fon={kapakYolu}
-      >
+      {/* FON MÜZİĞİ — İki temada da çalar */}
+      <MuzikCalar aktif={muzikAktif} />
+
+      {tema === "tema2" ? (
+        /* ================= TEMA 2 — SARAY KAPISI AÇILIŞI & ÖZEL DİZİLİM ================= */
+        <KapiAcilis solHarf={basHarf(gelinAd)} sagHarf={basHarf(damatAd)}>
+          <Tema2Dizilim
+            gelinAd={gelinAd}
+            damatAd={damatAd}
+            davetCumlesi={davetCumlesi}
+            gelin={gelin}
+            damat={damat}
+            tel={tel}
+            yemek={yemek}
+            otopark={otopark}
+            fotoNotu={fotoNotu}
+            yuklemeAcik={yuklemeAcik}
+            ciftYolu={ciftYolu}
+            gelinPng={gelinPng}
+            damatPng={damatPng}
+            kartBeyaz={kartBeyaz}
+            kartBlur={kartBlur}
+            anlar={anlar}
+          />
+        </KapiAcilis>
+      ) : (
+        /* ================= TEMA 1 — MEVCUT 3B ZARF (DOKUNULMAMIŞ) ================= */
+        <Zarf
+          solHarf={basHarf(gelinAd)}
+          sagHarf={basHarf(damatAd)}
+          satir={zarfSatir}
+          davet={zarfDavet}
+          fon={kapakYolu}
+        >
       <div
         className="kapak-dis"
         style={{ "--kart-beyaz": kartBeyaz, "--kart-blur": kartBlur } as React.CSSProperties}
@@ -121,6 +149,7 @@ export default function Davetiye() {
             <span className="saat">{SAAT_METNI}</span>
           </p>
           <p className="salon bel bel-3">{CFG.SALON_AD}</p>
+          <p className="salon-adres bel bel-3">{CFG.SALON_ADRES}</p>
 
           {/* Tek sutun: haritalar yan yana, altinda tek tek digerleri */}
           <div className="eylemler bel bel-4">
@@ -144,6 +173,7 @@ export default function Davetiye() {
         </AltinCerceve>
       </div>
       </Zarf>
+      )}
     </>
   );
 }

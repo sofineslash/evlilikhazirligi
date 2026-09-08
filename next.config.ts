@@ -8,6 +8,7 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   devIndicators: false,
+  allowedDevOrigins: ["10.10.52.133", "localhost:2608", "*.local"],
   /* Bu paketler ikili (binary) tasiyor ve yollarini kendi modul
      konumlarindan hesapliyor. Bundle edilirlerse o konum degisiyor ve
      ikili bulunamiyor: ffmpeg/ffprobe icin bu "her video acilamadi"

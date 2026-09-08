@@ -6,6 +6,26 @@
  * paketine surukleniyordu ve build kiriliyordu.
  */
 export const METIN_ALANLARI = [
+  {
+    anahtar: "tema_secimi",
+    etiket: "Davetiye Teması & Açılış Sahnesi",
+    ipucu: "Misafirlerin göreceği ana açılış deneyimi",
+    cok_satir: false,
+    secenekler: [
+      { deger: "tema1", etiket: "Tema 1 — 3B Zarf Açılışı (Mevcut)" },
+      { deger: "tema2", etiket: "Tema 2 — Saray Kapısı Açılışı & Fon Müziği (Yeni)" },
+    ],
+  },
+  {
+    anahtar: "muzik_acik",
+    etiket: "Fon Müziği (İki temada da geçerli)",
+    ipucu: "Açılışta ve davetiye boyunca hafif romantik fon müziği çalsın mı?",
+    cok_satir: false,
+    secenekler: [
+      { deger: "acik", etiket: "Açık — Müzik çalsın (Köşede durdurma butonu)" },
+      { deger: "kapali", etiket: "Kapalı — Müzik çalmasın" },
+    ],
+  },
   { anahtar: "gelin_ad", etiket: "Gelinin adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "damat_ad", etiket: "Damadın adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "davet_cumlesi", etiket: "Davet cümlesi", ipucu: "Davetiyenin ana cümlesi", cok_satir: true },
