@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function MuzikCalar({
   aktif,
-  sesDosyasi = "/muzik/davetiye.mp3",
+  sesDosyasi = "/api/muzik/ses",
 }: {
   aktif: boolean;
   sesDosyasi?: string;
@@ -28,38 +28,55 @@ export default function MuzikCalar({
     audio.preload = "auto";
     audioRef.current = audio;
 
-    audio.addEventListener("canplaythrough", () => {
-      setYuklendi(true);
-    });
-
-    audio.addEventListener("play", () => setCaliyor(true));
-    audio.addEventListener("pause", () => setCaliyor(false));
-    audio.addEventListener("error", () => {
-      // Dosya henuz eklenmemisse sessizce bekle
+    const onCanPlay = () => setYuklendi(true);
+    const onPlay = () => setCaliyor(true);
+    const onPause = () => setCaliyor(false);
+    const onError = (e: Event) => {
+      console.warn("Müzik yüklenemedi:", e);
       setYuklendi(false);
       setCaliyor(false);
-    });
-
-    // Mobil tarayici autoplay kuralini asmak icin ilk kullanici dokunusunu dinle
-    const baslat = () => {
-      if (audioRef.current && audioRef.current.paused) {
-        audioRef.current.play().catch(() => {
-          // Tarayici henuz izin vermediyse sorun yok
-        });
-      }
-      window.removeEventListener("click", baslat);
-      window.removeEventListener("touchstart", baslat);
-      window.removeEventListener("scroll", baslat);
     };
 
-    window.addEventListener("click", baslat, { once: true, passive: true });
-    window.addEventListener("touchstart", baslat, { once: true, passive: true });
-    window.addEventListener("scroll", baslat, { once: true, passive: true });
+    audio.addEventListener("canplay", onCanPlay);
+    audio.addEventListener("canplaythrough", onCanPlay);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("error", onError);
 
-    return () => {
+    let temizlendi = false;
+    const temizle = () => {
+      if (temizlendi) return;
+      temizlendi = true;
       window.removeEventListener("click", baslat);
       window.removeEventListener("touchstart", baslat);
-      window.removeEventListener("scroll", baslat);
+      window.removeEventListener("pointerdown", baslat);
+    };
+
+    // Mobil tarayıcı autoplay kuralını aşmak için ilk kullanıcı etkileşimini dinle
+    const baslat = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        const p = audioRef.current.play();
+        if (p && typeof p.then === "function") {
+          p.then(() => {
+            temizle();
+          }).catch(() => {
+            // Tarayıcı bu dokunuşta izin vermediyse bir sonraki dokunuşta tekrar denensin
+          });
+        }
+      }
+    };
+
+    window.addEventListener("click", baslat, { passive: true });
+    window.addEventListener("touchstart", baslat, { passive: true });
+    window.addEventListener("pointerdown", baslat, { passive: true });
+
+    return () => {
+      temizle();
+      audio.removeEventListener("canplay", onCanPlay);
+      audio.removeEventListener("canplaythrough", onCanPlay);
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("error", onError);
       audio.pause();
       audio.src = "";
     };
@@ -74,7 +91,9 @@ export default function MuzikCalar({
     if (caliyor) {
       audio.pause();
     } else {
-      audio.play().catch(() => {});
+      audio.play().catch((err) => {
+        console.warn("Müzik çalma başlatılamadı:", err);
+      });
     }
   };
 

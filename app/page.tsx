@@ -70,7 +70,7 @@ export default function Davetiye() {
       {/* FON MÜZİĞİ — İki temada da çalar */}
       <MuzikCalar
         aktif={muzikAktif && muzik.var}
-        sesDosyasi={muzik.url || "/muzik/davetiye.mp3"}
+        sesDosyasi={muzik.url || "/api/muzik/ses"}
       />
 
       {tema === "tema2" ? (

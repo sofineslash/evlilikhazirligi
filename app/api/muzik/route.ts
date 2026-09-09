@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import { adminMi } from "@/lib/admin";
-import { MUZIK_YOLU, muzikDurumu } from "@/lib/muzik";
+import { KALICI_MUZIK, REPO_MUZIK, muzikDurumu } from "@/lib/muzik";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +31,16 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Klasörün varlığından emin ol
-    await fsp.mkdir(path.dirname(MUZIK_YOLU), { recursive: true });
-    // Dosyayı public/muzik/davetiye.mp3 olarak kaydet
-    await fsp.writeFile(MUZIK_YOLU, tampon);
+    // Hem kalıcı disk (varsa Docker volume) hem repo klasörüne yaz
+    await fsp.mkdir(path.dirname(KALICI_MUZIK), { recursive: true });
+    await fsp.writeFile(KALICI_MUZIK, tampon);
+
+    if (REPO_MUZIK !== KALICI_MUZIK) {
+      try {
+        await fsp.mkdir(path.dirname(REPO_MUZIK), { recursive: true });
+        await fsp.writeFile(REPO_MUZIK, tampon);
+      } catch {}
+    }
 
     return NextResponse.json({
       basarili: true,
@@ -52,10 +58,21 @@ export async function DELETE() {
     return NextResponse.json({ mesaj: "Yetkisiz erişim" }, { status: 401 });
   }
 
+  let silindi = false;
   try {
-    await fsp.unlink(MUZIK_YOLU);
-    return NextResponse.json({ basarili: true, mesaj: "Müzik silindi" });
-  } catch {
-    return NextResponse.json({ mesaj: "Dosya bulunamadı veya silinemedi" }, { status: 404 });
+    await fsp.unlink(KALICI_MUZIK);
+    silindi = true;
+  } catch {}
+
+  if (REPO_MUZIK !== KALICI_MUZIK) {
+    try {
+      await fsp.unlink(REPO_MUZIK);
+      silindi = true;
+    } catch {}
   }
+
+  if (silindi) {
+    return NextResponse.json({ basarili: true, mesaj: "Müzik silindi" });
+  }
+  return NextResponse.json({ mesaj: "Dosya bulunamadı veya silinemedi" }, { status: 404 });
 }
