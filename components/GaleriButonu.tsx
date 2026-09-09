@@ -79,7 +79,7 @@ export default function GaleriButonu({ anlar: ilkAnlar }: { anlar: AnKart[] }) {
         className="btn btn-eylem"
         onClick={() => pencere.current?.showModal()}
       >
-        Fotoğraflarımız
+        Anı Albümümüz
       </button>
 
       <dialog ref={pencere} className="tema-pencere" aria-labelledby="galeri-baslik">
@@ -90,7 +90,7 @@ export default function GaleriButonu({ anlar: ilkAnlar }: { anlar: AnKart[] }) {
           >
             ×
           </button>
-          <h2 id="galeri-baslik">Anılarımız</h2>
+          <h2 id="galeri-baslik">Anı Albümümüz</h2>
 
           {anlar.length === 0 ? (
             <p className="kucuk" style={{ textAlign: "center" }}>
