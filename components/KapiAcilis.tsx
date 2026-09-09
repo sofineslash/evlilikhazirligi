@@ -37,19 +37,38 @@ export default function KapiAcilis({
   };
 
   useEffect(() => {
-    // Scroll edilirse de kapağı otomatik aç
-    const onScroll = () => {
-      if (!acildi && window.scrollY > 15) {
-        kapagiAc();
-      }
-    };
+    // Kapak kapalıyken sayfa kaydırmasını (scroll) tamamen kilitle:
+    // Giriş sayfası telefon ekranı ile 1:1 kalsın, aşağı kaymasın.
+    if (!acildi) {
+      const prevBodyOverflow = document.body.style.overflow;
+      const prevHtmlOverflow = document.documentElement.style.overflow;
+      const prevBodyHeight = document.body.style.height;
+      const prevHtmlHeight = document.documentElement.style.height;
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.height = "100%";
+      document.documentElement.style.height = "100%";
+
+      return () => {
+        document.body.style.overflow = prevBodyOverflow;
+        document.documentElement.style.overflow = prevHtmlOverflow;
+        document.body.style.height = prevBodyHeight;
+        document.documentElement.style.height = prevHtmlHeight;
+      };
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.body.style.height = "";
+      document.documentElement.style.height = "";
+    }
   }, [acildi]);
 
   return (
-    <div className="tema2-sahne-kapsayici" ref={sahneRef}>
+    <div
+      className={`tema2-sahne-kapsayici ${!acildi ? "kapak-kapali" : "kapak-acildi"}`}
+      ref={sahneRef}
+    >
       {/* 3B LÜKS ÇİFT KANATLI ORTADAN AÇILAN DAVETİYE KAPAĞI */}
       {!animasyonBitti && (
         <div
@@ -69,7 +88,7 @@ export default function KapiAcilis({
             </div>
           </div>
 
-          {/* SAĞ KANAT (Ortadan Sağa Doğru 3B Açılır) */}
+          {/* SAĞ KANAT (Ortadan Sağa Doğru 3B Açılır — MÜHÜR SAĞ KANADA BAĞLIDIR) */}
           <div className="tema2-kapak-kanat sag-kanat">
             <div className="tema2-kanat-doku sag">
               <div className="tema2-kanat-cerceve sag">
@@ -77,13 +96,24 @@ export default function KapiAcilis({
                 <div className="tema2-kapi-motif sag-alt" />
               </div>
             </div>
+
+            {/* MÜHÜR SAĞ KANADA MONTE EDİLMİŞTİR (Kanatla birlikte sağa açılır) */}
+            <div className="tema2-kapi-muhur-kapsayici" aria-hidden="true">
+              <div className="tema2-kapi-muhur">
+                <div className="tema2-muhur-halka">
+                  <span className="tema2-muhur-harfler">
+                    {sol}
+                    <span className="tema2-muhur-ve">&amp;</span>
+                    {sag}
+                  </span>
+                  <span className="tema2-muhur-dal" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* KAPAĞIN ORTASINDAKİ MÜHÜR, KURDELE VE BAŞLIK DÜZENİ */}
+          {/* KAPAĞIN ÜZERİNDEKİ YAZI VE İPUCU DÜZENİ */}
           <div className="tema2-kapak-icerik">
-            {/* Dikey İpek Şampanya Kurdele */}
-            <div className="tema2-kapak-kurdele" aria-hidden="true" />
-
             {/* Üst Alan: Taç/Motif ve Nişan Davetiyesi */}
             <div className="tema2-kapak-ust">
               <div className="tema2-kapak-motif" aria-hidden="true">
@@ -94,19 +124,8 @@ export default function KapiAcilis({
               <div className="tema2-kapak-baslik">NİŞAN DAVETİYESİ</div>
             </div>
 
-            {/* Orta Alan: Altın Mühür ve Çiftin İsimleri (Kapıların Birleştiği Merkezde) */}
+            {/* Orta Alan: Çiftin İsimleri */}
             <div className="tema2-kapak-orta">
-              <div className="tema2-kapi-muhur" aria-hidden="true">
-                <div className="tema2-muhur-halka">
-                  <span className="tema2-muhur-harfler">
-                    {sol}
-                    <span className="tema2-muhur-ve">&amp;</span>
-                    {sag}
-                  </span>
-                  <span className="tema2-muhur-dal" />
-                </div>
-              </div>
-
               <div className="tema2-kapak-isimler">
                 {gelinAd} <span className="ve">&amp;</span> {damatAd}
               </div>
@@ -140,7 +159,7 @@ export default function KapiAcilis({
         </div>
       )}
 
-      {/* KAPAĞIN ALTINDAKİ GERÇEK DAVETİYE KARTI */}
+      {/* KAPAĞIN ALTINDAKİ GERÇEK DAVETİYE KARTI (Açılırken arkada doğrudan görünür) */}
       <div className="tema2-icerik-alani">
         {children}
       </div>
