@@ -124,11 +124,6 @@ export default function Tema2Dizilim({
             </div>
           </div>
 
-          {/* TAKVİME EKLE BUTONU */}
-          <div className="tema2-takvim-satiri">
-            <TakvimeEkle />
-          </div>
-
           {/* AŞAĞI KAYDIR GÖSTERGESİ */}
           <div className="tema2-kaydir-ipucu" aria-hidden="true">
             <span className="tema2-kaydir-cizgi" />
@@ -224,6 +219,11 @@ export default function Tema2Dizilim({
 
           {/* GERİ SAYIM — BÜYÜK GÜNE KADAR CANLI GERİ SAYIM */}
           <GeriSayim />
+
+          {/* TAKVİME EKLE BUTONU */}
+          <div className="tema2-takvim-satiri">
+            <TakvimeEkle />
+          </div>
         </div>
       </div>
     </div>
