@@ -2501,6 +2501,13 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.2) 0%, transparent 75%);
 }
 
+.tema2-hero-alan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
 /* Üst Süs & Kicker */
 .tema2-kraliyet-tepe-sus {
   display: flex;
@@ -2528,13 +2535,13 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   color: #724d0c;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
-  margin-bottom: 1.15rem;
+  margin-bottom: clamp(3.2rem, 6.5vw, 4.2rem);
 }
 
 /* İsim Alanı ve Kübranur & Ömür Figürleri */
 .tema2-isim-kapsayici {
   position: relative;
-  margin: 2.8rem 0 0.5rem;
+  margin: 3.2rem 0 0.5rem;
 }
 .tema2-isim-arkasi {
   position: absolute;
@@ -3027,12 +3034,12 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   .tema2-kicker {
     font-size: clamp(0.72rem, 3.2vw, 0.88rem);
     letter-spacing: clamp(0.18em, 2.2vw, 0.32em);
-    margin-bottom: 0.85rem;
+    margin-bottom: clamp(2.6rem, 6.5vw, 3.4rem);
   }
 
   /* İsim alanı ve figürler */
   .tema2-isim-kapsayici {
-    margin: 1.6rem 0 0.3rem;
+    margin: 2.6rem 0 0.3rem;
   }
   .tema2-isimler {
     font-size: clamp(2.1rem, 10vw, 3.2rem);
