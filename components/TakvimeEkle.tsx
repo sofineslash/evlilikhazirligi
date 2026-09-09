@@ -1,37 +1,31 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { googleTakvimLinki, icsEtkinlikIndir } from "@/lib/takvim";
+import { useState, useEffect } from "react";
+import { googleTakvimLinki } from "@/lib/takvim";
 
 export default function TakvimeEkle() {
-  const [acik, setAcik] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [hedefLink, setHedefLink] = useState("/takvim.ics");
+  const [hedefTarget, setHedefTarget] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const disariTiklandi = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setAcik(false);
-      }
-    };
-    if (acik) {
-      document.addEventListener("mousedown", disariTiklandi);
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    if (/Android/i.test(ua)) {
+      setHedefLink(googleTakvimLinki());
+      setHedefTarget("_blank");
+    } else {
+      setHedefLink("/takvim.ics");
+      setHedefTarget(undefined);
     }
-    return () => document.removeEventListener("mousedown", disariTiklandi);
-  }, [acik]);
-
-  const appleTakvimeEkle = () => {
-    icsEtkinlikIndir();
-    setAcik(false);
-  };
+  }, []);
 
   return (
-    <div className="tema2-takvim-kapsul" ref={menuRef}>
-      <button
-        type="button"
+    <div className="tema2-takvim-kapsul">
+      <a
+        href={hedefLink}
+        target={hedefTarget}
+        rel={hedefTarget ? "noopener noreferrer" : undefined}
         className="tema2-takvim-btn"
-        onClick={() => setAcik((o) => !o)}
-        aria-haspopup="true"
-        aria-expanded={acik}
+        title="Telefon Takvimine Ekle"
       >
         <span className="tema2-takvim-ikon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -42,32 +36,7 @@ export default function TakvimeEkle() {
           </svg>
         </span>
         <span>Takvime Ekle</span>
-      </button>
-
-      {acik && (
-        <div className="tema2-takvim-menu" role="menu">
-          <a
-            href={googleTakvimLinki()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="tema2-takvim-secenek"
-            role="menuitem"
-            onClick={() => setAcik(false)}
-          >
-            <span className="tema2-takvim-secenek-ikon">📅</span>
-            <span>Google Takvim</span>
-          </a>
-          <button
-            type="button"
-            className="tema2-takvim-secenek"
-            role="menuitem"
-            onClick={appleTakvimeEkle}
-          >
-            <span className="tema2-takvim-secenek-ikon">🍏</span>
-            <span>Apple / Telefon Takvimi</span>
-          </button>
-        </div>
-      )}
+      </a>
     </div>
   );
 }
