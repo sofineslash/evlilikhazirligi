@@ -2011,29 +2011,48 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   box-shadow: 20px 0 60px rgba(135, 96, 20, 0.25);
 }
 
-/* Kanat: Gerçek Lüks Davetiye Kağıdı Dokusu (Fildişi, Şampanya & Altın Varak) */
+/* Kanat: Gerçek Lüks Davetiye Kağıdı Dokusu — Süslü & Yaldızlı Varak Damask Deseni */
 .tema2-kanat-doku {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 30%, #fffefc 0%, #fbf6ec 40%, #f4ebd8 80%, #ebe0cb 100%),
-    linear-gradient(175deg, #fbf7ee 0%, #f4ead7 50%, #e9dec9 100%);
+  background-color: #fbf6ec;
+  background-image:
+    /* Altın Işıltı & Parıltı Vurguları (Spot highlights) */
+    radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 225, 0.5) 35%, transparent 65%),
+    radial-gradient(circle at 18% 50%, rgba(230, 190, 95, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 82% 50%, rgba(230, 190, 95, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 50% 84%, rgba(212, 175, 55, 0.25) 0%, transparent 55%),
+    /* Süslü Yaldızlı Damask Varak Deseni */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e6be65' stop-opacity='0.36'/%3E%3Cstop offset='50%25' stop-color='%23c99a2e' stop-opacity='0.22'/%3E%3Cstop offset='100%25' stop-color='%23f5dc8a' stop-opacity='0.40'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg stroke='url(%23g)' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M44 8 C47 20, 60 24, 60 33 C60 42, 50 46, 44 54 C38 46, 28 42, 28 33 C28 24, 41 20, 44 8 Z' stroke-width='1.1'/%3E%3Cpath d='M44 80 C47 68, 60 64, 60 55 C60 46, 50 42, 44 34 C38 42, 28 46, 28 55 C28 64, 41 68, 44 80 Z' stroke-width='1.1'/%3E%3Cpath d='M8 44 C20 47, 24 60, 33 60 C42 60, 46 50, 54 44 C46 38, 42 28, 33 28 C24 28, 20 41, 8 44 Z' stroke-width='1.1'/%3E%3Cpath d='M80 44 C68 47, 64 60, 55 60 C46 60, 42 50, 34 44 C42 38, 46 28, 55 28 C64 28, 68 41, 80 44 Z' stroke-width='1.1'/%3E%3Ccircle cx='44' cy='44' r='4.5' stroke-width='1.2' fill='%23d4af37' fill-opacity='0.12'/%3E%3Cpath d='M44 37 V51 M37 44 H51' stroke-width='0.8' stroke-opacity='0.3'/%3E%3Cpath d='M0 0 C6 6, 11 3, 14 0 M0 0 C6 6, 3 11, 0 14' stroke-width='1'/%3E%3Cpath d='M88 0 C82 6, 77 3, 74 0 M88 0 C82 6, 85 11, 88 14' stroke-width='1'/%3E%3Cpath d='M0 88 C6 82, 11 85, 14 88 M0 88 C6 82, 3 77, 0 74' stroke-width='1'/%3E%3Cpath d='M88 88 C82 82, 77 85, 74 88 M88 88 C82 82, 85 77, 88 74' stroke-width='1'/%3E%3Ccircle cx='0' cy='0' r='2.8' fill='%23d4af37' fill-opacity='0.22'/%3E%3Ccircle cx='88' cy='0' r='2.8' fill='%23d4af37' fill-opacity='0.22'/%3E%3Ccircle cx='0' cy='88' r='2.8' fill='%23d4af37' fill-opacity='0.22'/%3E%3Ccircle cx='88' cy='88' r='2.8' fill='%23d4af37' fill-opacity='0.22'/%3E%3C/g%3E%3C/svg%3E"),
+    /* Zemin Lüks Sıcak Şampanya Degrade */
+    linear-gradient(168deg, #fffdf8 0%, #fbf4e4 28%, #f3e5c4 68%, #e8d0a0 100%);
+  background-size: auto, auto, auto, auto, 76px 76px, auto;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    inset 0 0 70px rgba(184, 134, 11, 0.12),
-    inset 0 0 25px rgba(0, 0, 0, 0.03);
+    inset 0 0 70px rgba(184, 134, 11, 0.2),
+    inset 0 0 20px rgba(0, 0, 0, 0.05);
 }
 
 .tema2-kanat-doku.sol {
   padding: 1.2rem 0.25rem 1.2rem 1.2rem;
-  border-right: 1.5px solid rgba(197, 160, 89, 0.9);
+  border-right: 2px solid transparent;
+  border-image: linear-gradient(180deg, #d4af37 0%, #fdf5d6 25%, #c5a059 50%, #8c6819 75%, #fdf5d6 100%) 1;
+  box-shadow:
+    inset 0 0 70px rgba(184, 134, 11, 0.2),
+    inset -4px 0 12px rgba(184, 134, 11, 0.15),
+    4px 0 16px rgba(0, 0, 0, 0.08);
 }
 
 .tema2-kanat-doku.sag {
   padding: 1.2rem 1.2rem 1.2rem 0.25rem;
-  border-left: 1.5px solid rgba(197, 160, 89, 0.9);
+  border-left: 2px solid transparent;
+  border-image: linear-gradient(180deg, #d4af37 0%, #fdf5d6 25%, #c5a059 50%, #8c6819 75%, #fdf5d6 100%) 1;
+  box-shadow:
+    inset 0 0 70px rgba(184, 134, 11, 0.2),
+    inset 4px 0 12px rgba(184, 134, 11, 0.15),
+    -4px 0 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Kanat Çerçeveleri */
@@ -2041,12 +2060,14 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   position: relative;
   width: 100%;
   height: 100%;
-  border: 1.5px solid rgba(197, 160, 89, 0.8);
+  border: 1.5px solid rgba(197, 160, 89, 0.9);
+  outline: 1px dashed rgba(212, 175, 55, 0.5);
+  outline-offset: -7px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 6px;
-  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.65) 0%, transparent 75%);
+  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 250, 240, 0.25) 60%, transparent 85%);
 }
 
 .tema2-kanat-cerceve.sol {
@@ -2054,8 +2075,8 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
   box-shadow:
-    inset 4px 0 25px rgba(197, 160, 89, 0.12),
-    0 0 15px rgba(184, 134, 11, 0.06);
+    inset 4px 0 25px rgba(197, 160, 89, 0.15),
+    0 0 15px rgba(184, 134, 11, 0.08);
 }
 
 .tema2-kanat-cerceve.sag {
@@ -2063,21 +2084,27 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   border-top-right-radius: 18px;
   border-bottom-right-radius: 18px;
   box-shadow:
-    inset -4px 0 25px rgba(197, 160, 89, 0.12),
-    0 0 15px rgba(184, 134, 11, 0.06);
+    inset -4px 0 25px rgba(197, 160, 89, 0.15),
+    0 0 15px rgba(184, 134, 11, 0.08);
 }
 
 .tema2-kapi-motif {
   position: absolute;
-  width: 32px;
-  height: 32px;
-  border-color: rgba(184, 134, 11, 0.85);
+  width: 38px;
+  height: 38px;
+  color: #c99a2e;
   pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.9));
 }
-.sol-ust { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
-.sol-alt { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
-.sag-ust { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
-.sag-alt { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
+.tema2-kapi-motif svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.sol-ust { top: 12px; left: 12px; }
+.sol-alt { bottom: 12px; left: 12px; transform: scaleY(-1); }
+.sag-ust { top: 12px; right: 12px; transform: scaleX(-1); }
+.sag-alt { bottom: 12px; right: 12px; transform: scale(-1); }
 
 /* Kapak Dikey İpek Şampanya Kurdele */
 .tema2-kapak-kurdele {
@@ -2206,29 +2233,50 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   justify-content: center;
 }
 .tema2-muhur-harfler {
-  font-family: var(--font-baslik);
-  font-size: clamp(1.75rem, 5vw, 2.2rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: "Nisan Script", cursive, var(--font-baslik);
+  font-size: clamp(2.4rem, 7.5vw, 3.1rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: #382303;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.65);
+  text-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.8),
+    0 -1px 1px rgba(70, 45, 8, 0.35);
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
+}
+.tema2-muhur-harf {
+  display: inline-block;
+  transform: translateY(-2px);
+  filter: drop-shadow(0 1px 2px rgba(114, 77, 12, 0.35));
 }
 .tema2-muhur-ve {
   font-family: "Hoefler Text", Georgia, serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-style: italic;
-  margin: 0 3px;
+  margin: 0 5px;
   color: #724d0c;
+  opacity: 0.9;
+  transform: translateY(2px);
 }
 .tema2-muhur-dal {
-  display: block;
-  width: 32px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(56, 35, 3, 0.6), transparent);
-  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 54px;
+  margin-top: 2px;
+}
+.tema2-muhur-dal-cizgi {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(114, 77, 12, 0.6), transparent);
+}
+.tema2-muhur-dal-simge {
+  font-size: 0.65rem;
+  color: #724d0c;
+  line-height: 1;
 }
 .tema2-kapak-isimler {
   font-family: "Nisan Script", cursive, var(--font-baslik);
@@ -2431,7 +2479,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   color: #724d0c;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
-  margin-bottom: 0.4rem;
+  margin-bottom: 1.15rem;
 }
 
 /* İsim Alanı ve Kübranur & Ömür Figürleri */
@@ -2918,7 +2966,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   .tema2-kicker {
     font-size: clamp(0.72rem, 3.2vw, 0.88rem);
     letter-spacing: clamp(0.18em, 2.2vw, 0.32em);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.85rem;
   }
 
   /* İsim alanı ve figürler */
@@ -3038,7 +3086,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
     height: 118px;
   }
   .tema2-muhur-harfler {
-    font-size: 1.7rem;
+    font-size: clamp(2.1rem, 6.5vw, 2.5rem);
   }
   .tema2-kapak-isimler {
     font-size: clamp(1.8rem, 8vw, 2.4rem);

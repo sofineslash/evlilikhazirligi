@@ -2,6 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 
+function KoseMotif() {
+  return (
+    <svg
+      viewBox="0 0 44 44"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 41 V14 C3 8 8 3 14 3 H41" />
+      <path d="M8 41 V18 C8 12 12 8 18 8 H41" strokeWidth="0.9" strokeOpacity="0.65" />
+      <path d="M5 5 C12 12 16 7 22 13 C16 19 21 23 27 25" strokeWidth="1.1" />
+      <circle cx="15" cy="15" r="2.2" fill="currentColor" fillOpacity="0.8" />
+    </svg>
+  );
+}
+
 export default function KapiAcilis({
   gelinAd = "Kübranur",
   damatAd = "Ömür",
@@ -82,8 +101,12 @@ export default function KapiAcilis({
           <div className="tema2-kapak-kanat sol-kanat">
             <div className="tema2-kanat-doku sol">
               <div className="tema2-kanat-cerceve sol">
-                <div className="tema2-kapi-motif sol-ust" />
-                <div className="tema2-kapi-motif sol-alt" />
+                <div className="tema2-kapi-motif sol-ust">
+                  <KoseMotif />
+                </div>
+                <div className="tema2-kapi-motif sol-alt">
+                  <KoseMotif />
+                </div>
               </div>
             </div>
           </div>
@@ -92,8 +115,12 @@ export default function KapiAcilis({
           <div className="tema2-kapak-kanat sag-kanat">
             <div className="tema2-kanat-doku sag">
               <div className="tema2-kanat-cerceve sag">
-                <div className="tema2-kapi-motif sag-ust" />
-                <div className="tema2-kapi-motif sag-alt" />
+                <div className="tema2-kapi-motif sag-ust">
+                  <KoseMotif />
+                </div>
+                <div className="tema2-kapi-motif sag-alt">
+                  <KoseMotif />
+                </div>
               </div>
             </div>
 
@@ -102,11 +129,15 @@ export default function KapiAcilis({
               <div className="tema2-kapi-muhur">
                 <div className="tema2-muhur-halka">
                   <span className="tema2-muhur-harfler">
-                    {sol}
+                    <span className="tema2-muhur-harf">{sol}</span>
                     <span className="tema2-muhur-ve">&amp;</span>
-                    {sag}
+                    <span className="tema2-muhur-harf">{sag}</span>
                   </span>
-                  <span className="tema2-muhur-dal" />
+                  <div className="tema2-muhur-dal" aria-hidden="true">
+                    <span className="tema2-muhur-dal-cizgi" />
+                    <span className="tema2-muhur-dal-simge">❖</span>
+                    <span className="tema2-muhur-dal-cizgi" />
+                  </div>
                 </div>
               </div>
             </div>
