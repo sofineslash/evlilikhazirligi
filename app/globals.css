@@ -1663,68 +1663,105 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Tek Parça 3B Kapak Kanadı (Soldan Sağa Menteşeli Kitap Kapağı Hissi) */
+/* Çift Kanat 3B Kapak Yapısı (Ortadan İkiye Açılır) */
 .tema2-kapak-kanat {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  bottom: 0;
+  width: 50%;
   height: 100%;
-  transform-origin: left center;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transition: transform 1.25s cubic-bezier(0.25, 1, 0.45, 1), box-shadow 1.25s ease, opacity 0.45s ease 0.9s;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.85);
+  transition: transform 1.25s cubic-bezier(0.25, 1, 0.45, 1), box-shadow 1.25s ease, opacity 0.45s ease 0.85s;
   will-change: transform, opacity;
+  z-index: 1;
 }
+
+.tema2-kapak-kanat.sol-kanat {
+  left: 0;
+  transform-origin: left center;
+  box-shadow: 10px 0 35px rgba(0, 0, 0, 0.2);
+}
+
+.tema2-kapak-kanat.sag-kanat {
+  right: 0;
+  transform-origin: right center;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+}
+
 .tema2-kapak-overlay.kapak-aciliyor {
   pointer-events: none;
 }
 
-/* Kapak Açılma Hareketi — Sola doğru 112 derece açılır ve altındaki kart açılma esnasında görünür */
-.kapak-aciliyor .tema2-kapak-kanat {
-  transform: rotateY(-112deg);
-  box-shadow: 30px 0 90px rgba(135, 96, 20, 0.45);
+/* Kapak Açılma Hareketi — Sol kanat sola, sağ kanat sağa doğru 3B açılır */
+.kapak-aciliyor .sol-kanat {
+  transform: rotateY(-115deg);
+  box-shadow: -30px 0 80px rgba(135, 96, 20, 0.4);
   opacity: 0;
 }
 
-/* Kapak: Gerçek Lüks Davetiye Kağıdı Dokusu (Fildişi, Şampanya & Altın Varak) */
-.tema2-kapak-doku {
+.kapak-aciliyor .sag-kanat {
+  transform: rotateY(115deg);
+  box-shadow: 30px 0 80px rgba(135, 96, 20, 0.4);
+  opacity: 0;
+}
+
+/* Kanat: Gerçek Lüks Davetiye Kağıdı Dokusu (Fildişi, Şampanya & Altın Varak) */
+.tema2-kanat-doku {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(ellipse at 50% 30%, #fffefc 0%, #fbf6ec 40%, #f4ebd8 80%, #ebe0cb 100%),
     linear-gradient(175deg, #fbf7ee 0%, #f4ead7 50%, #e9dec9 100%);
-  padding: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    inset 0 0 100px rgba(184, 134, 11, 0.12),
-    inset 0 0 30px rgba(0, 0, 0, 0.03);
+    inset 0 0 70px rgba(184, 134, 11, 0.12),
+    inset 0 0 25px rgba(0, 0, 0, 0.03);
 }
-.tema2-kapak-cerceve-dis {
+
+.tema2-kanat-doku.sol {
+  padding: 1.2rem 0.25rem 1.2rem 1.2rem;
+  border-right: 1.5px solid rgba(197, 160, 89, 0.9);
+}
+
+.tema2-kanat-doku.sag {
+  padding: 1.2rem 1.2rem 1.2rem 0.25rem;
+  border-left: 1.5px solid rgba(197, 160, 89, 0.9);
+}
+
+/* Kanat Çerçeveleri */
+.tema2-kanat-cerceve {
   position: relative;
   width: 100%;
   height: 100%;
-  border: 1.5px solid rgba(197, 160, 89, 0.85);
-  border-radius: 18px;
-  box-shadow:
-    inset 0 0 45px rgba(197, 160, 89, 0.14),
-    0 0 24px rgba(184, 134, 11, 0.08);
+  border: 1.5px solid rgba(197, 160, 89, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
   background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.65) 0%, transparent 75%);
 }
-.tema2-kapak-cerceve-ic {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border: 1px solid rgba(197, 160, 89, 0.45);
-  border-radius: 13px;
+
+.tema2-kanat-cerceve.sol {
+  border-right: 0;
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
+  box-shadow:
+    inset 4px 0 25px rgba(197, 160, 89, 0.12),
+    0 0 15px rgba(184, 134, 11, 0.06);
+}
+
+.tema2-kanat-cerceve.sag {
+  border-left: 0;
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+  box-shadow:
+    inset -4px 0 25px rgba(197, 160, 89, 0.12),
+    0 0 15px rgba(184, 134, 11, 0.06);
 }
 
 .tema2-kapi-motif {
@@ -2560,15 +2597,21 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   }
 
   /* Kapak Alanı Mobil Ergonomisi */
-  .tema2-kapak-doku {
-    padding: 0.75rem;
+  .tema2-kanat-doku.sol {
+    padding: 0.75rem 0.15rem 0.75rem 0.75rem;
   }
-  .tema2-kapak-cerceve-dis {
-    padding: 5px;
-    border-radius: 14px;
+  .tema2-kanat-doku.sag {
+    padding: 0.75rem 0.75rem 0.75rem 0.15rem;
   }
-  .tema2-kapak-cerceve-ic {
-    border-radius: 10px;
+  .tema2-kanat-cerceve.sol {
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+    padding: 4px;
+  }
+  .tema2-kanat-cerceve.sag {
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+    padding: 4px;
   }
   .tema2-kapak-icerik {
     padding: 2.2rem 0.8rem 1.8rem;

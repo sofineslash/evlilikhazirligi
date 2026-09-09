@@ -92,6 +92,7 @@ export default function Davetiye() {
             otopark={otopark}
             fotoNotu={fotoNotu}
             yuklemeAcik={yuklemeAcik}
+            galeriAcik={galeriAcik}
             ciftYolu={ciftYolu}
             gelinPng={gelinPng}
             damatPng={damatPng}

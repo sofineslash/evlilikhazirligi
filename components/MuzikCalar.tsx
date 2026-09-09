@@ -66,12 +66,25 @@ export default function MuzikCalar({
       }
     };
 
+    // Sayfa açıldığında tarayıcı izin veriyorsa hemen çalmayı dene
+    const ilkCal = audio.play();
+    if (ilkCal && typeof ilkCal.then === "function") {
+      ilkCal.then(() => {
+        temizle();
+      }).catch(() => {
+        // Tarayıcı ilk kullanıcı etkileşimini bekliyor
+      });
+    }
+
+    const onKapakTetik = () => baslat();
+    window.addEventListener("davetiye-muzik-cal", onKapakTetik);
     window.addEventListener("click", baslat, { passive: true });
     window.addEventListener("touchstart", baslat, { passive: true });
     window.addEventListener("pointerdown", baslat, { passive: true });
 
     return () => {
       temizle();
+      window.removeEventListener("davetiye-muzik-cal", onKapakTetik);
       audio.removeEventListener("canplay", onCanPlay);
       audio.removeEventListener("canplaythrough", onCanPlay);
       audio.removeEventListener("play", onPlay);

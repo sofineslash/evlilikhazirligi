@@ -18,6 +18,7 @@ export default function Tema2Dizilim({
   otopark,
   fotoNotu,
   yuklemeAcik,
+  galeriAcik,
   ciftYolu,
   gelinPng,
   damatPng,
@@ -35,6 +36,7 @@ export default function Tema2Dizilim({
   otopark?: string;
   fotoNotu?: string;
   yuklemeAcik: boolean;
+  galeriAcik?: boolean;
   ciftYolu?: string | null;
   gelinPng?: string | null;
   damatPng?: string | null;
@@ -215,7 +217,7 @@ export default function Tema2Dizilim({
           <div className="eylemler tema2-eylemler">
             <KatilimButonu tel={tel} />
             <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
-            {anlar.length > 0 && <GaleriButonu anlar={anlar} />}
+            {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}
             {fotoNotu && <p className="foto-notu tema2-foto-notu">{fotoNotu}</p>}
           </div>
         </div>
