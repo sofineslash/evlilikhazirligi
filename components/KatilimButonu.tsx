@@ -13,7 +13,17 @@ import RsvpForm from "./RsvpForm";
  * JS yoksa buton yerine dogrudan /tesekkurler'e giden bir baglanti kalir —
  * davetiyenin kendisi zaten JS'siz calisiyor (Premise 3).
  */
-export default function KatilimButonu({ tel }: { tel?: string }) {
+export default function KatilimButonu({
+  tel,
+  varsayilanAd,
+  token,
+  izinliKisi,
+}: {
+  tel?: string;
+  varsayilanAd?: string;
+  token?: string;
+  izinliKisi?: number;
+}) {
   const pencere = useRef<HTMLDialogElement>(null);
 
   // Pencere acikken arka plan kaymasin
@@ -53,7 +63,12 @@ export default function KatilimButonu({ tel }: { tel?: string }) {
           </button>
 
           <h2 id="katilim-baslik">Katılım Durumunuz</h2>
-          <RsvpForm onKapat={() => pencere.current?.close()} />
+          <RsvpForm
+            onKapat={() => pencere.current?.close()}
+            varsayilanAd={varsayilanAd}
+            token={token}
+            izinliKisi={izinliKisi}
+          />
 
           {tel && (
             <p className="kucuk pencere-tel">

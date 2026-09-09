@@ -4,22 +4,31 @@ import { CFG, TARIH_METNI, SAAT_METNI } from "@/lib/config";
 import { sahneYolu } from "@/lib/sahneler";
 import { davetliGetirToken } from "@/lib/davetliler";
 import { misafirAdiFormatla } from "@/lib/whatsapp";
-import { siteUrl, DEFAULT_DAVETIYE_SLUG } from "@/lib/site";
+import { siteUrl, slugSanitize, DEFAULT_DAVETIYE_SLUG } from "@/lib/site";
 import DavetiyeGosterimi from "@/components/DavetiyeGosterimi";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ guest?: string; misafir?: string; g?: string }>;
 };
 
 /**
- * Ana sayfa icin de WhatsApp crawler'ina server-side zengin Open Graph karti saglar.
+ * WhatsApp, Facebook, Telegram vb. crawler'lar icin server-side Open Graph
+ * ve Twitter Card meta taglarini uretir.
+ *
+ * ONEMLI: SALT OKUMADIR!
+ * Asla goruntulenme sayaci veya veritabani state'i degistirmez.
  */
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { slug } = await params;
   const { guest, misafir, g: token } = await searchParams;
+
+  const temizSlug = slugSanitize(slug);
   const guestQuery = guest || misafir;
 
+  // Misafir adi cozumleme: once token (varsa), sonra query
   let misafirAd = "";
   if (token) {
     const davetli = davetliGetirToken(token);
@@ -47,10 +56,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     ? `?guest=${encodeURIComponent(guestQuery)}`
     : "";
 
-  const slug = metin("davetiye_slug") || DEFAULT_DAVETIYE_SLUG;
-  const tamUrl = siteUrl(`/${paylasimParam}`);
-  const canonicalUrl = siteUrl(`/davet/${slug}`);
+  const tamUrl = siteUrl(`/davet/${temizSlug}${paylasimParam}`);
+  const canonicalUrl = siteUrl(`/davet/${temizSlug}`);
 
+  // OG Gorseli secimi
   const ogTur = metin("whatsapp_og_tur") || "dinamik";
   const kapak = sahneYolu("01-kapak");
   const ogGorselUrl =
@@ -92,12 +101,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
-export default async function Page({ searchParams }: Props) {
+export default async function DavetDetaySayfasi({ params, searchParams }: Props) {
+  const { slug } = await params;
   const { guest, misafir, g: token } = await searchParams;
+
+  const temizSlug = slugSanitize(slug);
   const guestQuery = guest || misafir;
 
   return (
     <DavetiyeGosterimi
+      slug={temizSlug}
       token={token}
       guest={guestQuery}
     />

@@ -5,6 +5,8 @@ import { CFG } from "@/lib/config";
 import { adKontrol } from "@/lib/normalizeAd";
 import { hizKontrol, istemciAnahtari } from "@/lib/ratelimit";
 import { cihazJetonuDogrula } from "@/lib/session";
+import { davetliRsvpGuncelle } from "@/lib/davetliler";
+import { DEFAULT_DAVETIYE_ID } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -127,6 +129,16 @@ export async function POST(req: Request) {
         { status: 409 },
       );
     }
+
+    if (typeof govde?.token === "string" && govde.token.trim()) {
+      try {
+        const durumStr = geliyorDeger === 1 ? "geliyor" : geliyorDeger === 2 ? "belirsiz" : "gelemiyor";
+        davetliRsvpGuncelle(DEFAULT_DAVETIYE_ID, govde.token.trim(), durumStr, kisi);
+      } catch {
+        // Davetli senkronizasyon hatasi ana kaydi engellemez
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     // Es zamanli ikinci gonderim indekse takildi -> yumusak yola dus, 500 DEGIL

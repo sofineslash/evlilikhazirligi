@@ -16,6 +16,14 @@ import {
   adGecerliMi, adNormalize, kullaniciEkleHam, kullaniciSilHam,
   kullaniciVarMi, sifreDogrula, sifreGecerliMi,
 } from "./kullanicilar";
+import {
+  davetliEkle,
+  davetliSil,
+  davetliTokenYenile,
+  davetliGonderildiGuncelle,
+  davetliWhatsappAcildiGuncelle,
+} from "./davetliler";
+import { slugSanitize, DEFAULT_DAVETIYE_SLUG } from "./site";
 
 const CEREZ = "nisan_admin";
 
@@ -172,4 +180,75 @@ export async function metinleriKaydet(_prev: unknown, form: FormData) {
   revalidatePath("/");
   revalidatePath("/admin");
   return { ok: true, sayi: n };
+}
+
+/** Yeni davetli ekleme server action'i */
+export async function davetliEkleAction(_prev: unknown, form: FormData) {
+  if (!(await adminMi())) return { hata: "Oturum bitmiş. Tekrar giriş yapın." };
+  const adSoyad = String(form.get("ad_soyad") ?? "").trim();
+  if (!adSoyad || adSoyad.length < 2) return { hata: "Lütfen davetlinin adını ve soyadını girin." };
+  const telefon = String(form.get("telefon") ?? "").trim();
+  const izinliKisi = Number(form.get("izinli_kisi_sayisi") ?? 1);
+  const masaNo = String(form.get("masa_no") ?? "").trim();
+  const notlar = String(form.get("notlar") ?? "").trim();
+
+  try {
+    const davetli = davetliEkle({
+      adSoyad,
+      telefon: telefon || null,
+      izinliKisiSayisi: izinliKisi,
+      masaNo: masaNo || null,
+      notlar: notlar || null,
+    });
+    revalidatePath("/admin");
+    return { ok: true, davetli };
+  } catch (e: any) {
+    return { hata: "Davetli kaydedilemedi: " + (e?.message || "") };
+  }
+}
+
+/** Davetli silme */
+export async function davetliSilAction(id: string) {
+  if (!(await adminMi())) return;
+  davetliSil(id);
+  revalidatePath("/admin");
+}
+
+/** Davetli token yenileme */
+export async function davetliTokenYenileAction(id: string) {
+  if (!(await adminMi())) return null;
+  const yeniToken = davetliTokenYenile(id);
+  revalidatePath("/admin");
+  return yeniToken;
+}
+
+/** Davetli gonderildi durumunu isaretleme */
+export async function davetliGonderildiAction(id: string, gonderildi: boolean) {
+  if (!(await adminMi())) return;
+  davetliGonderildiGuncelle(id, gonderildi);
+  revalidatePath("/admin");
+}
+
+/** WhatsApp acildi durumunu isaretleme */
+export async function davetliWhatsappAcildiAction(id: string, acildi: boolean) {
+  if (!(await adminMi())) return;
+  davetliWhatsappAcildiGuncelle(id, acildi);
+  revalidatePath("/admin");
+}
+
+/** WhatsApp mesaji ve slug ayarlarini kaydetme */
+export async function whatsappAyarlariKaydetAction(_prev: unknown, form: FormData) {
+  if (!(await adminMi())) return { hata: "Oturum bitmiş. Tekrar giriş yapın." };
+  const slug = slugSanitize(String(form.get("davetiye_slug") ?? DEFAULT_DAVETIYE_SLUG));
+  const mesaj = String(form.get("whatsapp_mesaj") ?? "").trim().slice(0, 1000);
+  const ogTur = String(form.get("whatsapp_og_tur") ?? "dinamik").trim();
+
+  metinYaz("davetiye_slug", slug);
+  metinYaz("whatsapp_mesaj", mesaj);
+  metinYaz("whatsapp_og_tur", ogTur);
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath(`/davet/${slug}`);
+  return { ok: true };
 }

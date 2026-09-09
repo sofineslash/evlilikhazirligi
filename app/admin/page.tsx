@@ -14,6 +14,8 @@ import { anlariListele, anSayisi } from "@/lib/anlar";
 import { galeriAcikMi } from "@/lib/galeri";
 import { muzikDurumu } from "@/lib/muzik";
 import MuzikYukle from "@/components/MuzikYukle";
+import WhatsappYonet from "@/components/WhatsappYonet";
+import { davetlileriListele } from "@/lib/davetliler";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +52,7 @@ export default async function Admin() {
   const sahip = process.env.ADMIN_KULLANICI ?? "—";
   const modu = yuklemeModu();
   const acik = yuklemeAcikMi();
+  const davetliler = davetlileriListele();
 
   return (
     <main style={{ maxWidth: "52rem" }}>
@@ -115,6 +118,22 @@ export default async function Admin() {
                   )}
                 </tbody>
               </table>
+            ),
+          },
+
+          {
+            id: "whatsapp",
+            etiket: "WhatsApp Paylaşım",
+            rozet: davetliler.length > 0 ? String(davetliler.length) : "📱",
+            icerik: (
+              <WhatsappYonet
+                baslangicSlug={metinler["davetiye_slug"] ?? ""}
+                baslangicMesaj={metinler["whatsapp_mesaj"] ?? ""}
+                baslangicOgTur={metinler["whatsapp_og_tur"] ?? "dinamik"}
+                gelin={metinler["gelin_ad"] || "Kübranur"}
+                damat={metinler["damat_ad"] || "Ömür"}
+                davetliler={davetliler}
+              />
             ),
           },
 

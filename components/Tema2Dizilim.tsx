@@ -5,6 +5,7 @@ import FotoYukleButonu from "./FotoYukleButonu";
 import GaleriButonu from "./GaleriButonu";
 import GeriSayim from "./GeriSayim";
 import HatiraNotlariKutusu from "./HatiraNotlariKutusu";
+import WhatsappPaylasButonu from "./WhatsappPaylasButonu";
 import { CFG, haritaLinkleri } from "@/lib/config";
 import type { EbeveynBlok } from "@/lib/metin";
 import type { HatiraNotu } from "@/lib/hatira";
@@ -29,6 +30,11 @@ export default function Tema2Dizilim({
   kartBlur,
   anlar,
   hatiraNotlari,
+  misafirAd,
+  token,
+  izinliKisi,
+  paylasimUrl,
+  whatsappMesaj,
 }: {
   gelinAd: string;
   damatAd: string;
@@ -44,10 +50,15 @@ export default function Tema2Dizilim({
   ciftYolu?: string | null;
   gelinPng?: string | null;
   damatPng?: string | null;
-  kartBeyaz?: number;
-  kartBlur?: number;
+  kartBeyaz: number;
+  kartBlur: number;
   anlar: { id: string; yukleyen: string | null }[];
   hatiraNotlari?: HatiraNotu[];
+  misafirAd?: string;
+  token?: string;
+  izinliKisi?: number;
+  paylasimUrl?: string;
+  whatsappMesaj?: string;
 }) {
   const harita = haritaLinkleri();
 
@@ -77,6 +88,16 @@ export default function Tema2Dizilim({
               <span className="tema2-sus-simge">❖</span>
               <span className="tema2-sus-cizgi" />
             </div>
+
+            {misafirAd && (
+              <div className="tema2-misafir-karsilama">
+                <span className="tema2-misafir-ikon" aria-hidden="true">💌</span>
+                <div className="tema2-misafir-metinler">
+                  <span className="tema2-misafir-hitap">Sayın {misafirAd},</span>
+                  <span className="tema2-misafir-cumle">Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.</span>
+                </div>
+              </div>
+            )}
 
             <div className="tema2-kicker">NİŞANLANIYORUZ</div>
 
@@ -213,9 +234,17 @@ export default function Tema2Dizilim({
             )}
           </div>
 
-          {/* EYLEMLER (Katılım, Fotoğraf Yükle, Galeri) */}
+          {/* EYLEMLER (Katılım, WhatsApp Paylaş, Fotoğraf Yükle, Galeri) */}
           <div className="eylemler tema2-eylemler">
-            <KatilimButonu tel={tel} />
+            <KatilimButonu
+              tel={tel}
+              varsayilanAd={misafirAd}
+              token={token}
+              izinliKisi={izinliKisi}
+            />
+            {paylasimUrl && whatsappMesaj && (
+              <WhatsappPaylasButonu url={paylasimUrl} mesaj={whatsappMesaj} />
+            )}
             <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
             {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}
             {fotoNotu && <p className="foto-notu tema2-foto-notu">{fotoNotu}</p>}

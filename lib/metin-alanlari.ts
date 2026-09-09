@@ -79,6 +79,16 @@ export const METIN_ALANLARI = [
       { deger: "acik",     etiket: "Açık — şimdiden yüklenebilsin" },
       { deger: "kapali",   etiket: "Kapalı — tarih geçse bile kapalı kalsın" },
     ] },
+  { anahtar: "davetiye_slug", etiket: "Davetiye URL Bağlantısı (Slug)",
+    ipucu: "örn. omur-kubra (https://siteadresiniz.com/davet/omur-kubra)", cok_satir: false },
+  { anahtar: "whatsapp_mesaj", etiket: "WhatsApp Paylaşım Mesaj Şablonu",
+    ipucu: "Değişkenler: {cift}, {gelin}, {damat}, {tarih}, {saat}, {salon}, {link}, {misafir}", cok_satir: true },
+  { anahtar: "whatsapp_og_tur", etiket: "Sosyal Medya / WhatsApp Paylaşım Görseli", cok_satir: false,
+    ipucu: "WhatsApp link önizlemesinde gösterilecek kart tasarımı",
+    secenekler: [
+      { deger: "dinamik", etiket: "Dinamik 1200×630 Kart (Önerilen — İsimler, Tarih ve Mühür İçeren Özel Tasarım)" },
+      { deger: "kapak",   etiket: "01-Kapak Fotoğrafı (Yüklenen arka plan)" },
+    ] },
 ] as const;
 
 export type MetinAlan = (typeof METIN_ALANLARI)[number];

@@ -12,13 +12,24 @@ type Sonuc =
   | { tur: "basari"; durum: KatilimDurumu }
   | { tur: "zaten"; ad: string; durum?: string; geliyor: boolean; kisi: number };
 
-export default function RsvpForm({ onKapat }: { onKapat?: () => void }) {
+export default function RsvpForm({
+  onKapat,
+  varsayilanAd = "",
+  token,
+  izinliKisi = 10,
+}: {
+  onKapat?: () => void;
+  varsayilanAd?: string;
+  token?: string;
+  izinliKisi?: number;
+}) {
   const [durum, setDurum] = useState<KatilimDurumu | null>(null);
   const [kisi, setKisi] = useState<number>(0);
-  const [ad, setAd] = useState("");
+  const [ad, setAd] = useState(varsayilanAd);
   const [dilek, setDilek] = useState("");
   const [sonuc, setSonuc] = useState<Sonuc>({ tur: "bos" });
 
+  const tavanKisi = Math.min(CFG.KISI_MAX, Math.max(1, izinliKisi || CFG.KISI_MAX));
   const kilitli = sonuc.tur === "gonderiliyor";
 
   const handleDurumSecim = (secim: KatilimDurumu) => {
@@ -54,6 +65,7 @@ export default function RsvpForm({ onKapat }: { onKapat?: () => void }) {
           kisi: durum === "katilmayacagim" ? 0 : kisi,
           dilek,
           hatiraNotu: dilek,
+          token,
           zorla,
         }),
       });
@@ -242,7 +254,7 @@ export default function RsvpForm({ onKapat }: { onKapat?: () => void }) {
             type="button"
             className="katilim-sayac-btn"
             aria-label="Kişi sayısını artır"
-            onClick={() => setKisi((k) => Math.min(CFG.KISI_MAX, k + 1))}
+            onClick={() => setKisi((k) => Math.min(tavanKisi, k + 1))}
           >
             +
           </button>
