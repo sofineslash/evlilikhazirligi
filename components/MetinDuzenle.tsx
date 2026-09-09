@@ -11,7 +11,7 @@ const GRUPLAR: { sekme: MetinSekme; baslik: string; not?: string; anahtarlar: st
   {
     sekme: "davetiye",
     baslik: "Tasarım ve Tema Seçimi",
-    not: "Davetiyenin misafirlere nasıl açılacağını ve hangi temayla sunulacağını buradan seçebilirsin. Tema 1: Mevcut 3B zarf açılışı. Tema 2: Saray kapısı açılışı ve fon müziği.",
+    not: "Davetiyenin misafirlere nasıl açılacağını buradan seçebilirsin. Fon müziği dosyasını 'Fotoğraf & Müzik' sekmesinden doğrudan yükleyebilirsin.",
     anahtarlar: ["tema_secimi", "muzik_acik"],
   },
   {

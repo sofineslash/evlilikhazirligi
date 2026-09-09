@@ -12,6 +12,8 @@ import KullaniciYonet from "@/components/KullaniciYonet";
 import { kullanicilariListele } from "@/lib/kullanicilar";
 import { anlariListele, anSayisi } from "@/lib/anlar";
 import { galeriAcikMi } from "@/lib/galeri";
+import { muzikDurumu } from "@/lib/muzik";
+import MuzikYukle from "@/components/MuzikYukle";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,7 @@ export default async function Admin() {
 
   const sahneler = sahneDurumu();
   const hazir = sahneler.filter((s) => s.yol).length;
+  const muzik = muzikDurumu();
   const metinler = tumMetinler();
   const bosMetin = Object.values(metinler).filter((v) => !v.trim()).length;
 
@@ -107,10 +110,16 @@ export default async function Admin() {
 
           {
             id: "fotograflar",
-            etiket: "Fotoğraflar",
-            rozet: `${hazir}/${sahneler.length}`,
+            etiket: "Fotoğraf & Müzik",
+            rozet: muzik.var ? `${hazir}/${sahneler.length} + 🎵` : `${hazir}/${sahneler.length}`,
             icerik: (
               <>
+                {/* FON MÜZİĞİ YÜKLEME ALANI */}
+                <MuzikYukle baslangicDurumu={muzik} />
+
+                <h3 style={{ marginTop: "2rem", marginBottom: "0.4rem", fontSize: "1.05rem" }}>
+                  🖼️ Davetiye Görselleri
+                </h3>
                 <p className="kucuk" style={{ marginTop: 0 }}>
                   4:5 dikey (1080×1350), en fazla 4 MB. JPG, PNG, WebP veya AVIF.
                 </p>

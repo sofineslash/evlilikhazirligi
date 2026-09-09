@@ -11,6 +11,7 @@ import { galeriAcikMi } from "@/lib/galeri";
 import { anlariListele } from "@/lib/anlar";
 import GaleriButonu from "@/components/GaleriButonu";
 import MuzikCalar from "@/components/MuzikCalar";
+import { muzikDurumu } from "@/lib/muzik";
 import KapiAcilis from "@/components/KapiAcilis";
 import Tema2Dizilim from "@/components/Tema2Dizilim";
 
@@ -62,11 +63,15 @@ export default function Davetiye() {
 
   const tema = metin("tema_secimi") || "tema1";
   const muzikAktif = metin("muzik_acik") !== "kapali";
+  const muzik = muzikDurumu();
 
   return (
     <>
       {/* FON MÜZİĞİ — İki temada da çalar */}
-      <MuzikCalar aktif={muzikAktif} />
+      <MuzikCalar
+        aktif={muzikAktif && muzik.var}
+        sesDosyasi={muzik.url || "/muzik/davetiye.mp3"}
+      />
 
       {tema === "tema2" ? (
         /* ================= TEMA 2 — SARAY KAPISI AÇILIŞI & ÖZEL DİZİLİM ================= */
