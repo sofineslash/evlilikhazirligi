@@ -75,7 +75,12 @@ export default function Davetiye() {
 
       {tema === "tema2" ? (
         /* ================= TEMA 2 — SARAY KAPISI AÇILIŞI & ÖZEL DİZİLİM ================= */
-        <KapiAcilis solHarf={basHarf(gelinAd)} sagHarf={basHarf(damatAd)}>
+        <KapiAcilis
+          gelinAd={gelinAd}
+          damatAd={damatAd}
+          solHarf={basHarf(gelinAd)}
+          sagHarf={basHarf(damatAd)}
+        >
           <Tema2Dizilim
             gelinAd={gelinAd}
             damatAd={damatAd}

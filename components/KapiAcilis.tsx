@@ -3,11 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function KapiAcilis({
-  solHarf = "K",
-  sagHarf = "Ö",
+  gelinAd = "Kübranur",
+  damatAd = "Ömür",
+  solHarf,
+  sagHarf,
   onAcildi,
   children,
 }: {
+  gelinAd?: string;
+  damatAd?: string;
   solHarf?: string;
   sagHarf?: string;
   onAcildi?: () => void;
@@ -16,6 +20,9 @@ export default function KapiAcilis({
   const [acildi, setAcildi] = useState(false);
   const [animasyonBitti, setAnimasyonBitti] = useState(false);
   const sahneRef = useRef<HTMLDivElement>(null);
+
+  const sol = solHarf || (gelinAd ? gelinAd.charAt(0).toUpperCase() : "K");
+  const sag = sagHarf || (damatAd ? damatAd.charAt(0).toUpperCase() : "Ö");
 
   const kapagiAc = () => {
     if (acildi) return;
@@ -40,7 +47,7 @@ export default function KapiAcilis({
 
   return (
     <div className="tema2-sahne-kapsayici" ref={sahneRef}>
-      {/* 3B LÜKS KAPAK AÇILIŞ SAHNESİ */}
+      {/* 3B LÜKS FİLDİŞİ & ŞAMPANYA DAVETİYE KAPAĞI */}
       {!animasyonBitti && (
         <div
           className={`tema2-kapak-overlay ${acildi ? "kapak-aciliyor" : ""}`}
@@ -62,41 +69,61 @@ export default function KapiAcilis({
               </div>
             </div>
 
-            {/* Kapak Üzerindeki Mühür ve Aşağı Taşınan İpucu */}
+            {/* Kapak Üzerindeki Lüks Davetiye Kompozisyonu */}
             <div className="tema2-kapak-icerik">
-              {/* Merkez Mühür & Açılış Madalyonu */}
-              <div className="tema2-merkez-muhur-alani">
-                <div className="tema2-kapi-muhur">
+              {/* Dikey İpek Şampanya Kurdele */}
+              <div className="tema2-kapak-kurdele" aria-hidden="true" />
+
+              {/* Üst Alan: Taç/Motif ve Nişan Davetiyesi Başlığı */}
+              <div className="tema2-kapak-ust">
+                <div className="tema2-kapak-motif" aria-hidden="true">
+                  <span className="tema2-motif-cizgi" />
+                  <span className="tema2-motif-simge">❖</span>
+                  <span className="tema2-motif-cizgi" />
+                </div>
+                <div className="tema2-kapak-baslik">NİŞAN DAVETİYESİ</div>
+              </div>
+
+              {/* Orta Alan: Altın Mühür ve Çiftin İsimleri */}
+              <div className="tema2-kapak-orta">
+                <div className="tema2-kapi-muhur" aria-hidden="true">
                   <div className="tema2-muhur-halka">
                     <span className="tema2-muhur-harfler">
-                      {solHarf}
+                      {sol}
                       <span className="tema2-muhur-ve">&amp;</span>
-                      {sagHarf}
+                      {sag}
                     </span>
                     <span className="tema2-muhur-dal" />
                   </div>
                 </div>
+
+                <div className="tema2-kapak-isimler">
+                  {gelinAd} <span className="ve">&amp;</span> {damatAd}
+                </div>
               </div>
 
-              {/* Aşağı Taşınmış ve Ortalanmış Rehber Metin */}
-              <div className="tema2-kapak-ipucu-alani">
+              {/* Alt Alan: Açılış İpucu Butonu */}
+              <div className="tema2-kapak-alt">
                 <div className="tema2-ipucu-metin-kutusu">
-                  <span className="tema2-ipucu-satir-1">Davetiyeyi Açmak</span>
-                  <span className="tema2-ipucu-satir-2">İçin Dokunun</span>
-                </div>
-                <div className="tema2-ipucu-ok" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
+                  <span className="tema2-ipucu-zarf-ikon">✉</span>
+                  <div className="tema2-ipucu-metin-grup">
+                    <span className="tema2-ipucu-satir-1">Davetiyeyi Açmak İçin</span>
+                    <span className="tema2-ipucu-satir-2">Dokunun</span>
+                  </div>
+                  <div className="tema2-ipucu-ok" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
