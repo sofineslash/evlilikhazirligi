@@ -3,6 +3,7 @@ import TakvimeEkle from "./TakvimeEkle";
 import KatilimButonu from "./KatilimButonu";
 import FotoYukleButonu from "./FotoYukleButonu";
 import GaleriButonu from "./GaleriButonu";
+import GeriSayim from "./GeriSayim";
 import { CFG, haritaLinkleri } from "@/lib/config";
 import type { EbeveynBlok } from "@/lib/metin";
 import { YUKLEME_MESAJI } from "@/lib/yukleme";
@@ -220,6 +221,9 @@ export default function Tema2Dizilim({
             {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}
             {fotoNotu && <p className="foto-notu tema2-foto-notu">{fotoNotu}</p>}
           </div>
+
+          {/* GERİ SAYIM — BÜYÜK GÜNE KADAR CANLI GERİ SAYIM */}
+          <GeriSayim />
         </div>
       </div>
     </div>

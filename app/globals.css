@@ -2457,6 +2457,65 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   text-align: center;
 }
 
+/* Geri Sayım Bölümü */
+.tema2-gerisayim-kapsul {
+  margin: 2.2rem auto 0.4rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid rgba(197, 160, 89, 0.4);
+  text-align: center;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.tema2-gerisayim-baslik {
+  font-family: "Nisan Script", cursive, var(--font-baslik);
+  font-size: clamp(2.2rem, 8.5vw, 2.8rem);
+  line-height: 1.2;
+  color: #2b3e34;
+  margin-bottom: 0.85rem;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.tema2-gerisayim-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 2.4vw, 1.2rem);
+  padding: 0.4rem 0.2rem;
+}
+
+.tema2-gerisayim-kolon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(3.2rem, 16vw, 4.5rem);
+}
+
+.tema2-gerisayim-sayi {
+  font-family: var(--font-baslik);
+  font-size: clamp(1.85rem, 6.5vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1;
+  color: #233e2f;
+  letter-spacing: 0.02em;
+}
+
+.tema2-gerisayim-etiket {
+  font-family: var(--font-baslik);
+  font-size: clamp(0.65rem, 2.2vw, 0.74rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: #8c7d6c;
+  margin-top: 0.45rem;
+}
+
+.tema2-gerisayim-ayrac {
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(180deg, transparent, rgba(197, 160, 89, 0.55), transparent);
+}
+
 /* Kapanış */
 .tema2-kapanis {
   margin-top: 1.8rem;
@@ -2654,6 +2713,22 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   .tema2-eylemler > button:not(:first-child) {
     min-height: 42px;
     font-size: 0.88rem !important;
+  }
+
+  /* Geri Sayım Mobil Uyarlaması */
+  .tema2-gerisayim-kapsul {
+    margin: 1.6rem auto 0.2rem;
+    padding-top: 1.2rem;
+  }
+  .tema2-gerisayim-baslik {
+    font-size: 2.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .tema2-gerisayim-sayi {
+    font-size: 1.85rem;
+  }
+  .tema2-gerisayim-ayrac {
+    height: 28px;
   }
 }
 
