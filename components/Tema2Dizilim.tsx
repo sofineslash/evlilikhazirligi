@@ -89,16 +89,6 @@ export default function Tema2Dizilim({
               <span className="tema2-sus-cizgi" />
             </div>
 
-            {misafirAd && (
-              <div className="tema2-misafir-karsilama">
-                <span className="tema2-misafir-ikon" aria-hidden="true">💌</span>
-                <div className="tema2-misafir-metinler">
-                  <span className="tema2-misafir-hitap">Sayın {misafirAd},</span>
-                  <span className="tema2-misafir-cumle">Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.</span>
-                </div>
-              </div>
-            )}
-
             <div className="tema2-kicker">NİŞANLANIYORUZ</div>
 
             {/* İSİMLER VE KÜBRANUR & ÖMÜR FİGÜRLERİ */}

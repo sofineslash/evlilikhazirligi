@@ -136,6 +136,7 @@ export default function DavetiyeGosterimi({
           damatAd={damatAd}
           solHarf={basHarf(gelinAd)}
           sagHarf={basHarf(damatAd)}
+          misafirAd={misafirAd}
         >
           <Tema2Dizilim
             gelinAd={gelinAd}
@@ -178,16 +179,6 @@ export default function DavetiyeGosterimi({
           >
             <AltinCerceve className="kapak" fon={ciftYolu}>
               <header>
-                {misafirAd && (
-                  <div className="tema2-misafir-karsilama" style={{ marginBottom: "1rem" }}>
-                    <span className="tema2-misafir-ikon" aria-hidden="true">💌</span>
-                    <div className="tema2-misafir-metinler">
-                      <span className="tema2-misafir-hitap">Sayın {misafirAd},</span>
-                      <span className="tema2-misafir-cumle">Özel günümüzde sizleri de aramızda görmekten onur duyarız.</span>
-                    </div>
-                  </div>
-                )}
-
                 <div className="isim-alani">
                   {(gelinPng || damatPng) && (
                     <div className="isim-arkasi" aria-hidden="true">

@@ -26,6 +26,7 @@ export default function KapiAcilis({
   damatAd = "Ömür",
   solHarf,
   sagHarf,
+  misafirAd,
   onAcildi,
   children,
 }: {
@@ -33,6 +34,7 @@ export default function KapiAcilis({
   damatAd?: string;
   solHarf?: string;
   sagHarf?: string;
+  misafirAd?: string;
   onAcildi?: () => void;
   children: React.ReactNode;
 }) {
@@ -153,6 +155,18 @@ export default function KapiAcilis({
                 <span className="tema2-motif-cizgi" />
               </div>
               <div className="tema2-kapak-baslik">NİŞAN DAVETİYESİ</div>
+
+              {misafirAd && (
+                <div className="tema2-kapak-misafir-kutu" aria-hidden="true">
+                  <span className="tema2-kapak-misafir-ikon">💌</span>
+                  <div className="tema2-kapak-misafir-metinler">
+                    <span className="tema2-kapak-misafir-hitap">Sayın {misafirAd},</span>
+                    <span className="tema2-kapak-misafir-not">
+                      Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Orta Alan: Çiftin İsimleri */}

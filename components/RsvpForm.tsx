@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CFG } from "@/lib/config";
 
 type KatilimDurumu = "katilacagim" | "net_degil" | "katilmayacagim";
@@ -32,8 +32,45 @@ export default function RsvpForm({
   const tavanKisi = Math.min(CFG.KISI_MAX, Math.max(1, izinliKisi || CFG.KISI_MAX));
   const kilitli = sonuc.tur === "gonderiliyor";
 
+  const urlIsmiGetir = (): string => {
+    if (typeof window === "undefined") return "";
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const gParam = sp.get("guest") || sp.get("misafir");
+      if (!gParam) return "";
+      return decodeURIComponent(gParam)
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .map((k) => (k ? k[0].toLocaleUpperCase("tr") + k.slice(1).toLocaleLowerCase("tr") : ""))
+        .join(" ");
+    } catch {
+      return "";
+    }
+  };
+
+  // Açılışta veya varsayilanAd geldiğinde ad alanını otomatik doldur
+  useEffect(() => {
+    if (varsayilanAd) {
+      setAd(varsayilanAd);
+    } else {
+      const uAd = urlIsmiGetir();
+      if (uAd) setAd(uAd);
+    }
+  }, [varsayilanAd]);
+
   const handleDurumSecim = (secim: KatilimDurumu) => {
     setDurum(secim);
+
+    // "Katılacağım" veya diğer durumlara basıldığında ad alanı boşsa otomatik doldur
+    if (!ad.trim()) {
+      const adayAd = varsayilanAd || urlIsmiGetir();
+      if (adayAd) {
+        setAd(adayAd);
+      }
+    }
+
     if (secim === "katilacagim") {
       setKisi((prev) => (prev > 0 ? prev : 1));
     } else if (secim === "katilmayacagim") {
