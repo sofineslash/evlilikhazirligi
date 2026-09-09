@@ -225,9 +225,14 @@ export default function AnYukle() {
 
   return (
     <div className="an-yukle">
-      <label htmlFor="an-ad">İsim soyisim (isteğe bağlı)</label>
+      <label htmlFor="an-ad" className="an-label">Adınız Soyadınız (İsteğe bağlı)</label>
       <input
-        id="an-ad" type="text" value={ad} maxLength={60}
+        id="an-ad"
+        type="text"
+        className="an-ad-input"
+        placeholder="Adınızı ve soyadınızı yazabilirsiniz…"
+        value={ad}
+        maxLength={60}
         onChange={(e) => setAd(e.target.value)}
       />
 
@@ -240,7 +245,10 @@ export default function AnYukle() {
           multiple
           onChange={(e) => ekle(e.target.files)}
         />
-        <span className="btn btn-birincil">Fotoğraf veya video seç</span>
+        <span className="btn btn-eylem an-sec-btn">
+          <span className="an-sec-ikon" aria-hidden="true">📷</span>
+          <span>Fotoğraf veya Video Seç</span>
+        </span>
       </label>
 
       {kalemler.length > 0 && (
@@ -296,14 +304,24 @@ export default function AnYukle() {
             ))}
           </ul>
 
-          <div className="butonlar" style={{ justifyContent: "flex-start" }}>
+          <div className="butonlar" style={{ justifyContent: "center", marginTop: "1.2rem" }}>
             <button
               type="button"
-              className="btn btn-birincil"
+              className="btn btn-eylem an-gonder-btn"
               onClick={gonder}
               disabled={calisiyor || bekleyen === 0}
             >
-              {calisiyor ? "Gönderiliyor…" : `Gönder (${bekleyen})`}
+              {calisiyor ? (
+                <>
+                  <span className="tema2-btn-spinner" aria-hidden="true" />
+                  <span>Yükleniyor…</span>
+                </>
+              ) : (
+                <>
+                  <span aria-hidden="true">✨</span>
+                  <span>{bekleyen > 0 ? `Yüklemeyi Başlat (${bekleyen})` : "Tamamlandı"}</span>
+                </>
+              )}
             </button>
           </div>
 
