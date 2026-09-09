@@ -71,7 +71,7 @@ export default function Tema2Dizilim({
               <span className="tema2-sus-cizgi" />
             </div>
 
-            <div className="tema2-kicker">N İ Ş A N L A N I Y O R U Z</div>
+            <div className="tema2-kicker">NİŞANLANIYORUZ</div>
 
             {/* İSİMLER VE KÜBRANUR & ÖMÜR FİGÜRLERİ */}
             <div className="isim-alani tema2-isim-kapsayici">
