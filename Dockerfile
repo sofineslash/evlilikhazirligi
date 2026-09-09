@@ -20,7 +20,7 @@ COPY next.config.ts tsconfig.json ./
 COPY db ./db
 COPY scripts ./scripts
 COPY lib ./lib
-RUN mkdir -p /srv/data /srv/medya/scenes && chown -R node:node /srv /app
+RUN mkdir -p /srv/data /srv/medya/scenes /srv/medya/muzik && chown -R node:node /srv /app
 USER node
 EXPOSE 2608
 CMD ["sh", "-c", "npx tsx scripts/migrate.ts && npm run start"]

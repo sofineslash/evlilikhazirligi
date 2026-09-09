@@ -55,6 +55,7 @@ jobs:
           AUTH_SECRET=${{ secrets.AUTH_SECRET }}
           DB_PATH=/srv/data/nisan.db
           MEDYA_KOK=/srv/medya/scenes
+          MUZIK_KOK=/srv/medya/muzik
           TZ=Europe/Istanbul
           EOF
 
@@ -69,7 +70,7 @@ jobs:
           docker run --rm \
             -v /srv/nisan-data:/d \
             -v /srv/nisan-medya:/m \
-            alpine:3 sh -c 'mkdir -p /m/scenes /m/anlar && chown -R 1000:1000 /d /m'
+            alpine:3 sh -c 'mkdir -p /m/scenes /m/anlar /m/muzik && chown -R 1000:1000 /d /m'
 
       - name: Onceki konteyneri durdur
         run: docker compose down --remove-orphans || true
