@@ -1532,7 +1532,11 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
 .pencere-ic h2 {
   font-family: var(--font-baslik);
   text-align: center;
-  margin: .4rem 0 1rem;
+  margin: .4rem 0 1.1rem;
+  color: #724d0c;
+  font-size: 1.65rem;
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 .pencere-kapat {
   position: absolute; top: .5rem; right: .6rem;
@@ -1784,23 +1788,38 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
 
 .katilim-gonder-btn {
   width: 100%;
-  padding: 0.85rem 1.4rem;
-  border-radius: 28px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  padding: 0.95rem 1.5rem;
+  border-radius: 999px !important;
+  font-size: 1rem;
+  font-weight: 700 !important;
   letter-spacing: 0.04em;
-  box-shadow: 0 4px 16px rgba(158, 117, 32, 0.28);
-  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  background: linear-gradient(135deg, #b88a2a 0%, #9e7520 50%, #825f18 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 6px 22px rgba(158, 117, 32, 0.38) !important;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease !important;
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .katilim-gonder-btn:hover:not(:disabled) {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(158, 117, 32, 0.35);
+  box-shadow: 0 8px 25px rgba(158, 117, 32, 0.48) !important;
 }
 
 .katilim-gonder-btn:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(158, 117, 32, 0.3) !important;
+}
+
+.katilim-gonder-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
 }
 
 .katilim-guvenlik-notu {
@@ -1852,6 +1871,17 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   max-width: 26rem;
 }
 
+.katilim-basari-kapsul .btn-birincil,
+.katilim-zaten-kapsul .btn-birincil {
+  background: linear-gradient(135deg, #b88a2a 0%, #9e7520 50%, #825f18 100%) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 6px 20px rgba(158, 117, 32, 0.35) !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.6rem;
+}
+
 
 /* ---------- /an sayfasi ---------- */
 .an-sayfa { max-width: 30rem; margin: 0 auto; padding: 3rem 1.25rem; }
@@ -1861,7 +1891,14 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
 }
 
 .pencere-tel { text-align: center; margin: 1rem 0 0; }
-.pencere-tel a { color: var(--birincil); }
+.pencere-tel a {
+  color: #9e7520;
+  font-weight: 600;
+  text-decoration-color: rgba(158, 117, 32, 0.4);
+}
+.pencere-tel a:hover {
+  color: #724d0c;
+}
 
 /* ============================================================
    FON MÜZİĞİ KONTROLÜ (İki Temada da Geçerli)
