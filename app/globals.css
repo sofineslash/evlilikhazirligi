@@ -2457,19 +2457,16 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   text-align: center;
 }
 
-/* Geri Sayım Bölümü */
+/* Geri Sayım Bölümü — Konteynersiz, Açık ve Asil Tipografi */
 .tema2-gerisayim-kapsul {
-  margin: 2rem auto 0.6rem;
-  padding: 1.35rem 1.1rem 1.25rem;
-  background: rgba(245, 237, 224, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(197, 160, 89, 0.38);
-  border-radius: 20px;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.7), 0 6px 20px rgba(114, 77, 12, 0.05);
+  margin: 3rem auto 1.8rem;
+  padding: 0 0.5rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   text-align: center;
   width: 100%;
-  max-width: 25.5rem;
+  max-width: 27rem;
   position: relative;
 }
 
@@ -2477,9 +2474,9 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin: 0 auto 0.35rem;
-  max-width: 13rem;
+  gap: 0.85rem;
+  margin: 0 auto 0.75rem;
+  max-width: 15rem;
   color: #9e7520;
 }
 
@@ -2490,28 +2487,29 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
 }
 
 .tema2-gerisayim-simge {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #9e7520;
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: translateY(-0.5px);
 }
 
 .tema2-gerisayim-baslik {
   font-family: "Nisan Script", cursive, var(--font-baslik);
-  font-size: clamp(2.3rem, 8.5vw, 3rem);
-  line-height: 1.15;
+  font-size: clamp(2.8rem, 11vw, 3.8rem);
+  line-height: 1.1;
   color: #241a10;
-  margin: 0.15rem 0 0.85rem;
+  margin: 0.15rem 0 1.25rem;
   font-weight: 400;
   text-shadow:
-    0 0 14px rgba(253, 249, 242, 0.95),
-    0 1px 2px rgba(158, 117, 32, 0.2);
+    0 0 18px rgba(253, 249, 242, 0.95),
+    0 0 8px rgba(253, 249, 242, 0.85);
 }
 
 .tema2-gerisayim-grid {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.4rem, 2.4vw, 1.2rem);
+  gap: clamp(0.5rem, 3.2vw, 1.4rem);
   padding: 0.2rem 0;
 }
 
@@ -2520,32 +2518,41 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: clamp(3.2rem, 16vw, 4.5rem);
+  min-width: clamp(3.2rem, 16vw, 4.8rem);
 }
 
 .tema2-gerisayim-sayi {
   font-family: var(--font-baslik);
-  font-size: clamp(1.9rem, 6.8vw, 2.5rem);
-  font-weight: 500;
+  font-size: clamp(2.4rem, 8.8vw, 3.3rem);
+  font-weight: 400;
   line-height: 1;
-  color: #9e7520;
-  letter-spacing: 0.02em;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  color: #241a10;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 
 .tema2-gerisayim-etiket {
   font-family: var(--font-baslik);
-  font-size: clamp(0.68rem, 2.3vw, 0.76rem);
+  font-size: clamp(0.72rem, 2.4vw, 0.82rem);
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.22em;
   color: #8c641d;
-  margin-top: 0.45rem;
+  margin-top: 0.55rem;
+  text-transform: uppercase;
 }
 
 .tema2-gerisayim-ayrac {
   width: 1px;
-  height: 36px;
-  background: linear-gradient(180deg, transparent, rgba(197, 160, 89, 0.65), transparent);
+  height: clamp(38px, 9.5vw, 48px);
+  background: linear-gradient(180deg, transparent, rgba(197, 160, 89, 0.55) 15%, rgba(197, 160, 89, 0.55) 85%, transparent);
+}
+
+.tema2-gerisayim-alt-cizgi {
+  margin: 1.8rem auto 0;
+  max-width: 14rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.45), transparent);
 }
 
 /* Kapanış */
@@ -2747,21 +2754,28 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
     font-size: 0.88rem !important;
   }
 
-  /* Geri Sayım Mobil Uyarlaması */
+  /* Geri Sayım Mobil Uyarlaması — Konteynersiz, Ferah */
   .tema2-gerisayim-kapsul {
-    margin: 1.6rem auto 0.2rem;
-    padding: 1.15rem 0.75rem 1.05rem;
-    border-radius: 16px;
+    margin: 2.2rem auto 1.2rem;
+    padding: 0 0.2rem;
   }
   .tema2-gerisayim-baslik {
-    font-size: 2.2rem;
-    margin-bottom: 0.65rem;
+    font-size: 2.6rem;
+    margin-bottom: 0.9rem;
   }
   .tema2-gerisayim-sayi {
-    font-size: 1.85rem;
+    font-size: 2.2rem;
+  }
+  .tema2-gerisayim-etiket {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
   }
   .tema2-gerisayim-ayrac {
-    height: 30px;
+    height: 34px;
+  }
+  .tema2-gerisayim-alt-cizgi {
+    margin-top: 1.4rem;
+    max-width: 11rem;
   }
 }
 

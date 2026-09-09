@@ -54,6 +54,19 @@ export default function GeriSayim({
     return () => clearInterval(zamanlayici);
   }, [hedefMs]);
 
+  if (kalan.bitti) {
+    return (
+      <div className="tema2-gerisayim-kapsul" aria-label="Etkinlik günü">
+        <div className="tema2-gerisayim-sus" aria-hidden="true">
+          <span className="tema2-gerisayim-cizgi" />
+          <span className="tema2-gerisayim-simge">❖</span>
+          <span className="tema2-gerisayim-cizgi" />
+        </div>
+        <div className="tema2-gerisayim-baslik">Bugün Bizim Günümüz! ✨</div>
+      </div>
+    );
+  }
+
   return (
     <div className="tema2-gerisayim-kapsul" aria-label="Etkinliğe geri sayım">
       <div className="tema2-gerisayim-sus" aria-hidden="true">
@@ -91,6 +104,8 @@ export default function GeriSayim({
           <span className="tema2-gerisayim-etiket">SANİYE</span>
         </div>
       </div>
+
+      <div className="tema2-gerisayim-alt-cizgi" aria-hidden="true" />
     </div>
   );
 }
