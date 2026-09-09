@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { type HatiraNotu, hatiraAdSoyadFormatla } from "@/lib/hatira";
+import { type HatiraNotu, hatiraAdSoyadFormatla } from "@/lib/hatira-format";
 
 export default function HatiraNotlariKutusu({
   notlar: ilkNotlar,

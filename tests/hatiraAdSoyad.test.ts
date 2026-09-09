@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hatiraAdSoyadFormatla } from "../lib/hatira";
+import { hatiraAdSoyadFormatla } from "../lib/hatira-format";
 
 describe("hatiraAdSoyadFormatla", () => {
   it("kullanicinin verdigi ornek: Ahmet Mehmet Feyzi -> A. Mehmet FEYZİ", () => {
