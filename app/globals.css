@@ -1961,41 +1961,83 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   margin: 1.1rem 0;
   cursor: pointer;
 }
-.an-sec-btn {
-  width: 100%;
-  padding: 0.85rem 1.4rem;
-  justify-content: center;
-  gap: 0.6rem;
-  font-weight: 600;
-  font-size: 0.98rem;
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(135, 96, 20, 0.14) !important;
+/* Fotoğraf veya Video Seç Butonu — Yeşil renk kaldırıldı, Altın/Fildişi lüks stil */
+.an-sec-btn,
+label.an-sec .btn,
+.tema-pencere .an-sec .btn {
+  display: flex !important;
+  width: 100% !important;
+  padding: 0.9rem 1.4rem !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  background: linear-gradient(135deg, rgba(255, 254, 250, 0.98) 0%, rgba(252, 246, 232, 0.96) 100%) !important;
+  border: 1.5px solid rgba(197, 160, 89, 0.75) !important;
+  color: #5c3e08 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 18px rgba(135, 96, 20, 0.16), inset 0 1px 2px rgba(255, 255, 255, 0.95) !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  text-decoration: none !important;
+  min-height: 48px !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+.an-sec-btn:hover,
+label.an-sec:hover .btn,
+.tema-pencere .an-sec .btn:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #f9edd2 100%) !important;
+  border-color: #9e7520 !important;
+  color: #3b2706 !important;
+  box-shadow: 0 6px 22px rgba(158, 117, 32, 0.28) !important;
+  transform: translateY(-1px) !important;
+}
+.an-sec-btn:active,
+label.an-sec:active .btn {
+  transform: translateY(0) !important;
+}
+.an-sec input:focus-visible + .btn,
+label.an-sec input:focus-visible + .btn {
+  outline: 3px solid rgba(197, 160, 89, 0.85) !important;
+  outline-offset: 2px !important;
 }
 .an-sec-ikon {
-  font-size: 1.15rem;
+  font-size: 1.25rem !important;
+  color: #9e7520 !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
-.an-gonder-btn {
-  padding: 0.85rem 2.2rem;
-  font-size: 1.02rem;
-  font-weight: 600;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #a47c2a 0%, #7d5916 100%) !important;
+/* Gönder / Yüklemeyi Başlat Butonu */
+.an-gonder-btn,
+.tema-pencere .an-gonder-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  padding: 0.9rem 2.4rem !important;
+  font-size: 1.02rem !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #9e7520 0%, #7d5916 100%) !important;
   color: #ffffff !important;
   border: 1.5px solid #d4af37 !important;
   box-shadow: 0 4px 18px rgba(125, 89, 22, 0.35) !important;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  min-height: 48px !important;
 }
-.an-gonder-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(125, 89, 22, 0.45) !important;
+.an-gonder-btn:hover:not(:disabled),
+.tema-pencere .an-gonder-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b08428 0%, #8f671c 100%) !important;
+  box-shadow: 0 6px 24px rgba(125, 89, 22, 0.45) !important;
+  transform: translateY(-1px) !important;
 }
-.an-gonder-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.an-gonder-btn:disabled,
+.tema-pencere .an-gonder-btn:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 .tema2-btn-spinner {
   display: inline-block;
