@@ -2798,6 +2798,156 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   border-radius: 18px;
   border: 1px solid rgba(197, 160, 89, 0.32);
 }
+
+/* Hatıra Notları Bölümü (Asır Konteyneri ile Aynı Genişlik ve Boyut Dili) */
+.tema2-hatira-bolum {
+  margin: 1.6rem auto 1.0rem;
+  min-height: 185px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+.tema2-hatira-baslik-alan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: #9e7520;
+  margin-bottom: 0.85rem;
+}
+.tema2-hatira-baslik {
+  font-family: var(--font-baslik);
+  font-size: 1.22rem;
+  font-weight: 600;
+  color: #31210e;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.tema2-hatira-icerik-kapsul {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  padding: 0 0.5rem;
+}
+.tema2-hatira-kart {
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.tema2-hatira-kart.gecis-cik {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.tema2-hatira-kart.gecis-gir {
+  opacity: 1;
+  transform: translateY(0);
+}
+.tema2-hatira-metin-kapsayici {
+  position: relative;
+  padding: 0 1.8rem;
+}
+.tema2-hatira-tirnak {
+  font-family: "Hoefler Text", Georgia, serif;
+  font-size: 1.7rem;
+  color: rgba(184, 134, 11, 0.7);
+  line-height: 1;
+  vertical-align: -0.2rem;
+  user-select: none;
+}
+.tema2-hatira-tirnak.sol {
+  margin-right: 0.25rem;
+}
+.tema2-hatira-tirnak.sag {
+  margin-left: 0.25rem;
+}
+.tema2-hatira-metin {
+  display: inline;
+  font-style: italic;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #2e2013;
+  word-break: break-word;
+}
+.tema2-hatira-yazar {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8c5d18;
+  letter-spacing: 0.03em;
+}
+.tema2-hatira-ok {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(197, 160, 89, 0.5);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #724d0c;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0;
+  padding-bottom: 2px;
+  box-shadow: 0 2px 8px rgba(135, 96, 20, 0.12);
+  transition: background 0.2s, transform 0.2s;
+  z-index: 2;
+}
+.tema2-hatira-ok:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.1);
+}
+.tema2-hatira-ok.sol {
+  left: -4px;
+}
+.tema2-hatira-ok.sag {
+  right: -4px;
+}
+.tema2-hatira-noktalar {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.85rem;
+}
+.tema2-hatira-nokta {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(197, 160, 89, 0.35);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tema2-hatira-nokta.aktif {
+  background: #9e7520;
+  transform: scale(1.35);
+}
+.tema2-hatira-bos {
+  color: #5c4935;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  padding: 0.4rem 0.8rem;
+}
+.tema2-hatira-bos-ipucu {
+  display: block;
+  font-size: 0.82rem;
+  color: #876535;
+  margin-top: 0.35rem;
+}
 .tema2-salon {
   font-family: var(--font-baslik);
   font-size: 1.25rem;

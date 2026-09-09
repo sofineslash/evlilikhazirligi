@@ -14,6 +14,7 @@ import MuzikCalar from "@/components/MuzikCalar";
 import { muzikDurumu } from "@/lib/muzik";
 import KapiAcilis from "@/components/KapiAcilis";
 import Tema2Dizilim from "@/components/Tema2Dizilim";
+import { yayindakiHatiraNotlari } from "@/lib/hatira";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,8 @@ export default function Davetiye() {
   const muzikAktif = metin("muzik_acik") !== "kapali";
   const muzik = muzikDurumu();
 
+  const hatiraNotlari = yayindakiHatiraNotlari();
+
   return (
     <>
       {/* FON MÜZİĞİ — İki temada da çalar */}
@@ -99,6 +102,7 @@ export default function Davetiye() {
             kartBeyaz={kartBeyaz}
             kartBlur={kartBlur}
             anlar={anlar}
+            hatiraNotlari={hatiraNotlari}
           />
         </KapiAcilis>
       ) : (

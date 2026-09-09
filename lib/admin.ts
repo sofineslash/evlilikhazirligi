@@ -105,6 +105,8 @@ export async function tumOturumlariDusur() {
 export async function dilekYayinla(id: string, yayinda: boolean) {
   if (!(await adminMi())) return;
   db().prepare("UPDATE katilimlar SET dilek_yayinda = ? WHERE id = ?").run(yayinda ? 1 : 0, id);
+  revalidatePath("/");
+  revalidatePath("/admin");
 }
 
 export async function kayitSil(id: string) {

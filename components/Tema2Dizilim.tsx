@@ -4,8 +4,10 @@ import KatilimButonu from "./KatilimButonu";
 import FotoYukleButonu from "./FotoYukleButonu";
 import GaleriButonu from "./GaleriButonu";
 import GeriSayim from "./GeriSayim";
+import HatiraNotlariKutusu from "./HatiraNotlariKutusu";
 import { CFG, haritaLinkleri } from "@/lib/config";
 import type { EbeveynBlok } from "@/lib/metin";
+import type { HatiraNotu } from "@/lib/hatira";
 import { YUKLEME_MESAJI } from "@/lib/yukleme";
 
 export default function Tema2Dizilim({
@@ -26,6 +28,7 @@ export default function Tema2Dizilim({
   kartBeyaz,
   kartBlur,
   anlar,
+  hatiraNotlari,
 }: {
   gelinAd: string;
   damatAd: string;
@@ -44,6 +47,7 @@ export default function Tema2Dizilim({
   kartBeyaz?: number;
   kartBlur?: number;
   anlar: { id: string; yukleyen: string | null }[];
+  hatiraNotlari?: HatiraNotu[];
 }) {
   const harita = haritaLinkleri();
 
@@ -224,6 +228,9 @@ export default function Tema2Dizilim({
           <div className="tema2-takvim-satiri">
             <TakvimeEkle />
           </div>
+
+          {/* SİZDEN GELEN HATIRA NOTLARI — ASIR KONTEYNERİ İLE AYNI BOYUT VE STİLDE */}
+          <HatiraNotlariKutusu notlar={hatiraNotlari ?? []} />
         </div>
       </div>
     </div>
