@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { HatiraNotu } from "@/lib/hatira";
+import { type HatiraNotu, hatiraAdSoyadFormatla } from "@/lib/hatira";
 
 export default function HatiraNotlariKutusu({
   notlar: ilkNotlar,
@@ -77,9 +77,27 @@ export default function HatiraNotlariKutusu({
       onTouchEnd={() => setDuraklatildi(false)}
     >
       <div className="tema2-hatira-baslik-alan">
-        <span className="tema2-sus-simge" aria-hidden="true">❖</span>
+        <svg
+          className="tema2-hatira-simge"
+          viewBox="0 0 24 24"
+          width="13"
+          height="13"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
+        </svg>
         <h2 className="tema2-salon tema2-hatira-baslik">Sizden Gelen Hatıra Notları</h2>
-        <span className="tema2-sus-simge" aria-hidden="true">❖</span>
+        <svg
+          className="tema2-hatira-simge"
+          viewBox="0 0 24 24"
+          width="13"
+          height="13"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
+        </svg>
       </div>
 
       {karisikNotlar.length === 0 ? (
@@ -110,7 +128,9 @@ export default function HatiraNotlariKutusu({
               <p className="tema2-hatira-metin">{mevcut.dilek}</p>
               <span className="tema2-hatira-tirnak sag" aria-hidden="true">”</span>
             </div>
-            <div className="tema2-hatira-yazar">— {mevcut.adSoyad}</div>
+            <div className="tema2-hatira-yazar">
+              {hatiraAdSoyadFormatla(mevcut.adSoyad)}
+            </div>
           </div>
 
           {karisikNotlar.length > 1 && (

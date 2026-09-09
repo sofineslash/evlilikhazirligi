@@ -2817,6 +2817,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   gap: 0.65rem;
   color: #9e7520;
   margin-bottom: 0.85rem;
+  line-height: 1;
 }
 .tema2-hatira-baslik {
   font-family: var(--font-baslik);
@@ -2825,6 +2826,14 @@ input[type="range"]:focus-visible { outline: 3px solid var(--birincil-acik); out
   color: #31210e;
   margin: 0;
   letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.tema2-hatira-simge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #9e7520;
 }
 .tema2-hatira-icerik-kapsul {
   position: relative;
