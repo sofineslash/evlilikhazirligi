@@ -49,11 +49,21 @@ export async function POST(req: Request) {
   const kontrol = adKontrol(String(govde.ad ?? ""));
   if (!kontrol.ok) return NextResponse.json({ mesaj: kontrol.mesaj }, { status: 400 });
 
-  const geliyor = govde.geliyor === true;
-  const kisi = geliyor
+  let geliyorDeger = 0;
+  if (govde.durum === "katilacagim" || govde.geliyor === true || govde.geliyor === 1) {
+    geliyorDeger = 1;
+  } else if (govde.durum === "net_degil" || govde.geliyor === 2) {
+    geliyorDeger = 2;
+  } else {
+    geliyorDeger = 0;
+  }
+
+  const kisi = geliyorDeger === 1
     ? Math.min(CFG.KISI_MAX, Math.max(1, Number(govde.kisi) || 1))
+    : geliyorDeger === 2
+    ? Math.min(CFG.KISI_MAX, Math.max(0, Number(govde.kisi) || 0))
     : 0;
-  const dilek = String(govde.dilek ?? "").trim().slice(0, CFG.DILEK_MAX_KARAKTER) || null;
+  const dilek = String(govde.dilek ?? govde.hatiraNotu ?? "").trim().slice(0, CFG.DILEK_MAX_KARAKTER) || null;
   const zorla = govde.zorla === true;
   const tekKelime = kontrol.tekKelime;
 
@@ -86,7 +96,7 @@ export async function POST(req: Request) {
         crypto.randomUUID(),
         String(govde.ad).trim(),
         kontrol.norm,
-        geliyor ? 1 : 0,
+        geliyorDeger,
         kisi,
         dilek,
         cihaz,
@@ -105,6 +115,12 @@ export async function POST(req: Request) {
           kayit: {
             ad: r.cakisma.ad_soyad,
             geliyor: r.cakisma.geliyor === 1,
+            durum:
+              r.cakisma.geliyor === 1
+                ? "katilacagim"
+                : r.cakisma.geliyor === 2
+                ? "net_degil"
+                : "katilmayacagim",
             kisi: r.cakisma.kisi_sayisi,
           },
         },

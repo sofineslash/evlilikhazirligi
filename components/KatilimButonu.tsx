@@ -38,7 +38,7 @@ export default function KatilimButonu({ tel }: { tel?: string }) {
         className="btn btn-eylem btn-birincil"
         onClick={() => pencere.current?.showModal()}
       >
-        Katılmak istiyorum
+        Katılım Durumunuz
       </button>
 
       <dialog ref={pencere} className="tema-pencere" aria-labelledby="katilim-baslik">
@@ -52,8 +52,8 @@ export default function KatilimButonu({ tel }: { tel?: string }) {
             ×
           </button>
 
-          <h2 id="katilim-baslik">Katılım</h2>
-          <RsvpForm />
+          <h2 id="katilim-baslik">Katılım Durumunuz</h2>
+          <RsvpForm onKapat={() => pencere.current?.close()} />
 
           {tel && (
             <p className="kucuk pencere-tel">

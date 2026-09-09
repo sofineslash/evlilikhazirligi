@@ -35,6 +35,7 @@ export default async function Admin() {
   const gelen = kayitlar.filter((k) => k.geliyor === 1);
   const toplamKisi = gelen.reduce((t, k) => t + k.kisi_sayisi, 0);
   const gelemeyen = kayitlar.filter((k) => k.geliyor === 0);
+  const netDegil = kayitlar.filter((k) => k.geliyor === 2);
 
   const sahneler = sahneDurumu();
   const hazir = sahneler.filter((s) => s.yol).length;
@@ -58,6 +59,7 @@ export default async function Admin() {
       <p className="admin-ozet">
         <strong>{toplamKisi} kişi</strong> geliyor ({gelen.length} kayıt) ·{" "}
         {gelemeyen.length} kayıt gelemiyor
+        {netDegil.length > 0 && ` · ${netDegil.length} kayıt net değil`}
       </p>
 
       <AdminSekmeler
@@ -79,7 +81,15 @@ export default async function Admin() {
                         {k.cift_isaretli === 1 && <span className="rozet">çift?</span>}{" "}
                         {k.tek_kelime === 1 && <span className="rozet">tek kelime</span>}
                       </td>
-                      <td>{k.geliyor === 1 ? "Geliyor" : "Gelemiyor"}</td>
+                      <td>
+                        {k.geliyor === 1 ? (
+                          <span style={{ color: "#2e7d32", fontWeight: 600 }}>Katılacak</span>
+                        ) : k.geliyor === 2 ? (
+                          <span style={{ color: "#e65100", fontWeight: 600 }}>Net Değil</span>
+                        ) : (
+                          <span style={{ color: "#c62828" }}>Katılamayacak</span>
+                        )}
+                      </td>
                       <td>{k.kisi_sayisi || "—"}</td>
                       <td>
                         {k.dilek ? (
