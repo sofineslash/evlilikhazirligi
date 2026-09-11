@@ -36,12 +36,12 @@
 }
 
 /* ────────────────────────────────────────────────────────────
-   1. AÇILIŞ KATMANI (ENVELOPE OVERLAY + VIDEO TRANSITION)
+   1. AÇILIŞ KATMANI (TEK BÜTÜN OVERLAY & SİNEMATİK GEÇİŞ)
    ──────────────────────────────────────────────────────────── */
 .tema3-giris-overlay {
   position: fixed;
   inset: 0;
-  z-index: 99999;
+  z-index: 100000;
   background: #F9F0E0;
   display: flex;
   flex-direction: column;
@@ -50,15 +50,15 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 1.5rem;
 }
 
-.tema3-giris-overlay.overlay-gizle,
-.tema3-giris-overlay.overlay-aciliyor {
+.tema3-giris-overlay.overlay-kapanis {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tema3-zarf-sarma {
@@ -67,57 +67,47 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
 }
 
-/* Mührün arkasından parlayan altın ışık halosu */
-.tema3-altin-halo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.6);
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 232, 160, 0.95) 0%, rgba(212, 175, 55, 0.7) 40%, rgba(212, 175, 55, 0) 70%);
-  pointer-events: none;
-  opacity: 0;
-  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
-  z-index: 1;
-}
-
-.tema3-giris-overlay.overlay-aciliyor .tema3-altin-halo {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(3.5);
-}
-
-.tema3-zarf-img {
+/* Video ve Kapak Resmi Birebir Aynı Boyutta */
+.tema3-intro-video {
   width: 100%;
   max-width: 440px;
   max-height: 86vh;
   aspect-ratio: 9 / 16;
   display: block;
   object-fit: contain;
+  margin: auto;
   border-radius: 8px;
-  filter: drop-shadow(0 15px 35px rgba(90, 55, 10, 0.22));
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  filter: drop-shadow(0 18px 45px rgba(90, 55, 10, 0.25));
   position: relative;
+  z-index: 1;
+}
+
+.tema3-zarf-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 18px 45px rgba(90, 55, 10, 0.25));
   z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
 }
 
-.tema3-giris-overlay:hover .tema3-zarf-img {
-  transform: scale(1.02);
-}
-
-.tema3-giris-overlay.overlay-aciliyor .tema3-zarf-img,
-.tema3-giris-overlay.overlay-gizle .tema3-zarf-img {
+.tema3-zarf-img.img-gizli {
   opacity: 0;
 }
 
 /* Kişiye Özel Karşılama Rozeti (Kapakta) */
 .tema3-misafir-karsilama-kapak {
   position: absolute;
-  top: clamp(2rem, 8vh, 4rem);
+  top: clamp(1.5rem, 6vh, 3.5rem);
   width: calc(100% - 2.5rem);
   max-width: 380px;
   padding: 0.8rem 1.15rem;
@@ -131,8 +121,15 @@
   align-items: center;
   gap: 0.75rem;
   text-align: left;
-  z-index: 2;
+  z-index: 5;
+  transition: opacity 0.4s ease, transform 0.4s ease;
   animation: tema3FadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-misafir-karsilama-kapak.oge-gizle {
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
 }
 
 .tema3-misafir-ikon {
@@ -164,14 +161,21 @@
 /* Dokun & Aç Uyarısı */
 .tema3-tap-wrap {
   position: absolute;
-  bottom: 24%;
+  bottom: 12%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
   animation: tema3TapIn 1.2s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-tap-wrap.oge-gizle {
+  opacity: 0;
 }
 
 .tema3-chevron {
@@ -213,44 +217,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Açılış Video Geçiş Katmanı */
-.tema3-video-wrap {
-  position: fixed;
-  inset: 0;
-  z-index: 100000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fdf8ee;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tema3-video-wrap.video-in {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.tema3-video-wrap.video-out {
-  opacity: 0;
-  transition: opacity 0.7s ease;
-}
-
-.tema3-intro-video {
-  width: 100%;
-  max-width: 440px;
-  max-height: 86vh;
-  aspect-ratio: 9 / 16;
-  display: block;
-  object-fit: contain;
-  margin: auto;
-  border-radius: 8px;
-  filter: drop-shadow(0 18px 45px rgba(90, 55, 10, 0.25));
-}
-
+/* Video Geç Butonu */
 .tema3-video-gec-btn {
   position: absolute;
   top: 24px;
@@ -266,11 +233,14 @@
   border-radius: 999px;
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: background 0.2s ease;
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10;
+  transition: all 0.2s ease;
 }
 
 .tema3-video-gec-btn:hover {
   background: #F9F0E0;
+  transform: scale(1.04);
 }
 
 /* ────────────────────────────────────────────────────────────

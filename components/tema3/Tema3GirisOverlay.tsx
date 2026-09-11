@@ -10,6 +10,7 @@ interface Props {
 
 export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Props) {
   const [aciliyor, setAciliyor] = useState(false);
+  const [videoOynuyor, setVideoOynuyor] = useState(false);
   const [videoFading, setVideoFading] = useState(false);
   const [tamamlandi, setTamamlandi] = useState(false);
 
@@ -48,10 +49,10 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
 
     setVideoFading(true);
 
-    // 700ms yumuşak erime ile arkadaki kuğu bahçesine geç ve katmanı kaldır
+    // 800ms yumuşak erime ile arkadaki kuğu bahçesine geç ve katmanı kaldır
     setTimeout(() => {
       setTamamlandi(true);
-    }, 700);
+    }, 800);
   };
 
   const acilisBaslat = () => {
@@ -93,16 +94,25 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
-    // Video son 0.25 saniyesine geldiğinde yumuşak erimeyi başlat
-    if (video && video.duration && video.currentTime >= video.duration - 0.25) {
-      bitirSekansi();
+    if (video) {
+      if (!videoOynuyor && video.currentTime > 0.05) {
+        setVideoOynuyor(true);
+      }
+      // Video son 0.25 saniyesine geldiğinde yumuşak erimeyi başlat
+      if (video.duration && video.currentTime >= video.duration - 0.25) {
+        bitirSekansi();
+      }
     }
   };
 
-  const handleVideoWrapClick = () => {
-    // Açılış anındaki dokunmanın hemen videoyu atlamasını engelle (1.5s koruma)
-    if (Date.now() - acilisZamaniRef.current < 1500) return;
-    bitirSekansi();
+  const handleOverlayClick = () => {
+    if (!aciliyor) {
+      acilisBaslat();
+    } else {
+      if (Date.now() - acilisZamaniRef.current > 1500) {
+        bitirSekansi();
+      }
+    }
   };
 
   useEffect(() => {
@@ -121,51 +131,60 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
   if (tamamlandi) return null;
 
   return (
-    <>
-      {/* 1. ADIM: ZARF VE MÜHÜR DOKUNMA KAPAĞI */}
-      <div
-        className={`tema3-giris-overlay ${aciliyor ? "overlay-gizle" : ""}`}
-        onClick={acilisBaslat}
-        onTouchStart={sesKilidiAc}
-        role="button"
-        tabIndex={0}
-        aria-label="Davetiyeyi açmak için dokunun"
-      >
-        {misafirAd && (
-          <div className="tema3-misafir-karsilama-kapak">
-            <span className="tema3-misafir-ikon">💌</span>
-            <div className="tema3-misafir-metinler">
-              <span className="tema3-misafir-hitap">Sayın {misafirAd},</span>
-              <span className="tema3-misafir-cumle">
-                Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
-              </span>
-            </div>
+    <div
+      className={`tema3-giris-overlay ${videoFading ? "overlay-kapanis" : ""}`}
+      onClick={handleOverlayClick}
+      onTouchStart={sesKilidiAc}
+      role="button"
+      tabIndex={0}
+      aria-label="Davetiyeyi açmak için dokunun"
+    >
+      {/* Misafir Karşılama Rozeti (Açılış tıklanınca yumuşakça kaybolur) */}
+      {misafirAd && (
+        <div className={`tema3-misafir-karsilama-kapak ${aciliyor ? "oge-gizle" : ""}`}>
+          <span className="tema3-misafir-ikon">💌</span>
+          <div className="tema3-misafir-metinler">
+            <span className="tema3-misafir-hitap">Sayın {misafirAd},</span>
+            <span className="tema3-misafir-cumle">
+              Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
+            </span>
           </div>
-        )}
-
-        <div className="tema3-zarf-sarma">
-          <div className="tema3-altin-halo" aria-hidden="true" />
-          <img
-            src="/tema3/zarf_cover.jpg"
-            alt="Kübranur & Ömür Davetiyesi"
-            className="tema3-zarf-img"
-            draggable={false}
-          />
         </div>
+      )}
 
-        <div className="tema3-tap-wrap">
+      {/* Ortadaki Zarf / Video Kapsayıcısı */}
+      <div className="tema3-zarf-sarma">
+        <video
+          ref={videoRef}
+          className="tema3-intro-video"
+          src="/tema3/orijinal_intro_20260911223616.mp4"
+          poster="/tema3/zarf_cover.jpg"
+          muted
+          playsInline
+          preload="auto"
+          onTimeUpdate={handleTimeUpdate}
+          onPlaying={() => setVideoOynuyor(true)}
+          onEnded={bitirSekansi}
+          suppressHydrationWarning
+        />
+
+        {/* Video ilk karesini çizene kadar sabit kalan kapak resmi (Asla sıçrama veya aralık yapmaz) */}
+        <img
+          src="/tema3/zarf_cover.jpg"
+          alt="Kübranur & Ömür Davetiyesi"
+          className={`tema3-zarf-img ${videoOynuyor ? "img-gizli" : ""}`}
+          draggable={false}
+        />
+
+        {/* Dokun uyarısı */}
+        <div className={`tema3-tap-wrap ${aciliyor ? "oge-gizle" : ""}`}>
           <div className="tema3-chevron" />
           <div className="tema3-tap-label">Davetiyeyi Açmak İçin Dokunun</div>
         </div>
       </div>
 
-      {/* 2. ADIM: SİNEMATİK VİDEO GEÇİŞ KATMANI (DOM'da hazır bekler, kullanıcı jestiyle anında akar) */}
-      <div
-        className={`tema3-video-wrap ${aciliyor && !videoFading ? "video-in" : ""} ${
-          videoFading ? "video-out" : ""
-        }`}
-        onClick={handleVideoWrapClick}
-      >
+      {/* Video başladıktan sonra sağ üstte beliren "Geç ✕" butonu */}
+      {aciliyor && !videoFading && (
         <button
           type="button"
           className="tema3-video-gec-btn"
@@ -177,20 +196,7 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
         >
           Geç ✕
         </button>
-
-        <video
-          ref={videoRef}
-          className="tema3-intro-video"
-          src="/tema3/orijinal_intro_20260911223616.mp4"
-          poster="/tema3/zarf_cover.jpg"
-          muted
-          playsInline
-          preload="auto"
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={bitirSekansi}
-          suppressHydrationWarning
-        />
-      </div>
-    </>
+      )}
+    </div>
   );
 }
