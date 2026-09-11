@@ -3323,20 +3323,8 @@ label.an-sec input:focus-visible + .btn {
   display: grid;
   gap: 0.5rem;
 }
-.tema2-eylemler > .btn-birincil,
-.tema2-eylemler > button.btn-birincil,
-.tema2-eylemler > .btn:first-child,
-.tema2-eylemler > button:first-child {
-  background: linear-gradient(135deg, #9e7520 0%, #825f18 100%) !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  box-shadow: 0 6px 20px rgba(130, 95, 24, 0.35) !important;
-  font-weight: 600 !important;
-  border-radius: 999px !important;
-  min-height: 48px;
-}
-.tema2-eylemler > .btn:not(:first-child),
-.tema2-eylemler > button:not(:first-child) {
+.tema2-eylemler > .btn,
+.tema2-eylemler > button {
   background: rgba(253, 249, 242, 0.9) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -3345,10 +3333,16 @@ label.an-sec input:focus-visible + .btn {
   font-weight: 600 !important;
   border-radius: 999px !important;
   min-height: 44px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .tema2-eylemler > .btn:hover,
 .tema2-eylemler > button:hover {
+  background: rgba(255, 253, 248, 1) !important;
+  border-color: rgba(158, 117, 32, 0.8) !important;
+  color: #1a130c !important;
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(158, 117, 32, 0.18) !important;
 }
 .tema2-foto-notu {
   font-size: 0.8rem;

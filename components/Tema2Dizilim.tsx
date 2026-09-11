@@ -5,7 +5,6 @@ import FotoYukleButonu from "./FotoYukleButonu";
 import GaleriButonu from "./GaleriButonu";
 import GeriSayim from "./GeriSayim";
 import HatiraNotlariKutusu from "./HatiraNotlariKutusu";
-import WhatsappPaylasButonu from "./WhatsappPaylasButonu";
 import { CFG, haritaLinkleri } from "@/lib/config";
 import type { EbeveynBlok } from "@/lib/metin";
 import type { HatiraNotu } from "@/lib/hatira";
@@ -224,7 +223,7 @@ export default function Tema2Dizilim({
             )}
           </div>
 
-          {/* EYLEMLER (Katılım, WhatsApp Paylaş, Fotoğraf Yükle, Galeri) */}
+          {/* EYLEMLER (Katılım, Fotoğraf Yükle, Galeri) */}
           <div className="eylemler tema2-eylemler">
             <KatilimButonu
               tel={tel}
@@ -232,9 +231,6 @@ export default function Tema2Dizilim({
               token={token}
               izinliKisi={izinliKisi}
             />
-            {paylasimUrl && whatsappMesaj && (
-              <WhatsappPaylasButonu url={paylasimUrl} mesaj={whatsappMesaj} />
-            )}
             <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
             {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}
             {fotoNotu && <p className="foto-notu tema2-foto-notu">{fotoNotu}</p>}
