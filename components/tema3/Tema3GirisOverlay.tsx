@@ -157,6 +157,7 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
             preload="auto"
             onTimeUpdate={handleTimeUpdate}
             onEnded={bitirSekansi}
+            suppressHydrationWarning
           />
         </div>
       )}

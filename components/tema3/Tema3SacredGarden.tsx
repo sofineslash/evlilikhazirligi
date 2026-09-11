@@ -78,6 +78,7 @@ export default function Tema3SacredGarden({
         loop
         preload="auto"
         src={sesDosyasi}
+        suppressHydrationWarning
       />
 
       {/* AÇILIŞ ZARFI & VİDEO GEÇİŞ KATMANI */}

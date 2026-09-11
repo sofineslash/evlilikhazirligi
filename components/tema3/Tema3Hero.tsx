@@ -41,6 +41,7 @@ export default function Tema3Hero({
           muted
           playsInline
           preload="auto"
+          suppressHydrationWarning
         />
         <div className="tema3-kugu-video-overlay" />
       </div>

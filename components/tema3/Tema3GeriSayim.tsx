@@ -39,8 +39,10 @@ export default function Tema3GeriSayim({
 }) {
   const hedefMs = Date.parse(hedefTarih);
   const [kalan, setKalan] = useState<KalanZaman>(() => hesapla(hedefMs));
+  const [monte, setMonte] = useState(false);
 
   useEffect(() => {
+    setMonte(true);
     setKalan(hesapla(hedefMs));
     const timer = setInterval(() => {
       setKalan(hesapla(hedefMs));
@@ -48,7 +50,7 @@ export default function Tema3GeriSayim({
     return () => clearInterval(timer);
   }, [hedefMs]);
 
-  if (kalan.bitti) {
+  if (monte && kalan.bitti) {
     return (
       <div className="tema3-bolum-kapsul">
         <h3 className="tema3-bolum-baslik">Büyük Gün Geldi!</h3>
@@ -65,19 +67,27 @@ export default function Tema3GeriSayim({
 
       <div className="tema3-gerisayim-grid">
         <div className="tema3-sayac-kutu">
-          <span className="tema3-sayac-rakam">{pad(kalan.gun)}</span>
+          <span className="tema3-sayac-rakam" suppressHydrationWarning>
+            {monte ? pad(kalan.gun) : "00"}
+          </span>
           <span className="tema3-sayac-etiket">Gün</span>
         </div>
         <div className="tema3-sayac-kutu">
-          <span className="tema3-sayac-rakam">{pad(kalan.saat)}</span>
+          <span className="tema3-sayac-rakam" suppressHydrationWarning>
+            {monte ? pad(kalan.saat) : "00"}
+          </span>
           <span className="tema3-sayac-etiket">Saat</span>
         </div>
         <div className="tema3-sayac-kutu">
-          <span className="tema3-sayac-rakam">{pad(kalan.dakika)}</span>
+          <span className="tema3-sayac-rakam" suppressHydrationWarning>
+            {monte ? pad(kalan.dakika) : "00"}
+          </span>
           <span className="tema3-sayac-etiket">Dakika</span>
         </div>
         <div className="tema3-sayac-kutu">
-          <span className="tema3-sayac-rakam">{pad(kalan.saniye)}</span>
+          <span className="tema3-sayac-rakam" suppressHydrationWarning>
+            {monte ? pad(kalan.saniye) : "00"}
+          </span>
           <span className="tema3-sayac-etiket">Saniye</span>
         </div>
       </div>
