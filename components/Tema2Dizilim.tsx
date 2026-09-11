@@ -203,7 +203,17 @@ export default function Tema2Dizilim({
                 rel="noopener noreferrer"
                 className="btn btn-eylem tema2-harita-btn"
               >
-                <span className="tema2-btn-ikon">📍</span> Google Haritalar
+                <span className="tema2-btn-ikon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="13"
+                    height="13"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                  </svg>
+                </span>
+                <span>Google Haritalar</span>
               </a>
               <a
                 href={harita.apple}
@@ -211,7 +221,25 @@ export default function Tema2Dizilim({
                 rel="noopener noreferrer"
                 className="btn btn-eylem tema2-harita-btn"
               >
-                <span className="tema2-btn-ikon">🧭</span> Apple Haritalar
+                <span className="tema2-btn-ikon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="13"
+                    height="13"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <polygon
+                      points="16.2 7.8 13.8 13.8 7.8 16.2 10.2 10.2"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                <span>Apple Haritalar</span>
               </a>
             </div>
 
