@@ -2842,14 +2842,15 @@ label.an-sec input:focus-visible + .btn {
   color: #724d0c;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
-  margin-bottom: 1.15rem;
+  margin-top: clamp(0.85rem, 2.5vw, 1.2rem);
+  margin-bottom: 0;
 }
 
 /* İsim Alanı ve Kübranur & Ömür Figürleri */
 .tema2-isim-kapsayici {
   position: relative;
   width: 100%;
-  margin: 2.8rem 0 0.5rem;
+  margin: 3.8rem 0 0;
   text-align: center;
 }
 .tema2-isim-arkasi {
@@ -2920,10 +2921,10 @@ label.an-sec input:focus-visible + .btn {
   justify-content: center;
   gap: 1.4rem;
   padding: 0.85rem 1.2rem;
-  margin: 1.2rem auto 1.1rem;
+  margin: 33px auto 0.5rem;
   max-width: 22.5rem;
-  border-top: 1px solid rgba(197, 160, 89, 0.45);
-  border-bottom: 1px solid rgba(197, 160, 89, 0.45);
+  border-top: 1px solid rgba(175, 128, 28, 0.85);
+  border-bottom: 1px solid rgba(175, 128, 28, 0.85);
 }
 .tema2-tarih-kolon {
   display: flex;
@@ -2949,15 +2950,15 @@ label.an-sec input:focus-visible + .btn {
 }
 .tema2-tarih-buyuk-gun {
   font-family: var(--font-baslik);
-  font-size: 3rem;
+  font-size: clamp(38px, 4vw, 42px);
   line-height: 1;
-  font-weight: 400;
+  font-weight: 600;
   color: #9e7520;
 }
 .tema2-tarih-ayrac {
   width: 1px;
   height: 38px;
-  background: linear-gradient(180deg, transparent, rgba(197, 160, 89, 0.6), transparent);
+  background: linear-gradient(180deg, transparent, rgba(175, 128, 28, 0.85), transparent);
 }
 
 /* Takvime Ekle Butonu — Geri Sayım Altı Lüks Altın Tasarım */
@@ -3060,10 +3061,10 @@ label.an-sec input:focus-visible + .btn {
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
-  margin: 0.4rem auto 1.3rem;
+  margin: 0.25rem auto 0.75rem;
   max-width: 14rem;
   color: #9e7520;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 .tema2-kaydir-cizgi {
   flex: 1;
@@ -3518,12 +3519,13 @@ label.an-sec input:focus-visible + .btn {
   .tema2-kicker {
     font-size: clamp(0.72rem, 3.2vw, 0.88rem);
     letter-spacing: clamp(0.18em, 2.2vw, 0.32em);
-    margin-bottom: 0.85rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
   }
 
   /* İsim alanı ve figürler */
   .tema2-isim-kapsayici {
-    margin: 1.6rem 0 0.3rem;
+    margin: 3.1rem 0 0;
   }
   .tema2-isimler {
     font-size: clamp(2.1rem, 10vw, 3.2rem);
@@ -3537,8 +3539,10 @@ label.an-sec input:focus-visible + .btn {
   .tema2-tarih-kutusu {
     gap: 0.75rem;
     padding: 0.55rem 0.65rem;
-    margin: 0.75rem auto 0.75rem;
+    margin: 32px auto 0.4rem;
     max-width: 19.5rem;
+    border-top: 1px solid rgba(175, 128, 28, 0.85);
+    border-bottom: 1px solid rgba(175, 128, 28, 0.85);
   }
   .tema2-tarih-kolon {
     min-width: 3.8rem;
@@ -3553,10 +3557,15 @@ label.an-sec input:focus-visible + .btn {
     font-size: 0.76rem;
   }
   .tema2-tarih-buyuk-gun {
-    font-size: 2.4rem;
+    font-family: var(--font-baslik);
+    font-size: clamp(36px, 9.5vw, 40px);
+    line-height: 1;
+    font-weight: 600;
+    color: #9e7520;
   }
   .tema2-tarih-ayrac {
     height: 32px;
+    background: linear-gradient(180deg, transparent, rgba(175, 128, 28, 0.85), transparent);
   }
 
   /* Takvime ekle butonu */
@@ -3571,7 +3580,7 @@ label.an-sec input:focus-visible + .btn {
 
   /* Devam göstergesi */
   .tema2-kaydir-ipucu {
-    margin: 0.2rem auto 0.8rem;
+    margin: 0.15rem auto 0.45rem;
     max-width: 12rem;
   }
 
