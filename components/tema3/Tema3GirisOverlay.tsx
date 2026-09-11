@@ -9,16 +9,11 @@ interface Props {
 }
 
 export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Props) {
-  const [overlayGorunur, setOverlayGorunur] = useState(true);
-  const [overlayFading, setOverlayFading] = useState(false);
-  const [videoAktif, setVideoAktif] = useState(false);
-  const [videoFading, setVideoFading] = useState(false);
+  const [aciliyor, setAciliyor] = useState(false);
   const [tamamlandi, setTamamlandi] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
   const audioUnlockedRef = useRef(false);
 
-  // iOS Safari ve Android Chrome için ses kilidini açma (Touchstart priming)
+  // iOS Safari ve Android Chrome için dokunma ile ses kilidini açma
   const sesKilidiAc = () => {
     if (audioUnlockedRef.current) return;
     audioUnlockedRef.current = true;
@@ -36,25 +31,16 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
     }
   };
 
-  const baslatSekansi = () => {
-    if (overlayFading || tamamlandi) return;
-    setOverlayFading(true);
-
-    // Zarfı yavaşça soldur (1.4s ease)
-    setTimeout(() => {
-      setOverlayGorunur(false);
-    }, 1400);
-
-    // Videoyu göster ve başlat
-    setVideoAktif(true);
-    const video = videoRef.current;
-    if (video) {
-      video.currentTime = 0;
-      const vp = video.play();
-      if (vp && vp.catch) vp.catch(() => {});
+  const acilisBaslat = () => {
+    if (tamamlandi) return;
+    if (aciliyor) {
+      // İkinci tıklamada anında geç
+      setTamamlandi(true);
+      return;
     }
+    setAciliyor(true);
 
-    // Fon müziğini başlat
+    // Müziği başlat
     const audio = muzikRef.current;
     if (audio) {
       audio.volume = 1;
@@ -62,24 +48,13 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
       if (ap && ap.catch) ap.catch(() => {});
     }
 
-    // Dışarıya bildir (müzik butonu vb. için)
+    // Yüzen müzik butonunu aktif et
     onAcildi();
-  };
 
-  const bitirSekansi = () => {
-    if (tamamlandi) return;
-    setVideoFading(true);
+    // 1.1 saniyelik altın ışıltı ve zarf süzülme animasyonundan sonra katmanı tamamen kaldır
     setTimeout(() => {
-      setVideoAktif(false);
       setTamamlandi(true);
-    }, 1400);
-  };
-
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    if (video && video.duration && video.currentTime >= video.duration - 0.8) {
-      bitirSekansi();
-    }
+    }, 1100);
   };
 
   useEffect(() => {
@@ -95,72 +70,43 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
   if (tamamlandi) return null;
 
   return (
-    <>
-      {/* 1. ADIM: ZARF VE MÜHÜR AÇILIŞ KAPAĞI */}
-      {overlayGorunur && (
-        <div
-          className={`tema3-giris-overlay ${overlayFading ? "overlay-gizle" : ""}`}
-          onClick={baslatSekansi}
-          onTouchStart={sesKilidiAc}
-          role="button"
-          tabIndex={0}
-          aria-label="Davetiyeyi açmak için dokunun"
-        >
-          {misafirAd && (
-            <div className="tema3-misafir-karsilama-kapak">
-              <span className="tema3-misafir-ikon">💌</span>
-              <div className="tema3-misafir-metinler">
-                <span className="tema3-misafir-hitap">Sayın {misafirAd},</span>
-                <span className="tema3-misafir-cumle">
-                  Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
-                </span>
-              </div>
-            </div>
-          )}
-
-          <img
-            src="/tema3/zarf.png"
-            alt="Davetiyeyi Aç"
-            className="tema3-zarf-img"
-            draggable={false}
-          />
-
-          <div className="tema3-tap-wrap">
-            <div className="tema3-chevron" />
-            <div className="tema3-tap-label">Davetiyeyi Açmak İçin Dokunun</div>
+    <div
+      className={`tema3-giris-overlay ${aciliyor ? "overlay-aciliyor" : ""}`}
+      onClick={acilisBaslat}
+      onTouchStart={sesKilidiAc}
+      role="button"
+      tabIndex={0}
+      aria-label="Davetiyeyi açmak için dokunun"
+    >
+      {/* 1. KİŞİYE ÖZEL MİSAFİR KARŞILAMA KARTI */}
+      {misafirAd && (
+        <div className="tema3-misafir-karsilama-kapak">
+          <span className="tema3-misafir-ikon">💌</span>
+          <div className="tema3-misafir-metinler">
+            <span className="tema3-misafir-hitap">Sayın {misafirAd},</span>
+            <span className="tema3-misafir-cumle">
+              Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
+            </span>
           </div>
         </div>
       )}
 
-      {/* 2. ADIM: SİNEMATİK VİDEO GEÇİŞİ */}
-      {videoAktif && (
-        <div
-          className={`tema3-video-wrap ${videoAktif && !videoFading ? "video-in" : ""} ${
-            videoFading ? "video-out" : ""
-          }`}
-        >
-          <button
-            type="button"
-            className="tema3-video-gec-btn"
-            onClick={bitirSekansi}
-            aria-label="Geç"
-          >
-            Geç ✕
-          </button>
+      {/* 2. ZARF VE MERKEZİ ALTIN IŞIK HALOSU */}
+      <div className="tema3-zarf-sarma">
+        <div className="tema3-altin-halo" aria-hidden="true" />
+        <img
+          src="/tema3/zarf.png"
+          alt="Kübranur & Ömür Davetiyesi"
+          className="tema3-zarf-img"
+          draggable={false}
+        />
+      </div>
 
-          <video
-            ref={videoRef}
-            className="tema3-intro-video"
-            src="/tema3/intro.mp4"
-            muted
-            playsInline
-            preload="auto"
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={bitirSekansi}
-            suppressHydrationWarning
-          />
-        </div>
-      )}
-    </>
+      {/* 3. DOKUN VE AÇ UYARISI */}
+      <div className="tema3-tap-wrap">
+        <div className="tema3-chevron" />
+        <div className="tema3-tap-label">Davetiyeyi Açmak İçin Dokunun</div>
+      </div>
+    </div>
   );
 }
