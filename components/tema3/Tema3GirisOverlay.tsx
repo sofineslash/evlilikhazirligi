@@ -17,6 +17,7 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
   const audioUnlockedRef = useRef(false);
   const bitirildiRef = useRef(false);
   const guvenlikTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const acilisZamaniRef = useRef<number>(0);
 
   // iOS Safari ve Android Chrome için ses kilidi açma
   const sesKilidiAc = () => {
@@ -56,11 +57,14 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
   const acilisBaslat = () => {
     if (tamamlandi) return;
     if (aciliyor) {
-      // İkinci tıklamada bekletmeden anında geç
-      bitirSekansi();
+      // İkinci tıklamada yalnızca 1.5s sonra geçişe izin ver (çift dokunma koruması)
+      if (Date.now() - acilisZamaniRef.current > 1500) {
+        bitirSekansi();
+      }
       return;
     }
     setAciliyor(true);
+    acilisZamaniRef.current = Date.now();
 
     // 1. Fon müziğini başlat
     const audio = muzikRef.current;
@@ -81,18 +85,24 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
     // 3. Yüzen müzik kontrol butonunu aktifleştir
     onAcildi();
 
-    // 4. Video 4.8s — 4.5s sonra garantili bitirme zamanlayıcısı (asla takılı kalmaz)
+    // 4. Video 4.83s — 5.4s sonra garantili bitirme zamanlayıcısı (asla erken kesilmez, takılı kalmaz)
     guvenlikTimerRef.current = setTimeout(() => {
       bitirSekansi();
-    }, 4500);
+    }, 5400);
   };
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
-    // Video son 0.6 saniyesine geldiğinde yumuşak erimeyi başlat
-    if (video && video.duration && video.currentTime >= video.duration - 0.6) {
+    // Video son 0.25 saniyesine geldiğinde yumuşak erimeyi başlat
+    if (video && video.duration && video.currentTime >= video.duration - 0.25) {
       bitirSekansi();
     }
+  };
+
+  const handleVideoWrapClick = () => {
+    // Açılış anındaki dokunmanın hemen videoyu atlamasını engelle (1.5s koruma)
+    if (Date.now() - acilisZamaniRef.current < 1500) return;
+    bitirSekansi();
   };
 
   useEffect(() => {
@@ -154,7 +164,7 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
         className={`tema3-video-wrap ${aciliyor && !videoFading ? "video-in" : ""} ${
           videoFading ? "video-out" : ""
         }`}
-        onClick={bitirSekansi}
+        onClick={handleVideoWrapClick}
       >
         <button
           type="button"
@@ -171,7 +181,7 @@ export default function Tema3GirisOverlay({ misafirAd, muzikRef, onAcildi }: Pro
         <video
           ref={videoRef}
           className="tema3-intro-video"
-          src="/tema3/intro.mp4"
+          src="/tema3/orijinal_intro_20260911223616.mp4"
           poster="/tema3/zarf_cover.jpg"
           muted
           playsInline
