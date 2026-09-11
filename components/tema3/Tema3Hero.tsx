@@ -20,7 +20,7 @@ export default function Tema3Hero({
   const baslik = tepeBaslik || "NİŞAN TÖRENİ";
   const tarih = tarihKisa || "29.10.2026";
   const soz =
-    askSozu || "Two Souls, One destiny\nA Lifetime written by Allah";
+    askSozu || "İki Ruh, Tek Kader\nSonsuzluğa Atılan İlk Adım";
   const davet =
     davetCumlesi ||
     "Sevgili Ailemiz ve Dostlarımız, Sonsuzluğumuza adım atarken bu özel günümüzde sizleri de aramızda görmekten mutluluk duyarız.";
@@ -59,9 +59,13 @@ export default function Tema3Hero({
               className="tema3-sulu-gul sol"
               aria-hidden="true"
             />
-            <h1 className="tema3-isimler">
+            <h1 className="tema3-isimler tema3-isimler-el-yazisi">
               <span>{gelinAd}</span>
-              <span className="tema3-ve-isareti">&amp;</span>
+              <span className="tema3-isim-kalp" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </span>
               <span>{damatAd}</span>
             </h1>
             <img
@@ -70,10 +74,6 @@ export default function Tema3Hero({
               className="tema3-sulu-gul sag"
               aria-hidden="true"
             />
-          </div>
-
-          <div className="tema3-bismillah" aria-hidden="true">
-            بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
           </div>
         </div>
       </div>
