@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ guest?: string; misafir?: string; g?: string }>;
+  searchParams: Promise<{ guest?: string; misafir?: string; g?: string; tema?: string }>;
 };
 
 /**
@@ -103,7 +103,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
 export default async function DavetDetaySayfasi({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { guest, misafir, g: token } = await searchParams;
+  const { guest, misafir, g: token, tema } = await searchParams;
 
   const temizSlug = slugSanitize(slug);
   const guestQuery = guest || misafir;
@@ -113,6 +113,7 @@ export default async function DavetDetaySayfasi({ params, searchParams }: Props)
       slug={temizSlug}
       token={token}
       guest={guestQuery}
+      temaOzel={tema}
     />
   );
 }

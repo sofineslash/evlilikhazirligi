@@ -128,20 +128,12 @@ export default function KapiAcilis({
 
             {/* MÜHÜR SAĞ KANADA MONTE EDİLMİŞTİR (Kanatla birlikte sağa açılır) */}
             <div className="tema2-kapi-muhur-kapsayici" aria-hidden="true">
-              <div className="tema2-kapi-muhur">
-                <div className="tema2-muhur-halka">
-                  <span className="tema2-muhur-harfler">
-                    <span className="tema2-muhur-harf">{sol}</span>
-                    <span className="tema2-muhur-ve">&amp;</span>
-                    <span className="tema2-muhur-harf">{sag}</span>
-                  </span>
-                  <div className="tema2-muhur-dal" aria-hidden="true">
-                    <span className="tema2-muhur-dal-cizgi" />
-                    <span className="tema2-muhur-dal-simge">❖</span>
-                    <span className="tema2-muhur-dal-cizgi" />
-                  </div>
-                </div>
-              </div>
+              <img
+                src="/tema2/altin_muhur.png"
+                alt="Altın Mühür"
+                className="tema2-kapi-muhur-img"
+                draggable={false}
+              />
             </div>
           </div>
 

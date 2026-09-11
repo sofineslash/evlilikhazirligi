@@ -26,12 +26,14 @@ export type DavetiyeGosterimiProps = {
   slug?: string;
   token?: string;
   guest?: string;
+  temaOzel?: string;
 };
 
 export default function DavetiyeGosterimi({
   slug,
   token,
   guest,
+  temaOzel,
 }: DavetiyeGosterimiProps) {
   const harita = haritaLinkleri();
   const yuklemeAcik = yuklemeAcikMi();
@@ -75,7 +77,7 @@ export default function DavetiyeGosterimi({
     ? anlariListele(200).filter((a) => a.gizli === 0).map((a) => ({ id: a.id, yukleyen: a.yukleyen }))
     : [];
 
-  const tema = metin("tema_secimi") || "tema1";
+  const tema = temaOzel || metin("tema_secimi") || "tema1";
   const muzikAktif = metin("muzik_acik") !== "kapali";
   const muzik = muzikDurumu();
 
