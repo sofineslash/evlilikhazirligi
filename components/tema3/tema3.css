@@ -306,97 +306,152 @@
 /* ────────────────────────────────────────────────────────────
    3. HERO ALANI & KUĞU VİDEOSU
    ──────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────
+   3. HERO ALANI & KUĞU ARKA PLANI
+   ──────────────────────────────────────────────────────────── */
 .tema3-hero-bolum {
   width: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 2.5rem 0 2rem;
+  padding: 0;
+  margin: 0 auto;
 }
 
-.tema3-kugu-video-kapsayici {
+.tema3-kemer-kapsayici {
   position: relative;
   width: 100%;
   max-width: 450px;
-  height: 280px;
+  height: clamp(660px, 150vw, 780px);
+  border-radius: 16px 16px 0 0;
   overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 12px 36px rgba(90, 55, 10, 0.1);
 }
 
 .tema3-kugu-video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;
   display: block;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .tema3-kugu-video-overlay {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 249, 235, 0.2) 0%, rgba(249, 240, 224, 0.9) 85%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 30%, rgba(255, 252, 244, 0.55) 0%, rgba(249, 240, 224, 0.1) 55%, rgba(249, 240, 224, 0) 80%);
   pointer-events: none;
+  z-index: 2;
+}
+
+.tema3-kugu-alt-gecis {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(to bottom, rgba(249, 240, 224, 0) 0%, rgba(249, 240, 224, 0.75) 65%, #F9F0E0 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tema3-kemer-metinler {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(60px, 14vw, 85px) 1rem 0;
 }
 
 .tema3-tepe-baslik {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: clamp(1.6rem, 6vw, 2.2rem);
-  font-weight: 400;
+  font-size: clamp(1.2rem, 4.5vw, 1.55rem);
+  font-weight: 500;
   color: #a67d2b;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  margin: 0 0 0.4rem;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  margin: 0 0 0.35rem;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9), 0 0 14px rgba(255, 250, 235, 0.85);
 }
 
 .tema3-tarih-ust {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #a67d2b;
   letter-spacing: 0.22em;
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.8rem;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.tema3-isimler-alani {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto 0.4rem;
 }
 
 .tema3-isimler {
   font-family: 'Playfair Display', 'Cinzel', serif;
-  font-size: clamp(2.8rem, 11vw, 4.4rem);
+  font-size: clamp(2.3rem, 8.5vw, 3.2rem);
   font-weight: 700;
   color: #a67d2b;
   line-height: 1.05;
-  margin: 0 0 1.2rem;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9);
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 24px rgba(255, 250, 235, 0.95);
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tema3-ve-isareti {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-size: 0.7em;
-  font-weight: 300;
-  color: #a07b33;
-  margin: 0 0.4rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #9c7324;
+  margin: -0.1rem 0;
   display: inline-block;
 }
 
-/* Süzülen Çiçek / Gül Motifleri */
 .tema3-sulu-gul {
   position: absolute;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
   animation: tema3Salinim 4s ease-in-out infinite alternate;
 }
 
 .tema3-sulu-gul.sol {
-  width: 140px;
-  top: 48%;
-  left: -20px;
+  width: clamp(75px, 20vw, 105px);
+  left: clamp(-10px, -2vw, 10px);
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .tema3-sulu-gul.sag {
-  width: 130px;
-  top: 52%;
-  right: -15px;
+  width: clamp(75px, 20vw, 105px);
+  right: clamp(-10px, -2vw, 10px);
+  top: 50%;
+  transform: translateY(-50%);
   animation-delay: 1.5s;
 }
 
@@ -405,13 +460,37 @@
   100% { transform: translateY(-10px) rotate(3deg); }
 }
 
+.tema3-bismillah {
+  font-size: 1.15rem;
+  color: #8c6e3b;
+  letter-spacing: 0.05em;
+  margin-top: 0.4rem;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+.tema3-parsomon-alani {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 1rem;
+}
+
+.tema3-separator-img {
+  width: 160px;
+  margin: 1.5rem auto 0;
+  opacity: 0.8;
+}
+
 .tema3-romantik-soz {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: clamp(1.25rem, 5vw, 1.7rem);
+  font-size: clamp(1.2rem, 4.8vw, 1.6rem);
   font-weight: 400;
   color: #a67d2b;
   line-height: 1.4;
-  margin: 1.8rem 0 1rem;
+  margin: 0.5rem 0 1rem;
   letter-spacing: 0.05em;
   padding: 0 1rem;
 }
@@ -423,7 +502,7 @@
   color: #6a5140;
   line-height: 1.6;
   max-width: 380px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.5rem;
   padding: 0 1rem;
 }
 
@@ -432,7 +511,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   cursor: pointer;
 }
 

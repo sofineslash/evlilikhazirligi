@@ -26,16 +26,17 @@ export default function Tema3Hero({
     "Sevgili Ailemiz ve Dostlarımız, Sonsuzluğumuza adım atarken bu özel günümüzde sizleri de aramızda görmekten mutluluk duyarız.";
 
   const scrollAsagi = () => {
-    window.scrollBy({ top: window.innerHeight * 0.75, behavior: "smooth" });
+    window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" });
   };
 
   return (
     <section className="tema3-hero-bolum">
-      {/* 1. DÖNGÜSEL KUĞU ARKA PLAN VİDEOSU */}
-      <div className="tema3-kugu-video-kapsayici" aria-hidden="true">
+      {/* 1. TAŞ KEMER VE KUĞU VİDEOSU ARKA PLANI */}
+      <div className="tema3-kemer-kapsayici">
         <video
           className="tema3-kugu-video"
           src="/tema3/swans.mp4"
+          poster="/tema3/swans_poster.jpg"
           autoPlay
           loop
           muted
@@ -44,69 +45,75 @@ export default function Tema3Hero({
           suppressHydrationWarning
         />
         <div className="tema3-kugu-video-overlay" />
+        <div className="tema3-kugu-alt-gecis" />
+
+        {/* KEMER İÇİNDEKİ YAZILAR (Açık gökyüzü alanında) */}
+        <div className="tema3-kemer-metinler">
+          <h2 className="tema3-tepe-baslik">{baslik}</h2>
+          <div className="tema3-tarih-ust">{tarih}</div>
+
+          <div className="tema3-isimler-alani">
+            <img
+              src="/tema3/gul.png"
+              alt=""
+              className="tema3-sulu-gul sol"
+              aria-hidden="true"
+            />
+            <h1 className="tema3-isimler">
+              <span>{gelinAd}</span>
+              <span className="tema3-ve-isareti">&amp;</span>
+              <span>{damatAd}</span>
+            </h1>
+            <img
+              src="/tema3/gul.png"
+              alt=""
+              className="tema3-sulu-gul sag"
+              aria-hidden="true"
+            />
+          </div>
+
+          <div className="tema3-bismillah" aria-hidden="true">
+            بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+          </div>
+        </div>
       </div>
 
-      {/* SÜZÜLEN DEKORATİF GÜL VE ÇİÇEK MOTİFLERİ */}
-      <img
-        src="/tema3/gul.png"
-        alt=""
-        className="tema3-sulu-gul sol"
-        aria-hidden="true"
-      />
-      <img
-        src="/tema3/gul.png"
-        alt=""
-        className="tema3-sulu-gul sag"
-        aria-hidden="true"
-      />
+      {/* 2. KEMERİN ALTINDAKİ VİNTAGE PARŞÖMEN ALANI */}
+      <div className="tema3-parsomon-alani">
+        <div className="tema3-romantik-soz" style={{ whiteSpace: "pre-line" }}>
+          {soz}
+        </div>
 
-      {/* TEPE BAŞLIK VE TARİH */}
-      <h2 className="tema3-tepe-baslik">{baslik}</h2>
-      <div className="tema3-tarih-ust">{tarih}</div>
+        <p className="tema3-davet-paragraf">{davet}</p>
 
-      {/* ÇİFTİN İSİMLERİ */}
-      <h1 className="tema3-isimler">
-        <span>{gelinAd}</span>
-        <span className="tema3-ve-isareti">&amp;</span>
-        <span>{damatAd}</span>
-      </h1>
-
-      {/* DEKORATİF ÇİZGİ DESENİ */}
-      <img
-        src="/tema3/separator.png"
-        alt=""
-        style={{ width: "160px", margin: "0.4rem auto 1rem", opacity: 0.8 }}
-        aria-hidden="true"
-      />
-
-      {/* ROMANTİK AŞK SÖZÜ */}
-      <div className="tema3-romantik-soz" style={{ whiteSpace: "pre-line" }}>
-        {soz}
-      </div>
-
-      {/* DAVET PARAGRAFI */}
-      <p className="tema3-davet-paragraf">{davet}</p>
-
-      {/* AŞAĞI KAYDIRIN UYARISI */}
-      <div
-        className="tema3-scroll-down"
-        onClick={scrollAsagi}
-        role="button"
-        tabIndex={0}
-      >
-        <span className="tema3-scroll-text">Aşağı Kaydırın</span>
-        <svg
-          className="tema3-scroll-chevron"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
+        {/* AŞAĞI KAYDIRIN UYARISI */}
+        <div
+          className="tema3-scroll-down"
+          onClick={scrollAsagi}
+          role="button"
+          tabIndex={0}
         >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+          <span className="tema3-scroll-text">Aşağı Kaydırın</span>
+          <svg
+            className="tema3-scroll-chevron"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+
+        <img
+          src="/tema3/separator.png"
+          alt=""
+          className="tema3-separator-img"
+          aria-hidden="true"
+        />
       </div>
     </section>
   );
