@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
+
 /*
  * Nisan temasi — renkli, sicak, tek gorunum (ACIK).
  *
@@ -3939,6 +3941,214 @@ label.an-sec input:focus-visible + .btn {
   color: #667781;
   text-align: right;
   margin-top: -0.2rem;
+}
+
+/* ────────────────────────────────────────────────────────────
+   AÇILIŞ ZARFI & SİNEMATİK VİDEO GEÇİŞ KATMANI (ORTAK)
+   ──────────────────────────────────────────────────────────── */
+.tema3-giris-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: #F9F0E0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1.5rem;
+}
+
+.tema3-giris-overlay.overlay-kapanis {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tema3-zarf-sarma {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 440px;
+}
+
+/* Video ve Kapak Resmi Birebir Aynı Boyutta */
+.tema3-intro-video {
+  width: 100%;
+  max-width: 440px;
+  max-height: 86vh;
+  aspect-ratio: 9 / 16;
+  display: block;
+  object-fit: contain;
+  margin: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 18px 45px rgba(90, 55, 10, 0.25));
+  position: relative;
+  z-index: 1;
+}
+
+.tema3-zarf-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 18px 45px rgba(90, 55, 10, 0.25));
+  z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.tema3-zarf-img.img-gizli {
+  opacity: 0;
+}
+
+/* Kişiye Özel Karşılama Rozeti (Kapakta) */
+.tema3-misafir-karsilama-kapak {
+  position: absolute;
+  top: clamp(1.5rem, 6vh, 3.5rem);
+  width: calc(100% - 2.5rem);
+  max-width: 380px;
+  padding: 0.8rem 1.15rem;
+  background: rgba(255, 253, 248, 0.95);
+  border: 1px solid rgba(166, 125, 43, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(70, 45, 8, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  z-index: 5;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  animation: tema3FadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-misafir-karsilama-kapak.oge-gizle {
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+}
+
+.tema3-misafir-ikon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tema3-misafir-metinler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tema3-misafir-hitap {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a3411;
+  letter-spacing: 0.05em;
+}
+
+.tema3-misafir-cumle {
+  font-size: 0.82rem;
+  color: #6b553e;
+  line-height: 1.35;
+}
+
+/* Dokun & Aç Uyarısı */
+.tema3-tap-wrap {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  animation: tema3TapIn 1.2s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-tap-wrap.oge-gizle {
+  opacity: 0;
+}
+
+.tema3-chevron {
+  width: 12px;
+  height: 12px;
+  border-right: 1.8px solid rgba(140, 100, 60, 0.75);
+  border-top: 1.8px solid rgba(140, 100, 60, 0.75);
+  transform: rotate(-45deg);
+  animation: tema3ChevronAnim 2.4s 1.2s ease-in-out infinite;
+}
+
+.tema3-tap-label {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(140, 100, 60, 0.85);
+  animation: tema3PulseAnim 2.4s 1.2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes tema3TapIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes tema3PulseAnim {
+  0%, 100% { opacity: 0.5; letter-spacing: 0.28em; }
+  50%       { opacity: 1;   letter-spacing: 0.34em; }
+}
+
+@keyframes tema3ChevronAnim {
+  0%, 100% { transform: rotate(-45deg) translate(0, 0); opacity: 0.6; }
+  50%       { transform: rotate(-45deg) translate(3px, -3px); opacity: 1; }
+}
+
+@keyframes tema3FadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Video Geç Butonu */
+.tema3-video-gec-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(249, 240, 224, 0.85);
+  border: 1px solid rgba(166, 125, 43, 0.4);
+  color: #724d0c;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.tema3-video-gec-btn:hover {
+  background: #F9F0E0;
+  transform: scale(1.04);
 }
 
 

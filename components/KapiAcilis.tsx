@@ -2,30 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-function KoseMotif() {
-  return (
-    <svg
-      viewBox="0 0 44 44"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 41 V14 C3 8 8 3 14 3 H41" />
-      <path d="M8 41 V18 C8 12 12 8 18 8 H41" strokeWidth="0.9" strokeOpacity="0.65" />
-      <path d="M5 5 C12 12 16 7 22 13 C16 19 21 23 27 25" strokeWidth="1.1" />
-      <circle cx="15" cy="15" r="2.2" fill="currentColor" fillOpacity="0.8" />
-    </svg>
-  );
-}
-
 export default function KapiAcilis({
-  gelinAd = "Kübranur",
-  damatAd = "Ömür",
-  solHarf,
-  sagHarf,
   misafirAd,
   onAcildi,
   children,
@@ -38,165 +15,172 @@ export default function KapiAcilis({
   onAcildi?: () => void;
   children: React.ReactNode;
 }) {
-  const [acildi, setAcildi] = useState(false);
+  const [aciliyor, setAciliyor] = useState(false);
+  const [videoOynuyor, setVideoOynuyor] = useState(false);
+  const [videoFading, setVideoFading] = useState(false);
   const [animasyonBitti, setAnimasyonBitti] = useState(false);
-  const sahneRef = useRef<HTMLDivElement>(null);
 
-  const sol = solHarf || (gelinAd ? gelinAd.charAt(0).toUpperCase() : "K");
-  const sag = sagHarf || (damatAd ? damatAd.charAt(0).toUpperCase() : "Ö");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const bitirildiRef = useRef(false);
+  const guvenlikTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const acilisZamaniRef = useRef<number>(0);
 
-  const kapagiAc = () => {
-    if (acildi) return;
+  const bitirSekansi = () => {
+    if (bitirildiRef.current) return;
+    bitirildiRef.current = true;
+
+    if (guvenlikTimerRef.current) {
+      clearTimeout(guvenlikTimerRef.current);
+      guvenlikTimerRef.current = null;
+    }
+
+    setVideoFading(true);
+
+    // 800ms yumuşak erime ile arkadaki Tema 2 içeriğine geç ve katmanı kaldır
+    setTimeout(() => {
+      setAnimasyonBitti(true);
+    }, 800);
+  };
+
+  const acilisBaslat = () => {
+    if (animasyonBitti) return;
+    if (aciliyor) {
+      // Çift dokunma koruması (1.5s)
+      if (Date.now() - acilisZamaniRef.current > 1500) {
+        bitirSekansi();
+      }
+      return;
+    }
+    setAciliyor(true);
+    acilisZamaniRef.current = Date.now();
+
+    // 1. Fon müziğini başlat (MuzikCalar bunu dinler)
     try {
       window.dispatchEvent(new CustomEvent("davetiye-muzik-cal"));
     } catch {}
-    setAcildi(true);
+
+    // 2. Açılış videosunu başlat
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+      const vp = video.play();
+      if (vp && vp.catch) vp.catch(() => {});
+    }
+
     onAcildi?.();
-    setTimeout(() => {
-      setAnimasyonBitti(true);
-    }, 1250);
+
+    // 3. 4.83s video için 5.4s güvenlik sınırı
+    guvenlikTimerRef.current = setTimeout(() => {
+      bitirSekansi();
+    }, 5400);
+  };
+
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (video) {
+      if (!videoOynuyor && video.currentTime > 0.05) {
+        setVideoOynuyor(true);
+      }
+      if (video.duration && video.currentTime >= video.duration - 0.25) {
+        bitirSekansi();
+      }
+    }
+  };
+
+  const handleOverlayClick = () => {
+    if (!aciliyor) {
+      acilisBaslat();
+    } else {
+      if (Date.now() - acilisZamaniRef.current > 1500) {
+        bitirSekansi();
+      }
+    }
   };
 
   useEffect(() => {
-    // Kapak kapalıyken sayfa kaydırmasını (scroll) tamamen kilitle:
-    // Giriş sayfası telefon ekranı ile 1:1 kalsın, aşağı kaymasın.
-    if (!acildi) {
+    if (!animasyonBitti) {
       const prevBodyOverflow = document.body.style.overflow;
       const prevHtmlOverflow = document.documentElement.style.overflow;
-      const prevBodyHeight = document.body.style.height;
-      const prevHtmlHeight = document.documentElement.style.height;
-
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
-      document.body.style.height = "100%";
-      document.documentElement.style.height = "100%";
 
       return () => {
         document.body.style.overflow = prevBodyOverflow;
         document.documentElement.style.overflow = prevHtmlOverflow;
-        document.body.style.height = prevBodyHeight;
-        document.documentElement.style.height = prevHtmlHeight;
+        if (guvenlikTimerRef.current) {
+          clearTimeout(guvenlikTimerRef.current);
+        }
       };
-    } else {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      document.body.style.height = "";
-      document.documentElement.style.height = "";
     }
-  }, [acildi]);
+  }, [animasyonBitti]);
 
   return (
-    <div
-      className={`tema2-sahne-kapsayici ${!acildi ? "kapak-kapali" : "kapak-acildi"}`}
-      ref={sahneRef}
-    >
-      {/* 3B LÜKS ÇİFT KANATLI ORTADAN AÇILAN DAVETİYE KAPAĞI */}
+    <div className={`tema2-sahne-kapsayici ${animasyonBitti ? "kapak-acildi" : "kapak-kapali"}`}>
       {!animasyonBitti && (
         <div
-          className={`tema2-kapak-overlay ${acildi ? "kapak-aciliyor" : ""}`}
-          onClick={kapagiAc}
+          className={`tema3-giris-overlay ${videoFading ? "overlay-kapanis" : ""}`}
+          onClick={handleOverlayClick}
           role="button"
           tabIndex={0}
           aria-label="Davetiyeyi açmak için dokunun"
         >
-          {/* SOL KANAT (Ortadan Sola Doğru 3B Açılır) */}
-          <div className="tema2-kapak-kanat sol-kanat">
-            <div className="tema2-kanat-doku sol">
-              <div className="tema2-kanat-cerceve sol">
-                <div className="tema2-kapi-motif sol-ust">
-                  <KoseMotif />
-                </div>
-                <div className="tema2-kapi-motif sol-alt">
-                  <KoseMotif />
-                </div>
+          {misafirAd && (
+            <div className={`tema3-misafir-karsilama-kapak ${aciliyor ? "oge-gizle" : ""}`}>
+              <span className="tema3-misafir-ikon">💌</span>
+              <div className="tema3-misafir-metinler">
+                <span className="tema3-misafir-hitap">Sayın {misafirAd},</span>
+                <span className="tema3-misafir-cumle">
+                  Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
+                </span>
               </div>
+            </div>
+          )}
+
+          <div className="tema3-zarf-sarma">
+            <video
+              ref={videoRef}
+              className="tema3-intro-video"
+              src="/tema3/orijinal_intro_20260911223616.mp4"
+              poster="/tema3/zarf_cover.jpg"
+              muted
+              playsInline
+              preload="auto"
+              onTimeUpdate={handleTimeUpdate}
+              onPlaying={() => setVideoOynuyor(true)}
+              onEnded={bitirSekansi}
+              suppressHydrationWarning
+            />
+
+            <img
+              src="/tema3/zarf_cover.jpg"
+              alt="Kübranur & Ömür Davetiyesi"
+              className={`tema3-zarf-img ${videoOynuyor ? "img-gizli" : ""}`}
+              draggable={false}
+            />
+
+            <div className={`tema3-tap-wrap ${aciliyor ? "oge-gizle" : ""}`}>
+              <div className="tema3-chevron" />
+              <div className="tema3-tap-label">Davetiyeyi Açmak İçin Dokunun</div>
             </div>
           </div>
 
-          {/* SAĞ KANAT (Ortadan Sağa Doğru 3B Açılır — MÜHÜR SAĞ KANADA BAĞLIDIR) */}
-          <div className="tema2-kapak-kanat sag-kanat">
-            <div className="tema2-kanat-doku sag">
-              <div className="tema2-kanat-cerceve sag">
-                <div className="tema2-kapi-motif sag-ust">
-                  <KoseMotif />
-                </div>
-                <div className="tema2-kapi-motif sag-alt">
-                  <KoseMotif />
-                </div>
-              </div>
-            </div>
-
-            {/* MÜHÜR SAĞ KANADA MONTE EDİLMİŞTİR (Kanatla birlikte sağa açılır) */}
-            <div className="tema2-kapi-muhur-kapsayici" aria-hidden="true">
-              <img
-                src="/tema2/altin_muhur.png"
-                alt="Altın Mühür"
-                className="tema2-kapi-muhur-img"
-                draggable={false}
-              />
-            </div>
-          </div>
-
-          {/* KAPAĞIN ÜZERİNDEKİ YAZI VE İPUCU DÜZENİ */}
-          <div className="tema2-kapak-icerik">
-            {/* Üst Alan: Taç/Motif ve Nişan Davetiyesi */}
-            <div className="tema2-kapak-ust">
-              <div className="tema2-kapak-motif" aria-hidden="true">
-                <span className="tema2-motif-cizgi" />
-                <span className="tema2-motif-simge">❖</span>
-                <span className="tema2-motif-cizgi" />
-              </div>
-              <div className="tema2-kapak-baslik">NİŞAN DAVETİYESİ</div>
-
-              {misafirAd && (
-                <div className="tema2-kapak-misafir-kutu" aria-hidden="true">
-                  <span className="tema2-kapak-misafir-ikon">💌</span>
-                  <div className="tema2-kapak-misafir-metinler">
-                    <span className="tema2-kapak-misafir-hitap">Sayın {misafirAd},</span>
-                    <span className="tema2-kapak-misafir-not">
-                      Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız.
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Orta Alan: Çiftin İsimleri */}
-            <div className="tema2-kapak-orta">
-              <div className="tema2-kapak-isimler">
-                {gelinAd} <span className="ve">&amp;</span> {damatAd}
-              </div>
-            </div>
-
-            {/* Alt Alan: Açılış İpucu Butonu */}
-            <div className="tema2-kapak-alt">
-              <div className="tema2-ipucu-metin-kutusu">
-                <span className="tema2-ipucu-zarf-ikon">✉</span>
-                <div className="tema2-ipucu-metin-grup">
-                  <span className="tema2-ipucu-satir-1">Davetiyeyi Açmak İçin</span>
-                  <span className="tema2-ipucu-satir-2">Dokunun</span>
-                </div>
-                <div className="tema2-ipucu-ok" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
+          {aciliyor && !videoFading && (
+            <button
+              type="button"
+              className="tema3-video-gec-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                bitirSekansi();
+              }}
+              aria-label="Geç"
+            >
+              Geç ✕
+            </button>
+          )}
         </div>
       )}
 
-      {/* KAPAĞIN ALTINDAKİ GERÇEK DAVETİYE KARTI (Açılırken arkada doğrudan görünür) */}
+      {/* KAPAĞIN ALTINDAKİ GERÇEK DAVETİYE KARTI */}
       <div className="tema2-icerik-alani">
         {children}
       </div>
