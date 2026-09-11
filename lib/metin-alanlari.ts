@@ -27,7 +27,7 @@ export const METIN_ALANLARI = [
       { deger: "kapali", etiket: "Kapalı — Müzik çalmasın" },
     ],
   },
-  { anahtar: "tema3_baslik", etiket: "Tema 3 — Tepe Başlığı", ipucu: "Örn. Nişan Töreni veya Wedding Day", cok_satir: false },
+  { anahtar: "tema3_baslik", etiket: "Tema 3 — Tepe Başlığı", ipucu: "Örn. Nişanlanıyoruz veya Düğünümüze Davetlisiniz", cok_satir: false },
   { anahtar: "tema3_ask_sozu", etiket: "Tema 3 — Romantik Aşk Sözü", ipucu: "Örn. İki Ruh, Tek Kader, Sonsuzluğa Atılan İlk Adım", cok_satir: true },
   { anahtar: "tema3_kiyafet_kodu", etiket: "Tema 3 — Kıyafet Kodu (Dress Code)", ipucu: "Örn. Zarif ve şık kıyafetler rica olunur", cok_satir: false },
   { anahtar: "tema3_hediye_notu", etiket: "Tema 3 — Takı & Hediye Tercihi", ipucu: "Örn. Güzel dualarınız ve varlığınız bizim için en kıymetli hediyedir", cok_satir: false },
