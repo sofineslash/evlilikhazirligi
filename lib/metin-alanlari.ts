@@ -12,13 +12,14 @@ export const METIN_ALANLARI = [
     ipucu: "Misafirlerin göreceği ana açılış deneyimi",
     cok_satir: false,
     secenekler: [
-      { deger: "tema1", etiket: "Tema 1 — 3B Zarf Açılışı (Mevcut)" },
-      { deger: "tema2", etiket: "Tema 2 — Saray Kapısı Açılışı & Fon Müziği (Yeni)" },
+      { deger: "tema1", etiket: "Tema 1 — 3B Zarf Açılışı (Klasik)" },
+      { deger: "tema2", etiket: "Tema 2 — Saray Kapısı Açılışı & Fon Müziği" },
+      { deger: "tema3", etiket: "Tema 3 — The Sacred Garden (Lüks Video Açılış & Kuğu Bahçesi)" },
     ],
   },
   {
     anahtar: "muzik_acik",
-    etiket: "Fon Müziği (İki temada da geçerli)",
+    etiket: "Fon Müziği (Tüm temalarda geçerli)",
     ipucu: "Açılışta ve davetiye boyunca hafif romantik fon müziği çalsın mı?",
     cok_satir: false,
     secenekler: [
@@ -26,6 +27,10 @@ export const METIN_ALANLARI = [
       { deger: "kapali", etiket: "Kapalı — Müzik çalmasın" },
     ],
   },
+  { anahtar: "tema3_baslik", etiket: "Tema 3 — Tepe Başlığı", ipucu: "Örn. Nişan Töreni veya Wedding Day", cok_satir: false },
+  { anahtar: "tema3_ask_sozu", etiket: "Tema 3 — Romantik Aşk Sözü", ipucu: "Örn. İki Ruh, Tek Kader, Sonsuzluğa Atılan İlk Adım", cok_satir: true },
+  { anahtar: "tema3_kiyafet_kodu", etiket: "Tema 3 — Kıyafet Kodu (Dress Code)", ipucu: "Örn. Zarif ve şık kıyafetler rica olunur", cok_satir: false },
+  { anahtar: "tema3_hediye_notu", etiket: "Tema 3 — Takı & Hediye Tercihi", ipucu: "Örn. Güzel dualarınız ve varlığınız bizim için en kıymetli hediyedir", cok_satir: false },
   { anahtar: "gelin_ad", etiket: "Gelinin adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "damat_ad", etiket: "Damadın adı", ipucu: "Davetiyede görünecek — soyisim yazma", cok_satir: false },
   { anahtar: "davet_cumlesi", etiket: "Davet cümlesi", ipucu: "Davetiyenin ana cümlesi", cok_satir: true },

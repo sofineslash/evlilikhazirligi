@@ -14,6 +14,7 @@ import MuzikCalar from "@/components/MuzikCalar";
 import { muzikDurumu } from "@/lib/muzik";
 import KapiAcilis from "@/components/KapiAcilis";
 import Tema2Dizilim from "@/components/Tema2Dizilim";
+import Tema3SacredGarden from "@/components/tema3/Tema3SacredGarden";
 import { yayindakiHatiraNotlari } from "@/lib/hatira";
 import DavetliGoruntulendiIzleyici from "./DavetliGoruntulendiIzleyici";
 import WhatsappPaylasButonu from "./WhatsappPaylasButonu";
@@ -80,6 +81,12 @@ export default function DavetiyeGosterimi({
 
   const hatiraNotlari = yayindakiHatiraNotlari();
 
+  // Tema 3'e ozel alanlar
+  const tema3Baslik = metin("tema3_baslik");
+  const tema3AskSozu = metin("tema3_ask_sozu");
+  const tema3KiyafetKodu = metin("tema3_kiyafet_kodu");
+  const tema3HediyeNotu = metin("tema3_hediye_notu");
+
   // Davetli ve kisiye ozel misafir cozumleme
   let misafirAd = "";
   let izinliKisi: number = CFG.KISI_MAX;
@@ -123,13 +130,43 @@ export default function DavetiyeGosterimi({
       {/* Gercek kullanici tarayicisinda goruntulenme takibi */}
       {token && <DavetliGoruntulendiIzleyici token={token} />}
 
-      {/* FON MÜZİĞİ — İki temada da çalar */}
-      <MuzikCalar
-        aktif={muzikAktif && muzik.var}
-        sesDosyasi={muzik.url || "/api/muzik/ses"}
-      />
+      {/* FON MÜZİĞİ — Tema 1 ve Tema 2'de çalar (Tema 3 kendi video/audio sekansıyla entegre oynatır) */}
+      {tema !== "tema3" && (
+        <MuzikCalar
+          aktif={muzikAktif && muzik.var}
+          sesDosyasi={muzik.url || "/api/muzik/ses"}
+        />
+      )}
 
-      {tema === "tema2" ? (
+      {tema === "tema3" ? (
+        /* ================= TEMA 3 — THE SACRED GARDEN (LÜKS VİDEO AÇILIŞ & KUĞU BAHÇESİ) ================= */
+        <Tema3SacredGarden
+          gelinAd={gelinAd}
+          damatAd={damatAd}
+          davetCumlesi={davetCumlesi}
+          tepeBaslik={tema3Baslik}
+          askSozu={tema3AskSozu}
+          kiyafetKodu={tema3KiyafetKodu}
+          hediyeNotu={tema3HediyeNotu}
+          gelin={gelin}
+          damat={damat}
+          tel={tel}
+          yemek={yemek}
+          otopark={otopark}
+          fotoNotu={fotoNotu}
+          yuklemeAcik={yuklemeAcik}
+          yuklemeMesaji={YUKLEME_MESAJI}
+          galeriAcik={galeriAcik}
+          ciftYolu={ciftYolu}
+          anlar={anlar}
+          misafirAd={misafirAd}
+          token={token}
+          izinliKisi={izinliKisi}
+          paylasimUrl={paylasimUrl}
+          whatsappMesaj={whatsappMesaj}
+          muzikUrl={muzikAktif && muzik.url ? muzik.url : "/tema3/muzik.mp3"}
+        />
+      ) : tema === "tema2" ? (
         /* ================= TEMA 2 — SARAY KAPISI AÇILIŞI & ÖZEL DİZİLİM ================= */
         <KapiAcilis
           gelinAd={gelinAd}

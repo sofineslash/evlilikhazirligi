@@ -1,0 +1,882 @@
+/* ============================================================
+   TEMA 3 — THE SACRED GARDEN (LÜKS VİDEO AÇILIŞLI & KUĞU BAHÇESİ)
+   Referans: webgencyinvitations.com/thesacredgarden
+   İşçilik: Emil Kowalski high-craft animasyon standartları
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* Tema 3 Ana Konteyner */
+.tema3-govde {
+  background-color: #F9F0E0;
+  color: #4a382c;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Playfair Display', Georgia, serif;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 5rem;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.tema3-govde * {
+  box-sizing: border-box;
+}
+
+.tema3-icerik-kapsayici {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* ────────────────────────────────────────────────────────────
+   1. AÇILIŞ KATMANI (ENVELOPE OVERLAY + VIDEO TRANSITION)
+   ──────────────────────────────────────────────────────────── */
+.tema3-giris-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #F9F0E0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1.5rem;
+}
+
+.tema3-giris-overlay.overlay-gizle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tema3-zarf-img {
+  width: 100%;
+  max-width: 420px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 35px rgba(90, 55, 10, 0.18));
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tema3-giris-overlay:hover .tema3-zarf-img {
+  transform: scale(1.02);
+}
+
+/* Kişiye Özel Karşılama Rozeti (Kapakta) */
+.tema3-misafir-karsilama-kapak {
+  position: absolute;
+  top: clamp(2rem, 8vh, 4rem);
+  width: calc(100% - 2.5rem);
+  max-width: 380px;
+  padding: 0.8rem 1.15rem;
+  background: rgba(255, 253, 248, 0.95);
+  border: 1px solid rgba(166, 125, 43, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(70, 45, 8, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  z-index: 2;
+  animation: tema3FadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-misafir-ikon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tema3-misafir-metinler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tema3-misafir-hitap {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a3411;
+  letter-spacing: 0.05em;
+}
+
+.tema3-misafir-cumle {
+  font-size: 0.82rem;
+  color: #6b553e;
+  line-height: 1.35;
+}
+
+/* Dokun & Aç Uyarısı */
+.tema3-tap-wrap {
+  position: absolute;
+  bottom: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: tema3TapIn 1.2s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-chevron {
+  width: 12px;
+  height: 12px;
+  border-right: 1.8px solid rgba(140, 100, 60, 0.75);
+  border-top: 1.8px solid rgba(140, 100, 60, 0.75);
+  transform: rotate(-45deg);
+  animation: tema3ChevronAnim 2.4s 1.2s ease-in-out infinite;
+}
+
+.tema3-tap-label {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(140, 100, 60, 0.85);
+  animation: tema3PulseAnim 2.4s 1.2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes tema3TapIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes tema3PulseAnim {
+  0%, 100% { opacity: 0.5; letter-spacing: 0.28em; }
+  50%       { opacity: 1;   letter-spacing: 0.34em; }
+}
+
+@keyframes tema3ChevronAnim {
+  0%, 100% { transform: rotate(-45deg) translate(0, 0); opacity: 0.6; }
+  50%       { transform: rotate(-45deg) translate(3px, -3px); opacity: 1; }
+}
+
+@keyframes tema3FadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Açılış Video Geçiş Katmanı */
+.tema3-video-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F9F0E0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.tema3-video-wrap.video-in {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.tema3-video-wrap.video-out {
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.tema3-intro-video {
+  width: 100%;
+  max-width: 460px;
+  display: block;
+  object-fit: contain;
+}
+
+.tema3-video-gec-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(249, 240, 224, 0.85);
+  border: 1px solid rgba(166, 125, 43, 0.4);
+  color: #724d0c;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease;
+}
+
+.tema3-video-gec-btn:hover {
+  background: #F9F0E0;
+}
+
+/* ────────────────────────────────────────────────────────────
+   2. YÜZEN MÜZİK BUTONU
+   ──────────────────────────────────────────────────────────── */
+.tema3-muzik-btn {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  width: 54px;
+  height: 54px;
+  background: #5A0F1B;
+  border: 2px solid rgba(255, 235, 195, 0.4);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2147483647;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(90, 15, 27, 0.35);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.tema3-muzik-btn.gorunur {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tema3-muzik-btn:hover {
+  transform: scale(1.06);
+  background: #731322;
+}
+
+.tema3-muzik-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: #ffffff;
+}
+
+/* ────────────────────────────────────────────────────────────
+   3. HERO ALANI & KUĞU VİDEOSU
+   ──────────────────────────────────────────────────────────── */
+.tema3-hero-bolum {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem 0 2rem;
+}
+
+.tema3-kugu-video-kapsayici {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  height: 280px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.tema3-kugu-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tema3-kugu-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 249, 235, 0.2) 0%, rgba(249, 240, 224, 0.9) 85%);
+  pointer-events: none;
+}
+
+.tema3-tepe-baslik {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  font-weight: 400;
+  color: #a67d2b;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 0.4rem;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.tema3-tarih-ust {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #a67d2b;
+  letter-spacing: 0.22em;
+  margin: 0 0 1.5rem;
+}
+
+.tema3-isimler {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-size: clamp(2.8rem, 11vw, 4.4rem);
+  font-weight: 700;
+  color: #a67d2b;
+  line-height: 1.05;
+  margin: 0 0 1.2rem;
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9);
+}
+
+.tema3-ve-isareti {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.7em;
+  font-weight: 300;
+  color: #a07b33;
+  margin: 0 0.4rem;
+  display: inline-block;
+}
+
+/* Süzülen Çiçek / Gül Motifleri */
+.tema3-sulu-gul {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  animation: tema3Salinim 4s ease-in-out infinite alternate;
+}
+
+.tema3-sulu-gul.sol {
+  width: 140px;
+  top: 48%;
+  left: -20px;
+}
+
+.tema3-sulu-gul.sag {
+  width: 130px;
+  top: 52%;
+  right: -15px;
+  animation-delay: 1.5s;
+}
+
+@keyframes tema3Salinim {
+  0%   { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-10px) rotate(3deg); }
+}
+
+.tema3-romantik-soz {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(1.25rem, 5vw, 1.7rem);
+  font-weight: 400;
+  color: #a67d2b;
+  line-height: 1.4;
+  margin: 1.8rem 0 1rem;
+  letter-spacing: 0.05em;
+  padding: 0 1rem;
+}
+
+.tema3-davet-paragraf {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: #6a5140;
+  line-height: 1.6;
+  max-width: 380px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.tema3-scroll-down {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.tema3-scroll-text {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #a67d2b;
+}
+
+.tema3-scroll-chevron {
+  width: 16px;
+  height: 16px;
+  color: #937100;
+  animation: tema3BouncingChevron 2s ease-in-out infinite;
+}
+
+@keyframes tema3BouncingChevron {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+/* ────────────────────────────────────────────────────────────
+   4. CANLI GERİ SAYIM
+   ──────────────────────────────────────────────────────────── */
+.tema3-bolum-kapsul {
+  width: 100%;
+  margin: 2.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.tema3-bolum-baslik {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+  color: #a67d2b;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+
+.tema3-gerisayim-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.tema3-sayac-kutu {
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(166, 125, 43, 0.4);
+  border-radius: 10px;
+  padding: 0.8rem 0.4rem;
+  box-shadow: 0 4px 12px rgba(90, 55, 10, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tema3-sayac-rakam {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #5A0F1B;
+  line-height: 1;
+}
+
+.tema3-sayac-etiket {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #8c643c;
+  margin-top: 4px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   5. ETKİNLİK PROGRAM AKIŞI (SCHEDULE)
+   ──────────────────────────────────────────────────────────── */
+.tema3-program-kapsayici {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tema3-suslu-baslik-satiri {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.tema3-dekor-element {
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.75;
+}
+
+.tema3-program-kart {
+  background: rgba(255, 253, 248, 0.7);
+  border: 1px solid rgba(166, 125, 43, 0.35);
+  border-radius: 12px;
+  padding: 0.9rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(90, 55, 10, 0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.tema3-program-kart:hover {
+  transform: translateY(-2px);
+  border-color: rgba(166, 125, 43, 0.7);
+}
+
+.tema3-program-ad {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4a382c;
+}
+
+.tema3-program-saat {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #5A0F1B;
+  letter-spacing: 0.08em;
+}
+
+/* ────────────────────────────────────────────────────────────
+   6. MEKAN & HARİTALAR
+   ──────────────────────────────────────────────────────────── */
+.tema3-mekan-kart {
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(166, 125, 43, 0.4);
+  border-radius: 16px;
+  padding: 1.8rem 1.4rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 6px 18px rgba(90, 55, 10, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.tema3-mekan-ad {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #5A0F1B;
+  margin: 0;
+}
+
+.tema3-mekan-adres {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  color: #6a5140;
+  line-height: 1.5;
+  margin: 0 0 0.8rem;
+}
+
+.tema3-harita-butonlar {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tema3-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tema3-btn-birincil {
+  background: #5A0F1B;
+  color: #ffffff;
+  border: 1px solid #5A0F1B;
+  box-shadow: 0 4px 12px rgba(90, 15, 27, 0.25);
+}
+
+.tema3-btn-birincil:hover {
+  background: #751423;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.tema3-btn-ikincil {
+  background: transparent;
+  color: #5A0F1B;
+  border: 1.2px solid #5A0F1B;
+}
+
+.tema3-btn-ikincil:hover {
+  background: rgba(90, 15, 27, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ────────────────────────────────────────────────────────────
+   7. BİLGİLER (DRESS CODE & GIFT PREFERENCE)
+   ──────────────────────────────────────────────────────────── */
+.tema3-bilgi-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.tema3-bilgi-kart {
+  border-left: 3px solid #a67d2b;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 253, 248, 0.6);
+  border-radius: 0 10px 10px 0;
+  text-align: left;
+}
+
+.tema3-bilgi-baslik {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #a67d2b;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.tema3-bilgi-metin {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.92rem;
+  color: #5a4535;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ────────────────────────────────────────────────────────────
+   8. RSVP / KATILIM ONAYI
+   ──────────────────────────────────────────────────────────── */
+.tema3-rsvp-alani {
+  background: rgba(255, 253, 248, 0.9);
+  border: 1px solid rgba(166, 125, 43, 0.45);
+  border-radius: 20px;
+  padding: 2.5rem 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 30px rgba(90, 55, 10, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.tema3-muhur-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 10px rgba(135, 96, 20, 0.3));
+}
+
+.tema3-rsvp-aciklama {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #6a5140;
+  margin: 0 0 1.5rem;
+  max-width: 320px;
+}
+
+.tema3-rsvp-tetik-btn {
+  padding: 0.85rem 2rem;
+  font-size: 0.88rem;
+}
+
+/* ────────────────────────────────────────────────────────────
+   9. RSVP MODAL POPUP
+   ──────────────────────────────────────────────────────────── */
+.tema3-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 25, 15, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: tema3FadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-modal-kutu {
+  background: #fffaf8;
+  border: 1.5px solid rgba(166, 125, 43, 0.45);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem 1.6rem;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: tema3ScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tema3-modal-kapat {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: #8c643c;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.tema3-modal-kapat:hover {
+  color: #5A0F1B;
+}
+
+.tema3-modal-baslik {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.35rem;
+  color: #5A0F1B;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin: 0 0 0.4rem;
+}
+
+.tema3-modal-alt-metin {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.88rem;
+  color: #7a6352;
+  text-align: center;
+  margin: 0 0 1.5rem;
+}
+
+.tema3-form-grup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.tema3-form-label {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6a4f3a;
+  font-weight: 600;
+}
+
+.tema3-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d4c4b2;
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.95rem;
+  color: #33261c;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tema3-input:focus {
+  outline: none;
+  border-color: #5A0F1B;
+  box-shadow: 0 0 0 3px rgba(90, 15, 27, 0.12);
+}
+
+.tema3-radio-grup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tema3-radio-secenek {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  background: #ffffff;
+  border: 1px solid #d4c4b2;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tema3-radio-secenek.secili {
+  border-color: #5A0F1B;
+  background: rgba(90, 15, 27, 0.05);
+}
+
+.tema3-radio-secenek input[type="radio"] {
+  accent-color: #5A0F1B;
+}
+
+.tema3-radio-metin {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 0.92rem;
+  color: #4a382c;
+  font-weight: 500;
+}
+
+@keyframes tema3FadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes tema3ScaleUp {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ────────────────────────────────────────────────────────────
+   10. KAPANIŞ & ÇİFT FOTOĞRAFI
+   ──────────────────────────────────────────────────────────── */
+.tema3-kapanis-kapsayici {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.tema3-cift-foto-kutu {
+  width: 100%;
+  max-width: 380px;
+  height: 260px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(90, 55, 10, 0.16);
+  margin-bottom: 1.5rem;
+  border: 3px solid rgba(255, 253, 248, 0.9);
+}
+
+.tema3-cift-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tema3-kapanis-baslik {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.4rem;
+  color: #a67d2b;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.4rem;
+}
+
+.tema3-kapanis-isimler {
+  font-family: 'Playfair Display', 'Cinzel', serif;
+  font-size: 2.2rem;
+  color: #5A0F1B;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
