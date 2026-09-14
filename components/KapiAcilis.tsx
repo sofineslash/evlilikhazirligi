@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 export default function KapiAcilis({
   misafirAd,
   onAcildi,
+  videoModu = false,
   children,
 }: {
   gelinAd?: string;
@@ -13,12 +14,26 @@ export default function KapiAcilis({
   sagHarf?: string;
   misafirAd?: string;
   onAcildi?: () => void;
+  videoModu?: boolean;
   children: React.ReactNode;
 }) {
   const [aciliyor, setAciliyor] = useState(false);
   const [videoOynuyor, setVideoOynuyor] = useState(false);
   const [videoFading, setVideoFading] = useState(false);
-  const [animasyonBitti, setAnimasyonBitti] = useState(false);
+  const [animasyonBitti, setAnimasyonBitti] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).has("acik");
+    }
+    return false;
+  });
+  const [isVideo, setIsVideo] = useState(videoModu);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("video") === "1") setIsVideo(true);
+    }
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const bitirildiRef = useRef(false);
@@ -97,6 +112,56 @@ export default function KapiAcilis({
     }
   };
 
+  // Video modunda 2 saniye dokunulmadan sabit kapak görüntüsü, ardından otomatik açılış
+  useEffect(() => {
+    if (isVideo && !aciliyor && !animasyonBitti) {
+      const t = setTimeout(() => {
+        acilisBaslat();
+      }, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [isVideo, aciliyor, animasyonBitti]);
+
+  // Video modunda mühür açılışı tamamlandıktan sonra sayfa yumuşakça aşağıya kayar
+  useEffect(() => {
+    if (isVideo && animasyonBitti) {
+      const scrollTimer = setTimeout(() => {
+        const maxScroll = Math.max(
+          document.body.scrollHeight,
+          document.documentElement.scrollHeight
+        ) - window.innerHeight;
+
+        if (maxScroll <= 0) return;
+
+        const duration = 9000; // 9 saniyelik sinematik yumuşak kayış
+        const startTime = performance.now();
+
+        const animateScroll = (currentTime: number) => {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Yumuşak hızlanma ve yavaşlama (easeInOutCubic)
+          const ease = progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+          window.scrollTo(0, maxScroll * ease);
+
+          if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+          } else {
+            try {
+              window.dispatchEvent(new CustomEvent("davetiye-video-bitti"));
+            } catch {}
+          }
+        };
+
+        requestAnimationFrame(animateScroll);
+      }, 600);
+
+      return () => clearTimeout(scrollTimer);
+    }
+  }, [isVideo, animasyonBitti]);
+
   useEffect(() => {
     if (!animasyonBitti) {
       const prevBodyOverflow = document.body.style.overflow;
@@ -158,13 +223,13 @@ export default function KapiAcilis({
               draggable={false}
             />
 
-            <div className={`tema3-tap-wrap ${aciliyor ? "oge-gizle" : ""}`}>
+            <div className={`tema3-tap-wrap ${aciliyor || isVideo ? "oge-gizle" : ""}`}>
               <div className="tema3-chevron" />
               <div className="tema3-tap-label">Davetiyeyi Açmak İçin Dokunun</div>
             </div>
           </div>
 
-          {aciliyor && !videoFading && (
+          {aciliyor && !videoFading && !isVideo && (
             <button
               type="button"
               className="tema3-video-gec-btn"

@@ -27,6 +27,7 @@ export type DavetiyeGosterimiProps = {
   token?: string;
   guest?: string;
   temaOzel?: string;
+  videoModu?: boolean;
 };
 
 export default function DavetiyeGosterimi({
@@ -34,6 +35,7 @@ export default function DavetiyeGosterimi({
   token,
   guest,
   temaOzel,
+  videoModu,
 }: DavetiyeGosterimiProps) {
   const harita = haritaLinkleri();
   const yuklemeAcik = yuklemeAcikMi();
@@ -175,6 +177,7 @@ export default function DavetiyeGosterimi({
           solHarf={basHarf(gelinAd)}
           sagHarf={basHarf(damatAd)}
           misafirAd={misafirAd}
+          videoModu={videoModu}
         >
           <Tema2Dizilim
             gelinAd={gelinAd}

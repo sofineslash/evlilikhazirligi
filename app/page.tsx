@@ -10,7 +10,7 @@ import DavetiyeGosterimi from "@/components/DavetiyeGosterimi";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ guest?: string; misafir?: string; g?: string; tema?: string }>;
+  searchParams: Promise<{ guest?: string; misafir?: string; g?: string; tema?: string; video?: string }>;
 };
 
 /**
@@ -93,7 +93,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Page({ searchParams }: Props) {
-  const { guest, misafir, g: token, tema } = await searchParams;
+  const { guest, misafir, g: token, tema, video } = await searchParams;
   const guestQuery = guest || misafir;
 
   return (
@@ -101,6 +101,7 @@ export default async function Page({ searchParams }: Props) {
       token={token}
       guest={guestQuery}
       temaOzel={tema}
+      videoModu={video === "1"}
     />
   );
 }
