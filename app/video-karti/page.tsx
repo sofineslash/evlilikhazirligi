@@ -53,8 +53,21 @@ export default function VideoKartiSayfasi() {
         }}
       />
 
-      {/* DEV OVERLAY GİZLEME CSS */}
+      {/* DEV OVERLAY GİZLEME CSS VE FONT TANIMLARI */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+        @font-face {
+          font-family: "Nisan Script";
+          font-style: normal;
+          font-weight: 400;
+          src: url("/fonts/great-vibes-latin-ext.woff2") format("woff2");
+        }
+        @font-face {
+          font-family: "Nisan Script";
+          font-style: normal;
+          font-weight: 400;
+          src: url("/fonts/great-vibes-latin.woff2") format("woff2");
+        }
         nextjs-portal, [data-nextjs-toast], [data-nextjs-dialog] {
           display: none !important;
           visibility: hidden !important;
@@ -184,34 +197,41 @@ export default function VideoKartiSayfasi() {
               </div>
             )}
 
-            {/* İSİMLER — DEV VE NET ROMANTİK YAZI */}
-            <div
+            {/* İSİMLER — SİTEDEKİ ORİJİNAL EL YAZISI (Snell Roundhand / Nisan Script) */}
+            <h1
+              className="isimler isimler-script tema2-isimler"
               style={{
                 position: "relative",
                 zIndex: 2,
-                fontFamily: "'Great Vibes', cursive",
-                fontSize: "64px",
-                color: "#22170f",
+                fontFamily: '"Snell Roundhand", "Nisan Script", "Great Vibes", cursive, Georgia, serif',
+                fontSize: "62px",
+                color: "#241a10",
                 lineHeight: 1.15,
-                textShadow:
-                  "0 2px 5px rgba(255,255,255,0.95), 0 1px 2px rgba(197, 160, 89, 0.45)",
+                fontWeight: 400,
+                margin: "0",
                 padding: "8px 0",
+                textShadow:
+                  "0 0 16px rgba(253, 249, 242, 0.95), 0 0 8px rgba(253, 249, 242, 0.85)",
+                whiteSpace: "nowrap",
               }}
             >
               <span>{gelin}</span>
               <span
+                className="ve"
                 style={{
+                  fontFamily: '"Hoefler Text", Georgia, serif',
+                  fontSize: "0.65em",
+                  fontStyle: "italic",
+                  color: "#9e7520",
+                  margin: "0 6px",
                   display: "inline-block",
-                  margin: "0 14px",
-                  color: "#c5a059",
-                  fontSize: "48px",
                   verticalAlign: "middle",
                 }}
               >
                 &amp;
               </span>
               <span>{damat}</span>
-            </div>
+            </h1>
           </div>
 
           {/* SÜTUNLU ŞIK TARİH BLOĞU */}
