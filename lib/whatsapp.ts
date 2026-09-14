@@ -61,8 +61,15 @@ export function whatsappMesajiUret(params: WhatsappMesajParams): string {
   let metin = (sablon && sablon.trim().length > 0) ? sablon : VARSAYILAN_WHATSAPP_SABLONU;
   // Eski sablonlardan kalma basindaki 💌 emojisini temizle
   metin = metin.replace(/💌\s*\{cift\}/gi, "{cift}");
+  // Android ve iOS uyumlulugu: gorunmez Variation Selector-16 (\uFE0F) bazi cihazlarda soru isaretine () donusur.
+  // Bu nedenle tek kod noktali evrensel kalp (❤ \u2764) kullanilir, varyasyon secici ve soru isareti/FFFD temizlenir.
+  metin = metin.replace(/\uFE0F/g, "").replace(/\uFFFD/g, "❤");
 
-  const cift = `${gelin} ❤️ ${damat}`;
+  const cift = `${gelin} ❤ ${damat}`;
+
+  // Sablonda dogrudan cift isimleri eski baglacla (&, soru isareti veya varyasyon secicili kalp) yazilmissa guncelle
+  const ciftRegex = new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi");
+  metin = metin.replace(ciftRegex, cift);
 
   // {misafir} temizligi: Eger kisiye ozel misafir YOKSA, {misafir} gecen satiri tamamen temizle
   if (!misafir) {

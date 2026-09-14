@@ -57,11 +57,26 @@ describe("lib/whatsapp", () => {
       url: "https://kubranur.omuroz.com.tr/davet/omur-kubra",
     });
 
-    expect(mesaj).toContain("Kübranur ❤️ Ömür");
+    expect(mesaj).toContain("Kübranur ❤ Ömür");
     expect(mesaj).toContain("Özel günümüzde");
     expect(mesaj).toContain("https://kubranur.omuroz.com.tr/davet/omur-kubra");
     expect(mesaj).not.toContain("{cift}");
     expect(mesaj).not.toContain("{link}");
+  });
+
+  it("whatsappMesajiUret: bozuk karakterleri ve varyasyon secicileri temizler", () => {
+    const mesaj = whatsappMesajiUret({
+      sablon: "Kübranur \uFFFD Ömür\n\nDavetlisiniz: {link}",
+      gelin: "Kübranur",
+      damat: "Ömür",
+      tarih: "29 Ekim",
+      salon: "Asır",
+      url: "https://test.com",
+    });
+
+    expect(mesaj).toContain("Kübranur ❤ Ömür");
+    expect(mesaj).not.toContain("\uFFFD");
+    expect(mesaj).not.toContain("\uFE0F");
   });
 
   it("whatsappMesajiUret: misafir yoksa {misafir} gecen satiri temizler", () => {
@@ -76,7 +91,7 @@ describe("lib/whatsapp", () => {
     });
 
     expect(mesaj).not.toContain("Sayın");
-    expect(mesaj).toContain("Kübranur ❤️ Ömür davetlisiniz!");
+    expect(mesaj).toContain("Kübranur ❤ Ömür davetlisiniz!");
   });
 
   it("whatsappMesajiUret: misafir varsa {misafir} alanini doldurur", () => {

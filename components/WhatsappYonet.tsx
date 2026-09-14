@@ -34,9 +34,15 @@ export default function WhatsappYonet({
   damat: string;
   davetliler: Davetli[];
 }) {
+  const sanitizeMesaj = (txt: string) =>
+    (txt || "")
+      .replace(/\uFE0F/g, "")
+      .replace(/\uFFFD/g, "❤")
+      .replace(new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤ ${damat}`);
+
   const [slug, setSlug] = useState(baslangicSlug || DEFAULT_DAVETIYE_SLUG);
   const [mesajSablonu, setMesajSablonu] = useState(
-    baslangicMesaj || VARSAYILAN_WHATSAPP_SABLONU,
+    sanitizeMesaj(baslangicMesaj || VARSAYILAN_WHATSAPP_SABLONU),
   );
   const [ogTur, setOgTur] = useState(baslangicOgTur || "dinamik");
   const [davetliler, setDavetliler] = useState<Davetli[]>(baslangicDavetliler);
@@ -140,6 +146,13 @@ export default function WhatsappYonet({
             onClick={() => kopyala(genelUrl, "genel")}
           >
             {kopyalandiUrl === "genel" ? "✓ Kopyalandı" : "Linki Kopyala"}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => kopyala(genelMesaj, "genel-mesaj")}
+          >
+            {kopyalandiUrl === "genel-mesaj" ? "✓ Mesaj Kopyalandı" : "📋 Mesajı Kopyala"}
           </button>
           <a
             href={genelUrl}
@@ -283,24 +296,35 @@ export default function WhatsappYonet({
                       </button>
                     </td>
                     <td>
-                      <a
-                        href={kisiselWpUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn"
-                        style={{
-                          padding: "0.25rem 0.6rem",
-                          fontSize: "0.8rem",
-                          background: "#e8f5e9",
-                          color: "#1b5e20",
-                          borderColor: "#81c784",
-                        }}
-                        onClick={() => davetliWhatsappAcildiAction(d.id, true)}
-                      >
-                        {d.telefon ? "💬 Numaraya Gönder" : "💬 WhatsApp'ta Aç"}
-                      </a>
+                      <div style={{ display: "flex", gap: "0.35rem", alignItems: "center", flexWrap: "wrap" }}>
+                        <a
+                          href={kisiselWpUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn"
+                          style={{
+                            padding: "0.25rem 0.6rem",
+                            fontSize: "0.8rem",
+                            background: "#e8f5e9",
+                            color: "#1b5e20",
+                            borderColor: "#81c784",
+                          }}
+                          onClick={() => davetliWhatsappAcildiAction(d.id, true)}
+                        >
+                          {d.telefon ? "💬 Numaraya Gönder" : "💬 WhatsApp'ta Aç"}
+                        </a>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: "0.25rem 0.5rem", fontSize: "0.78rem" }}
+                          title="Hazır davet mesajını kopyala"
+                          onClick={() => kopyala(kisiselMesaj, `msg-${d.id}`)}
+                        >
+                          {kopyalandiUrl === `msg-${d.id}` ? "✓ Kopyalandı" : "📋 Mesajı Kopyala"}
+                        </button>
+                      </div>
                       {d.whatsapp_acildi_mi === 1 && (
-                        <div className="kucuk" style={{ color: "#2e7d32", fontSize: "0.72rem" }}>
+                        <div className="kucuk" style={{ color: "#2e7d32", fontSize: "0.72rem", marginTop: "0.2rem" }}>
                           ✓ WhatsApp açıldı
                         </div>
                       )}
@@ -504,7 +528,7 @@ export default function WhatsappYonet({
                 />
               </div>
               <div className="whatsapp-kart-govde">
-                <div className="whatsapp-kart-baslik">{gelin} ❤️ {damat} — Nişan Davetiyesi</div>
+                <div className="whatsapp-kart-baslik">{gelin} ❤ {damat} — Nişan Davetiyesi</div>
                 <div className="whatsapp-kart-aciklama">
                   Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. {TARIH_METNI}
                 </div>

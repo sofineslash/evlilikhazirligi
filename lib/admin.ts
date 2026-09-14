@@ -240,7 +240,8 @@ export async function davetliWhatsappAcildiAction(id: string, acildi: boolean) {
 export async function whatsappAyarlariKaydetAction(_prev: unknown, form: FormData) {
   if (!(await adminMi())) return { hata: "Oturum bitmiş. Tekrar giriş yapın." };
   const slug = slugSanitize(String(form.get("davetiye_slug") ?? DEFAULT_DAVETIYE_SLUG));
-  const mesaj = String(form.get("whatsapp_mesaj") ?? "").trim().slice(0, 1000);
+  const rawMesaj = String(form.get("whatsapp_mesaj") ?? "").trim().slice(0, 1000);
+  const mesaj = rawMesaj.replace(/\uFE0F/g, "").replace(/\uFFFD/g, "❤");
   const ogTur = String(form.get("whatsapp_og_tur") ?? "dinamik").trim();
 
   metinYaz("davetiye_slug", slug);
