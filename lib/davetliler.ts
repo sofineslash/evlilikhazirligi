@@ -22,6 +22,8 @@ export type Davetli = {
   rsvp_tarihi: string | null;
   masa_no: string | null;
   notlar: string | null;
+  yonlendiren_davetli_id?: string | null;
+  yonlendiren_ad?: string | null;
   olusturuldu: string;
   guncellendi: string;
 };
@@ -182,29 +184,150 @@ export function davetliGonderildiGuncelle(id: string, gonderildi: boolean): void
     .run(gonderildi ? 1 : 0, simdi, id);
 }
 
+export type RsvpIsleSonuc = {
+  tur: "guncellendi" | "yonlendirildi_eklendi" | "yonlendirildi_guncellendi";
+  davetli: Davetli;
+  asilDavetli?: Davetli | null;
+};
+
 /**
- * Misafir tarafindan bildirilen RSVP durumunu senkronize eder.
+ * Akıllı RSVP işleme:
+ * 1. Eğer formdaki isim ile linkin asıl davetlisi aynıysa:
+ *    Asıl davetlinin kendi durumunu günceller.
+ * 2. Eğer link başkasına yönlendirilmişse (formdaki isim asıl davetliden farklıysa):
+ *    Asıl davetlinin cevabını KORUR, üzerine YAZMAZ!
+ *    Yeni bir yönlendirilen davetli kaydı açar ve asıl davetlinin ID/adıyla bağlar.
+ * 3. Yönlendirilen kişi tekrar girip yanıt verirse kendi yönlendirilen kaydını günceller.
+ */
+export function davetliRsvpIsle(veri: {
+  davetiyeId?: string;
+  token: string;
+  adSoyad: string;
+  durum: DavetliDurum;
+  kisiSayisi?: number;
+}): RsvpIsleSonuc | null {
+  const davetiyeId = veri.davetiyeId || DEFAULT_DAVETIYE_ID;
+  const asilDavetli = davetliGetirToken(veri.token, davetiyeId);
+  if (!asilDavetli) return null;
+
+  const simdi = new Date().toISOString();
+  const izinli = CFG.KISI_MAX;
+  const gercekKisi = Math.max(0, Math.min(izinli, Number(veri.kisiSayisi) || 0));
+  const girilenAd = metinSanitize(veri.adSoyad, 80);
+
+  // İsim karşılaştırması (Türkçe karakter ve boşluk duyarsız)
+  const normYap = (s: string) =>
+    s
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLocaleLowerCase("tr");
+
+  const ayniKisiMi = normYap(girilenAd) === normYap(asilDavetli.ad_soyad);
+
+  // 1. DURUM: Asıl Davetli kendi yanıtını veriyor veya güncelliyor
+  if (ayniKisiMi) {
+    db()
+      .prepare(
+        `UPDATE davetliler
+         SET durum = ?, kisi_sayisi = ?, rsvp_tarihi = ?, guncellendi = ?
+         WHERE id = ?`,
+      )
+      .run(veri.durum, gercekKisi, simdi, simdi, asilDavetli.id);
+
+    const guncel = davetliGetirToken(asilDavetli.token, davetiyeId)!;
+    return { tur: "guncellendi", davetli: guncel, asilDavetli: guncel };
+  }
+
+  // 2. DURUM: Link başkasına yönlendirilmiş! (Farklı isim girdi)
+  // Bu asıl davetli altında daha önce bu isimle yönlendirilen bir kayıt var mı?
+  const tumYonlendirilenler = db()
+    .prepare(
+      `SELECT * FROM davetliler
+       WHERE davetiye_id = ? AND yonlendiren_davetli_id = ?`,
+    )
+    .all(davetiyeId, asilDavetli.id) as Davetli[];
+
+  const mevcutYonlendirilen = tumYonlendirilenler.find(
+    (y) => normYap(y.ad_soyad) === normYap(girilenAd),
+  );
+
+  if (mevcutYonlendirilen) {
+    // Daha önce bu linkle gelip cevap vermiş yönlendirilen kişi yanıtını güncelliyor
+    db()
+      .prepare(
+        `UPDATE davetliler
+         SET durum = ?, kisi_sayisi = ?, rsvp_tarihi = ?, guncellendi = ?
+         WHERE id = ?`,
+      )
+      .run(veri.durum, gercekKisi, simdi, simdi, mevcutYonlendirilen.id);
+
+    const guncel = davetliGetirToken(mevcutYonlendirilen.token, davetiyeId)!;
+    return {
+      tur: "yonlendirildi_guncellendi",
+      davetli: guncel,
+      asilDavetli,
+    };
+  }
+
+  // Yeni bir yönlendirilen davetli kaydı aç (Asıl davetlinin cevabına ASLA dokunma!)
+  const yeniId = crypto.randomUUID();
+  const yeniToken = kriptografikTokenUret();
+
+  db()
+    .prepare(
+      `INSERT INTO davetliler (
+        id, davetiye_id, ad_soyad, telefon, token,
+        kisi_sayisi, izinli_kisi_sayisi, durum, gonderildi_mi,
+        whatsapp_acildi_mi, ilk_acilma, son_acilma, acilma_sayisi,
+        rsvp_tarihi, masa_no, notlar, yonlendiren_davetli_id, yonlendiren_ad,
+        olusturuldu, guncellendi
+      ) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, 1, 1, ?, ?, 1, ?, NULL, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      yeniId,
+      davetiyeId,
+      girilenAd,
+      yeniToken,
+      gercekKisi,
+      izinli,
+      veri.durum,
+      simdi,
+      simdi,
+      simdi,
+      `🔗 ${asilDavetli.ad_soyad} linki üzerinden yönlendirildi`,
+      asilDavetli.id,
+      asilDavetli.ad_soyad,
+      simdi,
+      simdi,
+    );
+
+  const yeniDavetli = davetliGetirToken(yeniToken, davetiyeId)!;
+  return {
+    tur: "yonlendirildi_eklendi",
+    davetli: yeniDavetli,
+    asilDavetli,
+  };
+}
+
+/**
+ * Geriye uyumluluk için eski rsvp fonksiyonu
  */
 export function davetliRsvpGuncelle(
   davetiyeId: string,
   token: string,
   durum: DavetliDurum,
   kisiSayisi = 1,
+  adSoyad?: string,
 ): boolean {
   const davetli = davetliGetirToken(token, davetiyeId);
   if (!davetli) return false;
-
-  const simdi = new Date().toISOString();
-  const izinli = CFG.KISI_MAX;
-  const gercekKisi = Math.max(1, Math.min(izinli, kisiSayisi));
-
-  const res = db()
-    .prepare(
-      `UPDATE davetliler
-       SET durum = ?, kisi_sayisi = ?, rsvp_tarihi = ?, guncellendi = ?
-       WHERE token = ? AND davetiye_id = ?`,
-    )
-    .run(durum, gercekKisi, simdi, simdi, token, davetiyeId);
-
-  return res.changes > 0;
+  const res = davetliRsvpIsle({
+    davetiyeId,
+    token,
+    adSoyad: adSoyad || davetli.ad_soyad,
+    durum,
+    kisiSayisi,
+  });
+  return !!res;
 }

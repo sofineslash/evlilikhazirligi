@@ -32,6 +32,7 @@ export default function Tema2Dizilim({
   misafirAd,
   token,
   izinliKisi,
+  oncekiRsvp,
   paylasimUrl,
   whatsappMesaj,
 }: {
@@ -56,6 +57,7 @@ export default function Tema2Dizilim({
   misafirAd?: string;
   token?: string;
   izinliKisi?: number;
+  oncekiRsvp?: { ad: string; durum: string; kisi: number };
   paylasimUrl?: string;
   whatsappMesaj?: string;
 }) {
@@ -258,6 +260,7 @@ export default function Tema2Dizilim({
               varsayilanAd={misafirAd}
               token={token}
               izinliKisi={izinliKisi}
+              oncekiRsvp={oncekiRsvp}
             />
             <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
             {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}

@@ -5,7 +5,7 @@ import { CFG } from "@/lib/config";
 import { adKontrol } from "@/lib/normalizeAd";
 import { hizKontrol, istemciAnahtari } from "@/lib/ratelimit";
 import { cihazJetonuDogrula } from "@/lib/session";
-import { davetliRsvpGuncelle } from "@/lib/davetliler";
+import { davetliRsvpGuncelle, davetliRsvpIsle } from "@/lib/davetliler";
 import { DEFAULT_DAVETIYE_ID } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -77,6 +77,32 @@ export async function POST(req: Request) {
     .slice(0, 16);
 
   try {
+    // Yönlendirme ve Davetli RSVP İşleme:
+    // Token varsa asıl davetliyi ve yönlendirmeyi akıllıca ayırt et
+    const durumStr = geliyorDeger === 1 ? "geliyor" : geliyorDeger === 2 ? "belirsiz" : "gelemiyor";
+    let davetliId: string | null = null;
+    let yonlendirenAd: string | null = null;
+
+    if (typeof govde?.token === "string" && govde.token.trim()) {
+      try {
+        const islemSonucu = davetliRsvpIsle({
+          davetiyeId: DEFAULT_DAVETIYE_ID,
+          token: govde.token.trim(),
+          adSoyad: String(govde.ad).trim(),
+          durum: durumStr,
+          kisiSayisi: kisi,
+        });
+        if (islemSonucu) {
+          davetliId = islemSonucu.davetli.id;
+          if (islemSonucu.tur.startsWith("yonlendirildi") && islemSonucu.asilDavetli) {
+            yonlendirenAd = islemSonucu.asilDavetli.ad_soyad;
+          }
+        }
+      } catch (err) {
+        console.error("davetli rsvp isle hatasi:", err);
+      }
+    }
+
     // Kontrol + yazma TEK transaction icinde. Kismi tekil indeks yarisi ayrica kapatir.
     const yaz = d.transaction(() => {
       if (!zorla && !tekKelime) {
@@ -92,8 +118,8 @@ export async function POST(req: Request) {
       d.prepare(
         `INSERT INTO katilimlar
          (id, ad_soyad, ad_soyad_norm, geliyor, kisi_sayisi, dilek, cihaz_jetonu,
-          cift_isaretli, tek_kelime, ip_hash, olusturuldu)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+          cift_isaretli, tek_kelime, ip_hash, olusturuldu, davetli_id, yonlendiren_ad)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       ).run(
         crypto.randomUUID(),
         String(govde.ad).trim(),
@@ -106,6 +132,8 @@ export async function POST(req: Request) {
         tekKelime ? 1 : 0,
         ipHash,
         new Date().toISOString(),
+        davetliId,
+        yonlendirenAd,
       );
       return { cakisma: null };
     });
@@ -128,15 +156,6 @@ export async function POST(req: Request) {
         },
         { status: 409 },
       );
-    }
-
-    if (typeof govde?.token === "string" && govde.token.trim()) {
-      try {
-        const durumStr = geliyorDeger === 1 ? "geliyor" : geliyorDeger === 2 ? "belirsiz" : "gelemiyor";
-        davetliRsvpGuncelle(DEFAULT_DAVETIYE_ID, govde.token.trim(), durumStr, kisi);
-      } catch {
-        // Davetli senkronizasyon hatasi ana kaydi engellemez
-      }
     }
 
     return NextResponse.json({ ok: true });

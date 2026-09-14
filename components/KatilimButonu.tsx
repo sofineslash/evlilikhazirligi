@@ -18,11 +18,13 @@ export default function KatilimButonu({
   varsayilanAd,
   token,
   izinliKisi,
+  oncekiRsvp,
 }: {
   tel?: string;
   varsayilanAd?: string;
   token?: string;
   izinliKisi?: number;
+  oncekiRsvp?: { ad: string; durum: string; kisi: number };
 }) {
   const pencere = useRef<HTMLDialogElement>(null);
 
@@ -68,6 +70,7 @@ export default function KatilimButonu({
             varsayilanAd={varsayilanAd}
             token={token}
             izinliKisi={izinliKisi}
+            oncekiRsvp={oncekiRsvp}
           />
 
           {tel && (

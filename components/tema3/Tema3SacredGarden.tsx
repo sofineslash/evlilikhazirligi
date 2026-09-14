@@ -36,6 +36,7 @@ export interface Tema3Props {
   misafirAd?: string;
   token?: string;
   izinliKisi?: number;
+  oncekiRsvp?: { ad: string; durum: string; kisi: number };
   paylasimUrl?: string;
   whatsappMesaj?: string;
   muzikUrl?: string;
@@ -61,6 +62,7 @@ export default function Tema3SacredGarden({
   misafirAd,
   token,
   izinliKisi,
+  oncekiRsvp,
   paylasimUrl,
   whatsappMesaj,
   muzikUrl,
@@ -120,6 +122,7 @@ export default function Tema3SacredGarden({
           varsayilanAd={misafirAd}
           token={token}
           izinliKisi={izinliKisi}
+          oncekiRsvp={oncekiRsvp}
         />
 
         <Tema3Kapanis

@@ -358,13 +358,23 @@ export default function WhatsappYonet({
 
       {/* 2. BÖLÜM: KİŞİYE ÖZEL DAVETLİ OLUŞTURMA & TAKİP */}
       <section className="admin-kart" style={{ marginTop: "1.8rem" }}>
-        <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span>👤</span> Kişiye Özel Davetli Ekleme &amp; Takip
-        </h3>
-        <p className="kucuk" style={{ color: "#666" }}>
-          Davetliye özel güvenli token üretilir (örn. <code>?g=K7f2Qx9Lm4Wp</code>).
-          Misafir linki açtığında kişiye özel karşılama yapılır ve açılma zamanı kaydedilir.
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
+          <div>
+            <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span>👤</span> Kişiye Özel Davetli Ekleme &amp; Takip
+            </h3>
+            <p className="kucuk" style={{ color: "#666", margin: "0.2rem 0 0 0" }}>
+              Davetliye özel güvenli token üretilir. Misafir linki açtığında kişiye özel karşılama yapılır.
+              Link başkasına yönlendirilirse sistem gelen cevabı ayrı bir davetli olarak algılar ve bağlar.
+            </p>
+          </div>
+          <div style={{ fontSize: "0.82rem", background: "#f8fafc", padding: "0.35rem 0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+            <strong>{davetliler.filter((d) => !d.yonlendiren_ad).length}</strong> Asıl Davetli
+            {davetliler.some((d) => !!d.yonlendiren_ad) && (
+              <> · <strong style={{ color: "#0284c7" }}>{davetliler.filter((d) => !!d.yonlendiren_ad).length}</strong> Yönlendirilen Katılım 🔗</>
+            )}
+          </div>
+        </div>
 
         {/* Davetli Ekleme Formu */}
         <form action={ekleAction} className="admin-davetli-form">
@@ -458,9 +468,37 @@ export default function WhatsappYonet({
                 });
 
                 return (
-                  <tr key={d.id}>
+                  <tr key={d.id} style={d.yonlendiren_ad ? { background: "#f8fafc" } : undefined}>
                     <td>
-                      <strong>{d.ad_soyad}</strong>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        {d.yonlendiren_ad && (
+                          <span style={{ color: "#0284c7", fontWeight: 700, fontSize: "0.95rem" }} title="Yönlendirilen Davetli">
+                            ↳
+                          </span>
+                        )}
+                        <strong>{d.ad_soyad}</strong>
+                      </div>
+                      {d.yonlendiren_ad && (
+                        <div style={{ marginTop: "0.2rem" }}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                              background: "#e0f2fe",
+                              color: "#0369a1",
+                              fontSize: "0.72rem",
+                              fontWeight: 600,
+                              padding: "0.15rem 0.45rem",
+                              borderRadius: "6px",
+                              border: "1px solid #bae6fd",
+                            }}
+                            title={`${d.yonlendiren_ad} kişisinin özel davetiye bağlantısı üzerinden katıldı`}
+                          >
+                            <span>🔗</span> {d.yonlendiren_ad}&apos;dan Yönlendirildi
+                          </span>
+                        </div>
+                      )}
                       <div className="kucuk" style={{ color: "#777" }}>
                         {d.masa_no && `Masa ${d.masa_no}`}
                         {d.masa_no && d.telefon && " · "}

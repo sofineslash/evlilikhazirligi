@@ -16,17 +16,19 @@ interface Props {
   varsayilanAd?: string;
   token?: string;
   izinliKisi?: number;
+  oncekiRsvp?: { ad: string; durum: string; kisi: number };
 }
 
 export default function Tema3RsvpModal({
   varsayilanAd = "",
   token,
   izinliKisi = 10,
+  oncekiRsvp,
 }: Props) {
   const [modalAcik, setModalAcik] = useState(false);
   const [durum, setDurum] = useState<KatilimDurumu | null>("katilacagim");
   const [kisi, setKisi] = useState<number>(1);
-  const [ad, setAd] = useState(varsayilanAd);
+  const [ad, setAd] = useState(oncekiRsvp ? "" : varsayilanAd);
   const [dilek, setDilek] = useState("");
   const [sonuc, setSonuc] = useState<Sonuc>({ tur: "bos" });
 
@@ -52,16 +54,18 @@ export default function Tema3RsvpModal({
   };
 
   useEffect(() => {
-    if (varsayilanAd) {
+    if (oncekiRsvp) {
+      setAd("");
+    } else if (varsayilanAd) {
       setAd(varsayilanAd);
     } else {
       const uAd = urlIsmiGetir();
       if (uAd) setAd(uAd);
     }
-  }, [varsayilanAd]);
+  }, [varsayilanAd, oncekiRsvp]);
 
   const modalAc = () => {
-    if (!ad.trim()) {
+    if (!ad.trim() && !oncekiRsvp) {
       const adayAd = varsayilanAd || urlIsmiGetir();
       if (adayAd) setAd(adayAd);
     }
@@ -211,6 +215,39 @@ export default function Tema3RsvpModal({
                   Lütfen katılım durumunuzu ve kişi sayınızı belirtiniz.
                 </p>
 
+                {/* YÖNLENDİRİLMİŞ BAĞLANTI BİLGİLENDİRMESİ */}
+                {oncekiRsvp && (
+                  <div
+                    style={{
+                      padding: "0.75rem 0.9rem",
+                      borderRadius: "8px",
+                      background: "rgba(90, 15, 27, 0.05)",
+                      border: "1px solid rgba(90, 15, 27, 0.18)",
+                      margin: "0.8rem 0 1rem",
+                      fontSize: "0.82rem",
+                      lineHeight: 1.45,
+                      color: "#4a352a",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontWeight: 600, color: "#5A0F1B", marginBottom: "0.2rem" }}>
+                      <span>🔗</span>
+                      <span>Bu bağlantı ile daha önce yanıt verilmiştir</span>
+                    </div>
+                    <p style={{ margin: "0.2rem 0 0.3rem" }}>
+                      Bu davetiye bağlantısıyla daha önce <strong>{oncekiRsvp.ad}</strong> adına yanıt kaydedilmiştir (
+                      {oncekiRsvp.durum === "geliyor" || oncekiRsvp.durum === "katilacagim"
+                        ? `${oncekiRsvp.kisi && oncekiRsvp.kisi > 0 ? oncekiRsvp.kisi : 1} kişi katılacak`
+                        : oncekiRsvp.durum === "belirsiz" || oncekiRsvp.durum === "net_degil"
+                        ? "Net değil"
+                        : "Katılamayacak"}
+                      ).
+                    </p>
+                    <p style={{ margin: 0, fontSize: "0.78rem", color: "#6a5140" }}>
+                      Eğer bu davetiye size yönlendirildiyse, lütfen aşağıdaki alana <strong>kendi adınızı soyadınızı</strong> yazınız.
+                    </p>
+                  </div>
+                )}
+
                 {/* AD SOYAD */}
                 <div className="tema3-form-grup">
                   <label className="tema3-form-label" htmlFor="tema3-ad">
@@ -222,9 +259,27 @@ export default function Tema3RsvpModal({
                     className="tema3-input"
                     value={ad}
                     onChange={(e) => setAd(e.target.value)}
-                    placeholder="Adınız ve Soyadınız"
+                    placeholder={oncekiRsvp ? "Kendi Adınız ve Soyadınız" : "Adınız ve Soyadınız"}
                     required
                   />
+                  {oncekiRsvp && ad !== oncekiRsvp.ad && (
+                    <button
+                      type="button"
+                      onClick={() => setAd(oncekiRsvp.ad)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: "0.35rem 0 0",
+                        color: "#5A0F1B",
+                        fontSize: "0.78rem",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Ben {oncekiRsvp.ad} (Kendi yanıtımı güncellemek istiyorum)
+                    </button>
+                  )}
                 </div>
 
                 {/* KATILIM DURUMU */}

@@ -17,15 +17,17 @@ export default function RsvpForm({
   varsayilanAd = "",
   token,
   izinliKisi = 10,
+  oncekiRsvp,
 }: {
   onKapat?: () => void;
   varsayilanAd?: string;
   token?: string;
   izinliKisi?: number;
+  oncekiRsvp?: { ad: string; durum: string; kisi: number };
 }) {
   const [durum, setDurum] = useState<KatilimDurumu | null>(null);
   const [kisi, setKisi] = useState<number>(0);
-  const [ad, setAd] = useState(varsayilanAd);
+  const [ad, setAd] = useState(oncekiRsvp ? "" : varsayilanAd);
   const [dilek, setDilek] = useState("");
   const [sonuc, setSonuc] = useState<Sonuc>({ tur: "bos" });
 
@@ -50,21 +52,24 @@ export default function RsvpForm({
     }
   };
 
-  // Açılışta veya varsayilanAd geldiğinde ad alanını otomatik doldur
+  // Açılışta veya varsayilanAd geldiğinde ad alanını yönet
   useEffect(() => {
-    if (varsayilanAd) {
+    if (oncekiRsvp) {
+      // Link daha önce yanıtlanmış; yönlendirilen kişi giriyorsa kendi adını yazmalı
+      setAd("");
+    } else if (varsayilanAd) {
       setAd(varsayilanAd);
     } else {
       const uAd = urlIsmiGetir();
       if (uAd) setAd(uAd);
     }
-  }, [varsayilanAd]);
+  }, [varsayilanAd, oncekiRsvp]);
 
   const handleDurumSecim = (secim: KatilimDurumu) => {
     setDurum(secim);
 
-    // "Katılacağım" veya diğer durumlara basıldığında ad alanı boşsa otomatik doldur
-    if (!ad.trim()) {
+    // Ad alanı boşsa ve daha önce yanıtlanmış bir link değilse otomatik doldur
+    if (!ad.trim() && !oncekiRsvp) {
       const adayAd = varsayilanAd || urlIsmiGetir();
       if (adayAd) {
         setAd(adayAd);
@@ -176,6 +181,38 @@ export default function RsvpForm({
         gonder();
       }}
     >
+      {/* YÖNLENDİRİLMİŞ BAĞLANTI BİLGİLENDİRMESİ */}
+      {oncekiRsvp && (
+        <div
+          style={{
+            padding: "0.85rem 1rem",
+            borderRadius: "10px",
+            background: "rgba(184, 134, 11, 0.08)",
+            border: "1px solid rgba(184, 134, 11, 0.28)",
+            marginBottom: "1.2rem",
+            fontSize: "0.85rem",
+            lineHeight: 1.45,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: 600, color: "#8a6d1a", marginBottom: "0.25rem" }}>
+            <span>🔗</span>
+            <span>Bu bağlantı ile daha önce yanıt verilmiştir</span>
+          </div>
+          <p style={{ margin: "0.2rem 0 0.35rem", color: "#333" }}>
+            Bu davetiye bağlantısıyla daha önce <strong>{oncekiRsvp.ad}</strong> adına yanıt kaydedilmiştir (
+            {oncekiRsvp.durum === "geliyor" || oncekiRsvp.durum === "katilacagim"
+              ? `${oncekiRsvp.kisi && oncekiRsvp.kisi > 0 ? oncekiRsvp.kisi : 1} kişi katılacak`
+              : oncekiRsvp.durum === "belirsiz" || oncekiRsvp.durum === "net_degil"
+              ? "Net değil"
+              : "Katılamayacak"}
+            ).
+          </p>
+          <p style={{ margin: 0, fontSize: "0.8rem", color: "#666" }}>
+            Eğer davetiye size yönlendirildiyse, lütfen aşağıdaki alana <strong>kendi adınızı ve soyadınızı</strong> yazınız.
+          </p>
+        </div>
+      )}
+
       {/* 1. BÖLÜM: KATILIM DURUMU */}
       <div className="katilim-bolum">
         <label className="katilim-bolum-baslik">KATILIM DURUMU</label>
@@ -307,13 +344,31 @@ export default function RsvpForm({
           id="ad"
           type="text"
           className="katilim-input"
-          placeholder="Adınız ve Soyadınız"
+          placeholder={oncekiRsvp ? "Kendi Adınız ve Soyadınız" : "Adınız ve Soyadınız"}
           value={ad}
           maxLength={CFG.AD_MAX_KARAKTER}
           onChange={(e) => setAd(e.target.value)}
           autoComplete="name"
           required
         />
+        {oncekiRsvp && ad !== oncekiRsvp.ad && (
+          <button
+            type="button"
+            onClick={() => setAd(oncekiRsvp.ad)}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "0.35rem 0 0",
+              color: "#8a6d1a",
+              fontSize: "0.78rem",
+              cursor: "pointer",
+              textAlign: "left",
+              textDecoration: "underline",
+            }}
+          >
+            Ben {oncekiRsvp.ad} (Kendi yanıtımı güncellemek istiyorum)
+          </button>
+        )}
       </div>
 
       {/* 4. BÖLÜM: HATIRA NOTUNUZ */}

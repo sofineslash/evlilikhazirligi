@@ -94,11 +94,19 @@ export default function DavetiyeGosterimi({
   // Davetli ve kisiye ozel misafir cozumleme
   let misafirAd = "";
   let izinliKisi: number = CFG.KISI_MAX;
+  let oncekiRsvp: { ad: string; durum: string; kisi: number } | undefined = undefined;
 
   if (token) {
     const davetli = davetliGetirToken(token);
     if (davetli) {
       misafirAd = davetli.ad_soyad;
+      if (davetli.rsvp_tarihi) {
+        oncekiRsvp = {
+          ad: davetli.ad_soyad,
+          durum: davetli.durum,
+          kisi: davetli.kisi_sayisi,
+        };
+      }
     }
   }
 
@@ -165,6 +173,7 @@ export default function DavetiyeGosterimi({
           misafirAd={misafirAd}
           token={token}
           izinliKisi={izinliKisi}
+          oncekiRsvp={oncekiRsvp}
           paylasimUrl={paylasimUrl}
           whatsappMesaj={whatsappMesaj}
           muzikUrl={muzikAktif && muzik.url ? muzik.url : "/tema3/muzik.mp3"}
@@ -201,6 +210,7 @@ export default function DavetiyeGosterimi({
             misafirAd={misafirAd}
             token={token}
             izinliKisi={izinliKisi}
+            oncekiRsvp={oncekiRsvp}
             paylasimUrl={paylasimUrl}
             whatsappMesaj={whatsappMesaj}
           />
@@ -284,6 +294,7 @@ export default function DavetiyeGosterimi({
                     varsayilanAd={misafirAd}
                     token={token}
                     izinliKisi={izinliKisi}
+                    oncekiRsvp={oncekiRsvp}
                   />
                   <WhatsappPaylasButonu url={paylasimUrl} mesaj={whatsappMesaj} />
                   <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />

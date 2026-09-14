@@ -22,7 +22,8 @@ export const dynamic = "force-dynamic";
 type Kayit = {
   id: string; ad_soyad: string; geliyor: number; kisi_sayisi: number;
   dilek: string | null; dilek_yayinda: number; cift_isaretli: number;
-  tek_kelime: number; olusturuldu: string;
+  tek_kelime: number; davetli_id?: string | null; yonlendiren_ad?: string | null;
+  olusturuldu: string;
 };
 
 const kucukBtn = { minHeight: 32, padding: ".2rem .5rem", fontSize: ".8rem" } as const;
@@ -38,6 +39,7 @@ export default async function Admin() {
   const toplamKisi = gelen.reduce((t, k) => t + k.kisi_sayisi, 0);
   const gelemeyen = kayitlar.filter((k) => k.geliyor === 0);
   const netDegil = kayitlar.filter((k) => k.geliyor === 2);
+  const yonlendirilenler = kayitlar.filter((k) => !!k.yonlendiren_ad);
 
   const sahneler = sahneDurumu();
   const hazir = sahneler.filter((s) => s.yol).length;
@@ -63,6 +65,7 @@ export default async function Admin() {
         <strong>{toplamKisi} kişi</strong> geliyor ({gelen.length} kayıt) ·{" "}
         {gelemeyen.length} kayıt gelemiyor
         {netDegil.length > 0 && ` · ${netDegil.length} kayıt net değil`}
+        {yonlendirilenler.length > 0 && ` · ${yonlendirilenler.length} yönlendirilen katılım`}
       </p>
 
       <AdminSekmeler
@@ -80,7 +83,22 @@ export default async function Admin() {
                   {kayitlar.map((k) => (
                     <tr key={k.id}>
                       <td>
-                        {k.ad_soyad}{" "}
+                        <strong>{k.ad_soyad}</strong>{" "}
+                        {k.yonlendiren_ad && (
+                          <span
+                            className="rozet"
+                            style={{
+                              background: "#e0f2fe",
+                              color: "#0369a1",
+                              borderColor: "#bae6fd",
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                            }}
+                            title={`${k.yonlendiren_ad} kişisinin özel davetiye bağlantısıyla katıldı`}
+                          >
+                            🔗 {k.yonlendiren_ad} linkiyle
+                          </span>
+                        )}{" "}
                         {k.cift_isaretli === 1 && <span className="rozet">çift?</span>}{" "}
                         {k.tek_kelime === 1 && <span className="rozet">tek kelime</span>}
                       </td>
