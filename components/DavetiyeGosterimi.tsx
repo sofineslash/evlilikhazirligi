@@ -97,7 +97,6 @@ export default function DavetiyeGosterimi({
     const davetli = davetliGetirToken(token);
     if (davetli) {
       misafirAd = davetli.ad_soyad;
-      izinliKisi = davetli.izinli_kisi_sayisi || 1;
     }
   }
 

@@ -173,7 +173,7 @@ export default function WhatsappYonet({
 
         {/* Davetli Ekleme Formu */}
         <form action={ekleAction} className="admin-davetli-form">
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1.5fr 1fr", gap: "0.75rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div>
               <label htmlFor="ad_soyad" className="kucuk">Adı Soyadı *</label>
               <input
@@ -192,18 +192,6 @@ export default function WhatsappYonet({
                 name="telefon"
                 type="tel"
                 placeholder="örn. 0532 123 45 67"
-                className="admin-input"
-              />
-            </div>
-            <div>
-              <label htmlFor="izinli_kisi_sayisi" className="kucuk">Kişi Hakkı</label>
-              <input
-                id="izinli_kisi_sayisi"
-                name="izinli_kisi_sayisi"
-                type="number"
-                min={1}
-                max={20}
-                defaultValue={2}
                 className="admin-input"
               />
             </div>
@@ -247,7 +235,7 @@ export default function WhatsappYonet({
           <table className="admin-davetli-tablo">
             <thead>
               <tr>
-                <th>Davetli &amp; İzin</th>
+                <th>Davetli</th>
                 <th>Özel Link</th>
                 <th>WhatsApp</th>
                 <th>Açılma</th>
@@ -279,9 +267,9 @@ export default function WhatsappYonet({
                     <td>
                       <strong>{d.ad_soyad}</strong>
                       <div className="kucuk" style={{ color: "#777" }}>
-                        {d.izinli_kisi_sayisi} kişilik
-                        {d.masa_no && ` · Masa ${d.masa_no}`}
-                        {d.telefon && ` · ${d.telefon}`}
+                        {d.masa_no && `Masa ${d.masa_no}`}
+                        {d.masa_no && d.telefon && " · "}
+                        {d.telefon}
                       </div>
                     </td>
                     <td>

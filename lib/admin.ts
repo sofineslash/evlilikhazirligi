@@ -188,7 +188,7 @@ export async function davetliEkleAction(_prev: unknown, form: FormData) {
   const adSoyad = String(form.get("ad_soyad") ?? "").trim();
   if (!adSoyad || adSoyad.length < 2) return { hata: "Lütfen davetlinin adını ve soyadını girin." };
   const telefon = String(form.get("telefon") ?? "").trim();
-  const izinliKisi = Number(form.get("izinli_kisi_sayisi") ?? 1);
+  const izinliKisi = Number(form.get("izinli_kisi_sayisi") || CFG.KISI_MAX);
   const masaNo = String(form.get("masa_no") ?? "").trim();
   const notlar = String(form.get("notlar") ?? "").trim();
 

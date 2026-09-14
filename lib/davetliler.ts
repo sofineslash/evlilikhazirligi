@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { db } from "./db";
 import { DEFAULT_DAVETIYE_ID, metinSanitize, telefonNormalize } from "./site";
+import { CFG } from "./config";
 
 export type DavetliDurum = "bekliyor" | "geliyor" | "gelemiyor" | "belirsiz";
 
@@ -98,7 +99,7 @@ export function davetliEkle(veri: {
   const davetiyeId = veri.davetiyeId || DEFAULT_DAVETIYE_ID;
   const adSoyad = metinSanitize(veri.adSoyad, 80);
   const telefon = veri.telefon ? telefonNormalize(veri.telefon) : null;
-  const izinli = Math.max(1, Math.min(20, Number(veri.izinliKisiSayisi) || 1));
+  const izinli = Math.max(1, Math.min(20, Number(veri.izinliKisiSayisi) || CFG.KISI_MAX));
 
   db()
     .prepare(
@@ -194,7 +195,7 @@ export function davetliRsvpGuncelle(
   if (!davetli) return false;
 
   const simdi = new Date().toISOString();
-  const izinli = davetli.izinli_kisi_sayisi || 1;
+  const izinli = CFG.KISI_MAX;
   const gercekKisi = Math.max(1, Math.min(izinli, kisiSayisi));
 
   const res = db()
