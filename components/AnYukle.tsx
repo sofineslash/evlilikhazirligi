@@ -17,8 +17,9 @@ type Kalem = {
 };
 
 /* Ham dosya tavanlari — sunucudakiyle AYNI olmali, yoksa 413 alip
-   sasiriyoruz. Video icin ayri: 1 dakikalik 4K kayit rahat 300 MB. */
-const FOTO_MAX_BAYT = 25 * 1024 * 1024;
+   sasiriyoruz. Video icin ayri: 1 dakikalik 4K kayit rahat 300 MB.
+   RAW kamera fotograflari (30-80 MB) icin 100 MB. */
+const FOTO_MAX_BAYT = 100 * 1024 * 1024;
 const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
 /** Parca boyu — sunucudaki PARCA_MAX ile AYNI. */
 const PARCA_BAYT = 8 * 1024 * 1024;
@@ -26,6 +27,12 @@ const PARCA_BAYT = 8 * 1024 * 1024;
 const TEK_ISTEK_SINIRI = 8 * 1024 * 1024;
 
 const videoMu = (d: File) => d.type.startsWith("video/");
+const rawMu = (d: File) =>
+  /\.(cr2|cr3|nef|arw|dng|raf|orf|rw2|pef)$/i.test(d.name) ||
+  d.type.includes("raw") ||
+  d.type.includes("canon") ||
+  d.type.includes("nikon") ||
+  d.type.includes("sony");
 const boyut = (b: number) =>
   b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`;
 
@@ -114,11 +121,11 @@ export default function AnYukle() {
         dosya: d,
         onizleme,
         video: vid,
-        onizlemeYok: false,
+        onizlemeYok: rawMu(d),
         yuzde: 0,
         durum: d.size > tavan ? "hata" : "bekliyor",
         mesaj: d.size > tavan
-          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "600 MB" : "25 MB"}.`
+          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "600 MB" : "100 MB"}.`
           : undefined,
       });
     }
@@ -241,7 +248,7 @@ export default function AnYukle() {
           ref={girdiRef}
           id="an-dosya"
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf,.rw2,.pef"
           multiple
           onChange={(e) => ekle(e.target.files)}
         />
@@ -256,13 +263,13 @@ export default function AnYukle() {
           <ul className="an-liste">
             {kalemler.map((k) => (
               <li key={k.anahtar} className={`an-kalem an-${k.durum}`}>
-                {/* HEIC'i tarayici cizemiyor (Chrome/Android desteklemiyor,
+                {/* HEIC ve RAW'i tarayici cizemiyor (Chrome/Android desteklemiyor,
                     onError tetikleniyor). Kirik resim simgesi yerine
                     duzgun bir yer tutucu — dosya yine de yuklenebiliyor,
-                    sunucu HEIF'i cozuyor. */}
+                    sunucu formatlari cozuyor. */}
                 {k.onizlemeYok ? (
                   <span className="an-yertutucu" aria-hidden="true">
-                    {k.video ? "▶" : "HEIC"}
+                    {k.video ? "▶" : rawMu(k.dosya) ? "RAW" : "HEIC"}
                   </span>
                 ) : k.video ? (
                   /* #t=0.1 SART: preload="metadata" tek basina bos bir kare

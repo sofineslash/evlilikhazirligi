@@ -3,6 +3,7 @@ import { CFG } from "./config";
 import { ORAN, type SahneTur } from "./sahneler";
 import { goruntuyuCoz } from "./video";
 import heicCevir from "heic-convert";
+import { rawMu, rawToJpeg } from "./raw";
 
 /**
  * Sunucu tarafi gorsel isleme.
@@ -179,6 +180,29 @@ export async function anIsle(ham: Buffer): Promise<IslemSonuc> {
       return {
         ok: false,
         mesaj: "Bu fotoğraf açılamadı. Telefon ayarlarından fotoğraf biçimini JPEG yapıp tekrar deneyin.",
+      };
+    }
+  } else if (rawMu(ham)) {
+    /* RAW KAMERA FOTOĞRAFI (Canon CR2/CR3, Nikon NEF, Sony ARW, Adobe DNG,
+       Fujifilm RAF, Olympus ORF, Panasonic RW2).
+       Gömülü tam çözünürlüklü JPEG'i kameranın kendi renk bilimi ve
+       ton eğrisiyle ayıklarız. */
+    try {
+      const cikarilmis = await rawToJpeg(ham);
+      if (cikarilmis) {
+        girdi = cikarilmis;
+      } else {
+        console.error("an isleme: RAW gömülü JPEG çıkarılamadı");
+        return {
+          ok: false,
+          mesaj: "Bu RAW fotoğraf işlenemedi. Lütfen JPEG veya PNG olarak deneyin.",
+        };
+      }
+    } catch (e) {
+      console.error("an isleme: RAW çözme hatası", (e as Error).message);
+      return {
+        ok: false,
+        mesaj: "Bu RAW fotoğraf işlenemedi. Lütfen JPEG veya PNG olarak deneyin.",
       };
     }
   }

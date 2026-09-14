@@ -4,6 +4,7 @@ import path from "node:path";
 import { anIsle } from "./gorsel";
 import { videoIsle } from "./video";
 import { anKaydet, anlarKlasoru } from "./anlar";
+import { rawMu } from "./raw";
 
 /**
  * Yuklenen ham baytlari isleyip kaydeder.
@@ -14,8 +15,8 @@ import { anKaydet, anlarKlasoru } from "./anlar";
  * ayrisması sessiz veri bozulmasi demek.
  */
 
-/** Fotograf tavani. Video icin ayri ve cok daha yuksek. */
-export const FOTO_MAX_BAYT = 25 * 1024 * 1024;
+/** Fotograf tavani. RAW kamera fotograflari icin tavan 100 MB. Video icin 600 MB. */
+export const FOTO_MAX_BAYT = 100 * 1024 * 1024;
 export const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
 
 /**
@@ -31,6 +32,7 @@ export function goruntuMu(b: Buffer): boolean {
   const ftyp = b.subarray(4, 8).toString("ascii") === "ftyp";
   if (ftyp && b.subarray(8, 12).toString("ascii").startsWith("avif")) return true;     // AVIF
   if (ftyp && /heic|heif|heix|heim|heis|mif1|msf1/i.test(b.subarray(8, 12).toString("ascii"))) return true;
+  if (rawMu(b)) return true;                                                           // RAW (CR2/CR3/NEF/ARW/DNG/RAF/ORF/RW2)
   return false;
 }
 
@@ -90,7 +92,7 @@ export async function anKaydetVeIsle(
     return { ok: false, mesaj: "Sadece fotoğraf veya video gönderebilirsiniz." };
   }
   if (foto && bayt > FOTO_MAX_BAYT) {
-    return { ok: false, mesaj: "Fotoğraf çok büyük (en fazla 25 MB)." };
+    return { ok: false, mesaj: "Fotoğraf çok büyük (en fazla 100 MB)." };
   }
   if (video && bayt > VIDEO_MAX_BAYT) {
     return { ok: false, mesaj: "Video çok büyük (en fazla 600 MB)." };

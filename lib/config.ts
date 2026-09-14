@@ -61,7 +61,7 @@ export const CFG = {
   FOTO_WEBP_KALITE: 0.8,
   VIDEO_MAX_SANIYE: 60,
   VIDEO_MAX_BAYT: 100 * 1024 * 1024,
-  MEDYA_KOTA_BAYT: 20 * 1024 * 1024 * 1024,
+  MEDYA_KOTA_BAYT: 100 * 1024 * 1024 * 1024,
   MIN_BOS_DISK_BAYT: 10 * 1024 * 1024 * 1024,
 
   // ---- Gorsel butcesi ----------------------------------------------------
