@@ -38,7 +38,10 @@ export function misafirAdiFormatla(guest?: string | null): string {
 
 export const VARSAYILAN_WHATSAPP_SABLONU = `{cift}
 
-Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız.
+Sayın {misafir}
+
+Bu güzel günümüzde sizi de yanımızda görmek istiyoruz.
+Nişanımıza bekliyoruz, birlikte güzel bir anı paylaşmak dileğiyle.
 
 Davet detayları ve katılım için:
 {link}`;
@@ -61,13 +64,18 @@ export function whatsappMesajiUret(params: WhatsappMesajParams): string {
   let metin = (sablon && sablon.trim().length > 0) ? sablon : VARSAYILAN_WHATSAPP_SABLONU;
   // Eski sablonlardan kalma basindaki 💌 emojisini temizle
   metin = metin.replace(/💌\s*\{cift\}/gi, "{cift}");
-  // Android ve iOS uyumlulugu: gorunmez Variation Selector-16 (\uFE0F) bazi cihazlarda soru isaretine () donusur.
-  // Bu nedenle tek kod noktali evrensel kalp (❤ \u2764) kullanilir, varyasyon secici ve soru isareti/FFFD temizlenir.
-  metin = metin.replace(/\uFE0F/g, "").replace(/\uFFFD/g, "❤");
 
-  const cift = `${gelin} ❤ ${damat}`;
+  // Standart kirmizi kalp emojisi (U+2764 + U+FE0F = ❤️)
+  // iOS, Android, macOS, Windows ve WhatsApp Web ile %100 uyumludur.
+  const KALP = "❤️";
+  metin = metin
+    .replace(/\uFFFD/g, KALP)
+    .replace(/\u2764(?!\uFE0F)/g, KALP)
+    .replace(/\uFE0F{2,}/g, "\uFE0F");
 
-  // Sablonda dogrudan cift isimleri eski baglacla (&, soru isareti veya varyasyon secicili kalp) yazilmissa guncelle
+  const cift = `${gelin} ${KALP} ${damat}`;
+
+  // Sablonda dogrudan cift isimleri eski baglacla (&, soru isareti veya bozuk karakterle) yazilmissa guncelle
   const ciftRegex = new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi");
   metin = metin.replace(ciftRegex, cift);
 

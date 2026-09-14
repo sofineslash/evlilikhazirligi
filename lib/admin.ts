@@ -241,7 +241,10 @@ export async function whatsappAyarlariKaydetAction(_prev: unknown, form: FormDat
   if (!(await adminMi())) return { hata: "Oturum bitmiş. Tekrar giriş yapın." };
   const slug = slugSanitize(String(form.get("davetiye_slug") ?? DEFAULT_DAVETIYE_SLUG));
   const rawMesaj = String(form.get("whatsapp_mesaj") ?? "").trim().slice(0, 1000);
-  const mesaj = rawMesaj.replace(/\uFE0F/g, "").replace(/\uFFFD/g, "❤");
+  const mesaj = rawMesaj
+    .replace(/\uFFFD/g, "❤️")
+    .replace(/\u2764(?!\uFE0F)/g, "❤️")
+    .replace(/\uFE0F{2,}/g, "\uFE0F");
   const ogTur = String(form.get("whatsapp_og_tur") ?? "dinamik").trim();
 
   metinYaz("davetiye_slug", slug);

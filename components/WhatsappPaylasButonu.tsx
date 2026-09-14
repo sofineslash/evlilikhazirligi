@@ -31,7 +31,7 @@ export default function WhatsappPaylasButonu({
     <div className="tema2-whatsapp-kapsayici">
       <a
         href={paylasUrl}
-        target="_blank"
+        target="whatsapp_web"
         rel="noopener noreferrer"
         className="btn btn-eylem tema2-whatsapp-btn"
         title="WhatsApp üzerinden davetiyeyi paylaş"

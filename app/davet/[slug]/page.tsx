@@ -40,7 +40,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
   const gelin = metin("gelin_ad") || CFG.GELIN;
   const damat = metin("damat_ad") || CFG.DAMAT;
-  const ciftBaslik = `${gelin} ❤ ${damat}`;
+  const ciftBaslik = `${gelin} ❤️ ${damat}`;
 
   const baslik = misafirAd
     ? `Sayın ${misafirAd} — Davetlisiniz 💌 | ${ciftBaslik}`

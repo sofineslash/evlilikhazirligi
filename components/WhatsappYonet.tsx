@@ -36,9 +36,10 @@ export default function WhatsappYonet({
 }) {
   const sanitizeMesaj = (txt: string) =>
     (txt || "")
-      .replace(/\uFE0F/g, "")
-      .replace(/\uFFFD/g, "❤")
-      .replace(new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤ ${damat}`);
+      .replace(/\uFFFD/g, "❤️")
+      .replace(/\u2764(?!\uFE0F)/g, "❤️")
+      .replace(/\uFE0F{2,}/g, "\uFE0F")
+      .replace(new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤️ ${damat}`);
 
   const [slug, setSlug] = useState(baslangicSlug || DEFAULT_DAVETIYE_SLUG);
   const [mesajSablonu, setMesajSablonu] = useState(
@@ -196,6 +197,7 @@ export default function WhatsappYonet({
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(mesaj);
         setVideoKopyalandi(true);
+        setTimeout(() => setVideoKopyalandi(false), 3500);
       }
     } catch {}
 
@@ -204,7 +206,11 @@ export default function WhatsappYonet({
       : "kubranur-omur-davetiye.mp4";
 
     // 2. Mobil / Web Share API desteği varsa doğrudan videoyu WhatsApp'a aktar
-    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+    const isMobile =
+      typeof navigator !== "undefined" &&
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile && navigator.share && navigator.canShare) {
       try {
         setVideoPaylasimDurumu("⏳ Video WhatsApp'a aktarılıyor...");
         const resp = await fetch(videoUrl);
@@ -214,13 +220,16 @@ export default function WhatsappYonet({
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: "Kübranur ❤️ Ömür Nişan Davetiyesi",
+            title: `${gelin} ❤️ ${damat} Nişan Davetiyesi`,
             text: mesaj,
           });
           setVideoPaylasimDurumu("✓ WhatsApp'ta video başarıyla paylaşıldı!");
           setTimeout(() => setVideoPaylasimDurumu(null), 5000);
           if (secili) {
             davetliWhatsappAcildiAction(secili.id, true).catch(() => {});
+            setDavetliler((prev) =>
+              prev.map((item) => (item.id === secili.id ? { ...item, whatsapp_acildi_mi: 1 } : item)),
+            );
           }
           return;
         }
@@ -229,24 +238,21 @@ export default function WhatsappYonet({
       }
     }
 
-    // 3. Masaüstü / PC / Mac veya Web Share desteklemeyen durumlar:
-    // a) Videoyu kullanıcının bilgisayarına indir
-    const a = document.createElement("a");
-    a.href = videoUrl;
-    a.download = dosyaAdi;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    // b) WhatsApp Web / chat penceresini aç
+    // 3. Masaüstü / PC / Mac:
+    // NOT: Kullanıcı isteği gereği videoyu her seferinde otomatik indirmiyoruz.
+    // Kullanıcı videoyu tek tıkla 'Videoyu İndir (1 Kez)' butonuyla indirebilir.
+    // 200 kişiye gönderirken 200 ayrı sekme açılmaması için 'whatsapp_web' pencere adı kullanılır.
     const hedefWpUrl = whatsappGonderUrl({
       telefon: secili?.telefon,
       mesaj,
     });
-    window.open(hedefWpUrl, "_blank");
+    window.open(hedefWpUrl, "whatsapp_web");
 
     if (secili) {
       davetliWhatsappAcildiAction(secili.id, true).catch(() => {});
+      setDavetliler((prev) =>
+        prev.map((item) => (item.id === secili.id ? { ...item, whatsapp_acildi_mi: 1 } : item)),
+      );
     }
 
     setMasaustuRehberGoster(true);
@@ -272,6 +278,22 @@ export default function WhatsappYonet({
     url: genelUrl,
   });
   const genelWpUrl = whatsappGonderUrl({ mesaj: genelMesaj });
+
+  // Aktif secili davetli ve kisisel mesaj
+  const aktifDavetli = videoSecilenDavetli;
+  const aktifUrl = aktifDavetli
+    ? siteUrl(`/davet/${slug}?g=${aktifDavetli.token}`)
+    : genelUrl;
+  const aktifMesaj = whatsappMesajiUret({
+    sablon: mesajSablonu,
+    gelin,
+    damat,
+    tarih: TARIH_METNI,
+    saat: SAAT_METNI,
+    salon: CFG.SALON_AD,
+    url: aktifUrl,
+    misafir: aktifDavetli?.ad_soyad,
+  });
 
   return (
     <div className="admin-whatsapp-bolum">
@@ -324,7 +346,7 @@ export default function WhatsappYonet({
           </a>
           <a
             href={genelWpUrl}
-            target="_blank"
+            target="whatsapp_web"
             rel="noopener noreferrer"
             className="btn btn-eylem"
             style={{ background: "#25D366", color: "#ffffff", borderColor: "#1da851" }}
@@ -459,7 +481,7 @@ export default function WhatsappYonet({
                       <div style={{ display: "flex", gap: "0.35rem", alignItems: "center", flexWrap: "wrap" }}>
                         <a
                           href={kisiselWpUrl}
-                          target="_blank"
+                          target="whatsapp_web"
                           rel="noopener noreferrer"
                           className="btn"
                           style={{
@@ -469,7 +491,19 @@ export default function WhatsappYonet({
                             color: "#1b5e20",
                             borderColor: "#81c784",
                           }}
-                          onClick={() => davetliWhatsappAcildiAction(d.id, true)}
+                          onClick={async () => {
+                            try {
+                              if (navigator.clipboard) {
+                                await navigator.clipboard.writeText(kisiselMesaj);
+                                setKopyalandiUrl(`msg-${d.id}`);
+                                setTimeout(() => setKopyalandiUrl(null), 2500);
+                              }
+                            } catch {}
+                            davetliWhatsappAcildiAction(d.id, true).catch(() => {});
+                            setDavetliler((prev) =>
+                              prev.map((item) => (item.id === d.id ? { ...item, whatsapp_acildi_mi: 1 } : item)),
+                            );
+                          }}
                         >
                           {d.telefon ? "💬 Numaraya Gönder" : "💬 WhatsApp'ta Aç"}
                         </a>
@@ -704,7 +738,7 @@ export default function WhatsappYonet({
                 />
               </div>
               <div className="whatsapp-kart-govde">
-                <div className="whatsapp-kart-baslik">{gelin} ❤ {damat} — Nişan Davetiyesi</div>
+                <div className="whatsapp-kart-baslik">{gelin} ❤️ {damat} — Nişan Davetiyesi</div>
                 <div className="whatsapp-kart-aciklama">
                   Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. {TARIH_METNI}
                 </div>
@@ -761,8 +795,8 @@ export default function WhatsappYonet({
                   <span>🎬</span> WhatsApp Davetiye Videosu
                 </h3>
                 <p className="kucuk" style={{ color: "#666", margin: "0.3rem 0 0 0" }}>
-                  {videoSecilenDavetli ? (
-                    <span><strong>{videoSecilenDavetli.ad_soyad}</strong> için özel davet videosu</span>
+                  {aktifDavetli ? (
+                    <span><strong>{aktifDavetli.ad_soyad}</strong> için kişiye özel paylaşım</span>
                   ) : (
                     <span>Genel Paylaşım &amp; Durum Videosu (720×1280 MP4)</span>
                   )}
@@ -785,19 +819,154 @@ export default function WhatsappYonet({
               </button>
             </div>
 
+            {/* Davetli Seçici ve Gezinme (200 kişilik liste) */}
+            <div
+              style={{
+                background: "#f8f9fa",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: "12px",
+                padding: "0.75rem 0.9rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1e293b" }}>
+                  👤 Kime Gönderilecek? ({davetliler.length} Davetli)
+                </label>
+                {aktifDavetli && (
+                  <span
+                    style={{
+                      fontSize: "0.74rem",
+                      background: aktifDavetli.gonderildi_mi === 1 ? "#e8f5e9" : "#fff3e0",
+                      color: aktifDavetli.gonderildi_mi === 1 ? "#2e7d32" : "#e65100",
+                      padding: "0.15rem 0.45rem",
+                      borderRadius: "6px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {aktifDavetli.gonderildi_mi === 1 ? "✓ Gönderildi" : "⏳ Gönderilmedi"}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                <select
+                  value={aktifDavetli?.id || ""}
+                  onChange={(e) => {
+                    const found = davetliler.find((item) => item.id === e.target.value) || null;
+                    setVideoSecilenDavetli(found);
+                  }}
+                  className="admin-input"
+                  style={{ flex: 1, padding: "0.4rem 0.6rem", fontSize: "0.84rem", height: "36px" }}
+                >
+                  <option value="">🌐 Genel Paylaşım (Kişiye Özel Değil)</option>
+                  {davetliler.map((item, idx) => (
+                    <option key={item.id} value={item.id}>
+                      {idx + 1}. {item.ad_soyad} {item.telefon ? `(${item.telefon})` : ""} {item.gonderildi_mi === 1 ? "✓ Gönderildi" : ""}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ padding: "0.4rem 0.65rem", height: "36px", fontSize: "0.8rem", whiteSpace: "nowrap" }}
+                  disabled={!aktifDavetli || davetliler.findIndex((d) => d.id === aktifDavetli.id) <= 0}
+                  onClick={() => {
+                    const curIdx = davetliler.findIndex((d) => d.id === aktifDavetli?.id);
+                    if (curIdx > 0) setVideoSecilenDavetli(davetliler[curIdx - 1]);
+                  }}
+                  title="Önceki Davetli"
+                >
+                  ◀ Önceki
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ padding: "0.4rem 0.65rem", height: "36px", fontSize: "0.8rem", whiteSpace: "nowrap" }}
+                  disabled={
+                    davetliler.length === 0 ||
+                    (!!aktifDavetli && davetliler.findIndex((d) => d.id === aktifDavetli.id) >= davetliler.length - 1)
+                  }
+                  onClick={() => {
+                    if (!aktifDavetli && davetliler.length > 0) {
+                      setVideoSecilenDavetli(davetliler[0]);
+                    } else {
+                      const curIdx = davetliler.findIndex((d) => d.id === aktifDavetli?.id);
+                      if (curIdx >= 0 && curIdx < davetliler.length - 1) {
+                        setVideoSecilenDavetli(davetliler[curIdx + 1]);
+                      }
+                    }
+                  }}
+                  title="Sonraki Davetli"
+                >
+                  Sonraki ▶
+                </button>
+              </div>
+            </div>
+
+            {/* Kişiye Özel Mesaj Önizlemesi */}
+            <div
+              style={{
+                background: "#f0f4f8",
+                border: "1px solid #cbd5e1",
+                borderRadius: "10px",
+                padding: "0.6rem 0.8rem",
+                fontSize: "0.78rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                <strong style={{ color: "#0f172a" }}>
+                  📝 Gönderilecek Mesaj {aktifDavetli ? `(${aktifDavetli.ad_soyad})` : "(Genel)"}:
+                </strong>
+                <button
+                  type="button"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#0284c7",
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                    padding: 0,
+                    fontWeight: 600,
+                  }}
+                  onClick={() => kopyala(aktifMesaj, "modal-mesaj")}
+                >
+                  {kopyalandiUrl === "modal-mesaj" ? "✓ Kopyalandı" : "Mesajı Kopyala"}
+                </button>
+              </div>
+              <div
+                style={{
+                  whiteSpace: "pre-line",
+                  color: "#334155",
+                  maxHeight: "85px",
+                  overflowY: "auto",
+                  padding: "0.4rem 0.6rem",
+                  background: "#ffffff",
+                  borderRadius: "6px",
+                  border: "1px solid #e2e8f0",
+                  lineHeight: 1.4,
+                  fontSize: "0.76rem",
+                }}
+              >
+                {aktifMesaj}
+              </div>
+            </div>
+
             {/* Video Özellikleri Özeti */}
             <div
               style={{
                 background: "#f9f8f5",
                 border: "1px solid #eee",
                 borderRadius: "10px",
-                padding: "0.6rem 0.8rem",
-                fontSize: "0.8rem",
+                padding: "0.5rem 0.8rem",
+                fontSize: "0.76rem",
                 color: "#555",
-                marginBottom: "1.2rem",
+                marginBottom: "1rem",
                 display: "flex",
                 flexDirection: "column",
-                gap: "0.25rem",
+                gap: "0.2rem",
               }}
             >
               <div>✨ <strong>2 sn Dokunun Yazısız Sabit Kapak:</strong> Mühürlü zarf kapağı sabit başlar.</div>
@@ -807,14 +976,14 @@ export default function WhatsappYonet({
             </div>
 
             {/* İlerleme Çubuğu & Yüzde Göstergesi */}
-            <div style={{ marginBottom: "1.2rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                <span style={{ fontSize: "0.86rem", fontWeight: 600, color: "#333" }}>
+            <div style={{ marginBottom: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+                <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#333" }}>
                   {videoAsama}
                 </span>
                 <span
                   style={{
-                    fontSize: "1.15rem",
+                    fontSize: "1.05rem",
                     fontWeight: 800,
                     color: videoYuzde === 100 ? "#2e7d32" : "#673ab7",
                   }}
@@ -823,10 +992,9 @@ export default function WhatsappYonet({
                 </span>
               </div>
 
-              {/* Progress Bar */}
               <div
                 style={{
-                  height: "12px",
+                  height: "10px",
                   background: "#eee",
                   borderRadius: "8px",
                   overflow: "hidden",
@@ -850,7 +1018,7 @@ export default function WhatsappYonet({
 
             {/* Video Oynatıcı Önizlemesi */}
             {videoHazirUrl && (
-              <div style={{ textAlign: "center", marginBottom: "1.2rem" }}>
+              <div style={{ textAlign: "center", marginBottom: "1rem" }}>
                 <video
                   key={videoHazirUrl}
                   src={videoHazirUrl}
@@ -859,10 +1027,10 @@ export default function WhatsappYonet({
                   loop
                   playsInline
                   style={{
-                    maxHeight: "280px",
+                    maxHeight: "220px",
                     width: "auto",
-                    borderRadius: "12px",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                    borderRadius: "10px",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
                     border: "2px solid #e0e0e0",
                     background: "#000",
                   }}
@@ -871,8 +1039,8 @@ export default function WhatsappYonet({
             )}
 
             {/* Butonlar ve Paylaşım Seçenekleri */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
-              {/* 1. ÖNCELİKLİ BUTON: VİDEOYU WHATSAPP İLE GÖNDER */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              {/* 1. ÖNCELİKLİ BUTON: WHATSAPP'I AÇ (MESAJ KOPYALANIR & TEK SEKMEDE AÇILIR) */}
               <button
                 type="button"
                 className="btn btn-eylem"
@@ -880,93 +1048,97 @@ export default function WhatsappYonet({
                   background: "#25D366",
                   color: "#ffffff",
                   borderColor: "#1da851",
-                  padding: "0.75rem 1rem",
-                  fontSize: "0.95rem",
+                  padding: "0.7rem 1rem",
+                  fontSize: "0.92rem",
                   fontWeight: 700,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "0.2rem",
+                  gap: "0.15rem",
                   boxShadow: "0 4px 12px rgba(37, 211, 102, 0.3)",
                   cursor: "pointer",
                 }}
-                onClick={() => videoWhatsappGonder(videoSecilenDavetli)}
+                onClick={() => videoWhatsappGonder(aktifDavetli)}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <span>🎬</span> WhatsApp ile Video Gönder
+                  <span>💬</span> {aktifDavetli ? `${aktifDavetli.ad_soyad} İçin WhatsApp'ı Aç` : "WhatsApp'ta Aç"}
                 </div>
-                <span style={{ fontSize: "0.74rem", fontWeight: 400, opacity: 0.92 }}>
-                  (Mobilde videoyu WhatsApp&apos;a ekler • Masaüstünde videoyu indirip sohbeti açar)
+                <span style={{ fontSize: "0.72rem", fontWeight: 400, opacity: 0.95 }}>
+                  (Mesaj panoya kopyalanır • Tek sekmede WhatsApp açılır • Video indirilmez)
                 </span>
               </button>
 
-              {/* 2. İKİNCİL BUTONLAR: İNDİR VE SADECE METİN */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+              {/* 2. İKİNCİL BUTONLAR: 1 KEZ İNDİR VE GÖNDERİLDİ İŞARETLE */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                 <a
                   href={videoHazirUrl || "/davetiye-video.mp4"}
-                  download={
-                    videoSecilenDavetli
-                      ? `davetiye-${videoSecilenDavetli.ad_soyad.toLowerCase().replace(/\s+/g, "-")}.mp4`
-                      : "kubranur-omur-davetiye.mp4"
-                  }
+                  download="kubranur-omur-davetiye.mp4"
                   className="btn btn-birincil"
                   style={{
                     textAlign: "center",
                     textDecoration: "none",
-                    padding: "0.6rem",
+                    padding: "0.55rem",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "0.4rem",
-                    fontSize: "0.84rem",
+                    gap: "0.3rem",
+                    fontSize: "0.82rem",
+                    background: "#673ab7",
+                    borderColor: "#512da8",
                   }}
+                  title="Videoyu 1 kez bilgisayarınıza indirin"
                 >
-                  <span>⬇️</span> Videoyu İndir (.mp4)
+                  <span>⬇️</span> Videoyu İndir (1 Kez)
                 </a>
 
-                <button
-                  type="button"
-                  className="btn"
-                  style={{
-                    padding: "0.6rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.4rem",
-                    fontSize: "0.84rem",
-                  }}
-                  onClick={() => {
-                    const mesaj = videoSecilenDavetli
-                      ? whatsappMesajiUret({
-                          sablon: mesajSablonu,
-                          gelin,
-                          damat,
-                          tarih: TARIH_METNI,
-                          saat: SAAT_METNI,
-                          salon: CFG.SALON_AD,
-                          url: siteUrl(`/davet/${slug}?g=${videoSecilenDavetli.token}`),
-                          misafir: videoSecilenDavetli.ad_soyad,
-                        })
-                      : genelMesaj;
-
-                    try {
-                      if (navigator.clipboard) {
-                        navigator.clipboard.writeText(mesaj);
-                        setVideoKopyalandi(true);
-                        setTimeout(() => setVideoKopyalandi(false), 3000);
+                {aktifDavetli ? (
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{
+                      padding: "0.55rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.3rem",
+                      fontSize: "0.82rem",
+                      background: aktifDavetli.gonderildi_mi === 1 ? "#f1f8e9" : "#e3f2fd",
+                      borderColor: aktifDavetli.gonderildi_mi === 1 ? "#81c784" : "#90caf9",
+                      color: aktifDavetli.gonderildi_mi === 1 ? "#2e7d32" : "#1565c0",
+                      fontWeight: 600,
+                    }}
+                    onClick={async () => {
+                      const yeniDurum = !(aktifDavetli.gonderildi_mi === 1);
+                      await gonderildiDegistir(aktifDavetli.id, aktifDavetli.gonderildi_mi === 1);
+                      // Otomatik bir sonraki davetliye geç
+                      const curIdx = davetliler.findIndex((d) => d.id === aktifDavetli.id);
+                      if (curIdx >= 0 && curIdx < davetliler.length - 1) {
+                        setVideoSecilenDavetli(davetliler[curIdx + 1]);
                       }
-                    } catch {}
-
-                    const hedefWpUrl = whatsappGonderUrl({
-                      telefon: videoSecilenDavetli?.telefon,
-                      mesaj,
-                    });
-                    window.open(hedefWpUrl, "_blank");
-                  }}
-                >
-                  <span>💬</span> Sadece Metin Gönder
-                </button>
+                    }}
+                    title="Bu davetliyi gönderildi say ve listedeki sonraki kişiye geç"
+                  >
+                    <span>{aktifDavetli.gonderildi_mi === 1 ? "✓" : "☑️"}</span>
+                    {aktifDavetli.gonderildi_mi === 1 ? "Gönderildi (Sonraki ➡️)" : "Gönderildi Say & Sonraki ➡️"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{
+                      padding: "0.55rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.3rem",
+                      fontSize: "0.82rem",
+                    }}
+                    onClick={() => kopyala(aktifMesaj, "modal-sadece-metin")}
+                  >
+                    <span>📋</span> {kopyalandiUrl === "modal-sadece-metin" ? "✓ Kopyalandı" : "Mesajı Kopyala"}
+                  </button>
+                )}
               </div>
 
               {/* BİLDİRİM: WEB SHARE DURUMU */}
@@ -975,9 +1147,9 @@ export default function WhatsappYonet({
                   style={{
                     background: "#e8f5e9",
                     color: "#2e7d32",
-                    padding: "0.6rem",
+                    padding: "0.5rem",
                     borderRadius: "8px",
-                    fontSize: "0.82rem",
+                    fontSize: "0.8rem",
                     textAlign: "center",
                     fontWeight: 600,
                   }}
@@ -992,14 +1164,14 @@ export default function WhatsappYonet({
                   style={{
                     background: "#e8f5e9",
                     color: "#2e7d32",
-                    padding: "0.5rem",
+                    padding: "0.45rem",
                     borderRadius: "6px",
-                    fontSize: "0.8rem",
+                    fontSize: "0.78rem",
                     textAlign: "center",
                     fontWeight: 600,
                   }}
                 >
-                  ✓ Davet metni panoya kopyalandı!
+                  ✓ Davet metni panoya kopyalandı! WhatsApp açılıyor...
                 </div>
               )}
 
@@ -1010,27 +1182,28 @@ export default function WhatsappYonet({
                     background: "#f0f7f2",
                     border: "1.5px solid #a5d6a7",
                     borderRadius: "10px",
-                    padding: "0.8rem 1rem",
-                    fontSize: "0.82rem",
+                    padding: "0.7rem 0.9rem",
+                    fontSize: "0.8rem",
                     color: "#1b5e20",
                   }}
                 >
-                  <div style={{ fontWeight: 700, marginBottom: "0.35rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span>💡</span> Masaüstü Kolay Gönderim Adımları:
+                  <div style={{ fontWeight: 700, marginBottom: "0.3rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span>💡</span> 200 Kişiye Hızlı Gönderim İpuçları:
                   </div>
-                  <ol style={{ margin: 0, paddingLeft: "1.2rem", lineHeight: 1.5 }}>
-                    <li>Video bilgisayarınıza indirildi ve davet mesajınız kopyalandı.</li>
-                    <li>Yeni sekmede açılan WhatsApp sohbetine inen videoyu sürükleyip bırakın (veya 📎 butonuna tıklayın).</li>
-                    <li>Mesaj alanına yapıştırın (<strong>Cmd+V / Ctrl+V</strong>) ve Gönder tuşuna basın.</li>
+                  <ol style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.45 }}>
+                    <li>Videoyu yukarıdaki <strong>Videoyu İndir (1 Kez)</strong> butonundan bilgisayarınıza 1 kez indirin.</li>
+                    <li><strong>WhatsApp&apos;ı Aç</strong> dediğinizde aynı WhatsApp sekmesi açılır ve mesajınız otomatik kopyalanır (200 sekme birikmez).</li>
+                    <li>Sohbete videoyu sürükleyip mesajınızı yapıştırın (<strong>Cmd+V / Ctrl+V</strong>).</li>
+                    <li>Buradan <strong>Gönderildi Say &amp; Sonraki ➡️</strong> butonuna basarak sıradaki davetliye geçin.</li>
                   </ol>
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.4rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.3rem" }}>
                 <button
                   type="button"
                   className="btn"
-                  style={{ fontSize: "0.78rem" }}
+                  style={{ fontSize: "0.76rem" }}
                   disabled={videoUretiliyor}
                   onClick={() => videoUretimiBaslat(videoSecilenDavetli, true)}
                 >
@@ -1039,7 +1212,7 @@ export default function WhatsappYonet({
                 <button
                   type="button"
                   className="btn"
-                  style={{ fontSize: "0.78rem" }}
+                  style={{ fontSize: "0.76rem" }}
                   onClick={() => {
                     setVideoModalAcik(false);
                     setMasaustuRehberGoster(false);
