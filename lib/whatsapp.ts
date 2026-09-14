@@ -36,9 +36,7 @@ export function misafirAdiFormatla(guest?: string | null): string {
     .join(" ");
 }
 
-export const VARSAYILAN_WHATSAPP_SABLONU = `💌 {cift}
-
-Davetlisiniz!
+export const VARSAYILAN_WHATSAPP_SABLONU = `{cift}
 
 Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız.
 
@@ -61,7 +59,10 @@ export function whatsappMesajiUret(params: WhatsappMesajParams): string {
   } = params;
 
   let metin = (sablon && sablon.trim().length > 0) ? sablon : VARSAYILAN_WHATSAPP_SABLONU;
-  const cift = `${gelin} & ${damat}`;
+  // Eski sablonlardan kalma basindaki 💌 emojisini temizle
+  metin = metin.replace(/💌\s*\{cift\}/gi, "{cift}");
+
+  const cift = `${gelin} ❤️ ${damat}`;
 
   // {misafir} temizligi: Eger kisiye ozel misafir YOKSA, {misafir} gecen satiri tamamen temizle
   if (!misafir) {

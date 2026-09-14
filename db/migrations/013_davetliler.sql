@@ -26,9 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_davetliler_davetiye_token ON davetliler(davetiye_
 INSERT OR IGNORE INTO ayarlar (anahtar, deger) VALUES
   ('metin.davetiye_slug', 'omur-kubra'),
   ('metin.whatsapp_og_tur', 'dinamik'),
-  ('metin.whatsapp_mesaj', '💌 {cift}
-
-Davetlisiniz!
+  ('metin.whatsapp_mesaj', '{cift}
 
 Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız.
 

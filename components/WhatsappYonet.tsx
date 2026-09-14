@@ -516,7 +516,7 @@ export default function WhatsappYonet({
                 />
               </div>
               <div className="whatsapp-kart-govde">
-                <div className="whatsapp-kart-baslik">{gelin} &amp; {damat} — Nişan Davetiyesi</div>
+                <div className="whatsapp-kart-baslik">{gelin} ❤️ {damat} — Nişan Davetiyesi</div>
                 <div className="whatsapp-kart-aciklama">
                   Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. {TARIH_METNI}
                 </div>
