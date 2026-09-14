@@ -90,6 +90,15 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
           type: "image/png",
         },
       ],
+      videos: [
+        {
+          url: siteUrl("/davetiye-video.mp4"),
+          secureUrl: siteUrl("/davetiye-video.mp4"),
+          type: "video/mp4",
+          width: 720,
+          height: 1280,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",

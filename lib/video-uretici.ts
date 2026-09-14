@@ -88,21 +88,36 @@ export async function davetiyeVideosuUret(secenekler?: {
       `"${ffmpegPath}" -y -i "${introVideo}" -vf "scale=720:1280,fps=24" -c:v libx264 -pix_fmt yuv420p -an "${part2Intro}"`,
     );
 
-    // 3. ADIM: Davetiye sayfasının akıcı kaydırma videosunu hazırla
-    // Eğer sayfa ekran görüntüsü varsa onu kaydır, yoksa kapak üzerinden pürüzsüz geçiş yap
-    const sayfaGorsel = path.join(cwd, "public/tema3/cift-kapanis.jpg");
+    // 3. ADIM: Davetiye sayfasının akıcı ve okunaklı kaydırma videosunu hazırla (23 saniye)
+    const sayfaGorsel = path.join(cwd, "public/tema3/davetiye-kart-uzun.png");
+
+    // Chrome varsa ve yeniden üretim istenmişse kartı en güncel haliyle yakala
+    const chromeYolu = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+    if (secenekler?.guncelle && fs.existsSync(chromeYolu)) {
+      try {
+        await execAsync(
+          `"${chromeYolu}" --headless --disable-gpu --screenshot="${sayfaGorsel}" --window-size=720,1560 --hide-scrollbars "http://localhost:2608/video-karti"`,
+        );
+      } catch (e) {
+        console.warn("Kart görseli güncelleme atlandı:", e);
+      }
+    }
+
+    const scrollFilter =
+      "crop=720:1280:0:'if(lt(t,3.0), 0, if(gt(t,19.0), in_h-1280, (t-3.0)*(in_h-1280)/16.0))'";
+
     await execAsync(
-      `"${ffmpegPath}" -y -loop 1 -t 8 -i "${sayfaGorsel}" -vf "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280" -r 24 -pix_fmt yuv420p "${part3Scroll}"`,
+      `"${ffmpegPath}" -y -loop 1 -t 23 -i "${sayfaGorsel}" -vf "${scrollFilter}" -r 24 -pix_fmt yuv420p "${part3Scroll}"`,
     );
 
-    // 4. ADIM: Parçaları birleştir ve müzik ekle
+    // 4. ADIM: Parçaları birleştir ve fon müziği miksi ekle (~29.8 saniye toplam süre)
     fs.writeFileSync(
       concatList,
       `file '${part1Cover}'\nfile '${part2Intro}'\nfile '${part3Scroll}'\n`,
     );
 
     await execAsync(
-      `"${ffmpegPath}" -y -f concat -safe 0 -i "${concatList}" -i "${sesDosyasi}" -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest -af "afade=t=in:ss=0:d=1.5,afade=t=out:st=13.5:d=1.5" "${ciktiYol}"`,
+      `"${ffmpegPath}" -y -f concat -safe 0 -i "${concatList}" -i "${sesDosyasi}" -c:v libx264 -preset fast -crf 22 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest -af "afade=t=in:ss=0:d=1.5,afade=t=out:st=27.5:d=2.3" "${ciktiYol}"`,
     );
 
     // Geçici dosyaları temizle
