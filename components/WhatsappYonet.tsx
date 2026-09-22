@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import type { Davetli } from "@/lib/davetliler";
 import {
   davetliEkleAction,
@@ -56,6 +56,7 @@ export default function WhatsappYonet({
   const [videoSecilenDavetli, setVideoSecilenDavetli] = useState<Davetli | null>(null);
   const [videoYuzde, setVideoYuzde] = useState(0);
   const [videoAsama, setVideoAsama] = useState("Hazırlanıyor…");
+  const [videoUretiliyor, setVideoUretiliyor] = useState(false);
   const [videoHazirUrl, setVideoHazirUrl] = useState<string | null>(null);
   const [videoKopyalandi, setVideoKopyalandi] = useState(false);
   const [videoPaylasimDurumu, setVideoPaylasimDurumu] = useState<string | null>(null);
