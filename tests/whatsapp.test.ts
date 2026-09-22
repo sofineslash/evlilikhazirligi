@@ -109,17 +109,17 @@ describe("lib/whatsapp", () => {
     expect(mesaj).toContain("Sayın Ahmet Yılmaz,");
   });
 
-  it("whatsappGonderUrl: telefon varsa wa.me, yoksa api.whatsapp.com uretir", () => {
+  it("whatsappGonderUrl: doğrudan web.whatsapp.com üretir (wa.me sunucu yönlendirme bug'ını önler)", () => {
     const urlTel = whatsappGonderUrl({
       telefon: "0532 111 22 33",
       mesaj: "Merhaba Kübra & Ömür",
     });
-    expect(urlTel).toContain("https://wa.me/905321112233?text=Merhaba");
+    expect(urlTel).toContain("https://web.whatsapp.com/send?phone=905321112233&text=Merhaba");
 
     const urlGenel = whatsappGonderUrl({
       mesaj: "Genel Davet",
     });
-    expect(urlGenel).toContain("https://api.whatsapp.com/send?text=Genel%20Davet");
+    expect(urlGenel).toContain("https://web.whatsapp.com/send?text=Genel%20Davet");
   });
 
   it("whatsappVideoMesajiUret: kullanicinin istedigi video aciklama formatini tam olarak uretir", () => {

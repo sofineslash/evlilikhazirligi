@@ -35,11 +35,13 @@ export default function WhatsappYonet({
   damat: string;
   davetliler: Davetli[];
 }) {
+  const KALP = "❤️";
   const sanitizeMesaj = (txt: string) =>
     (txt || "")
-      .replace(/\uFE0F/g, "")
-      .replace(/\uFFFD/g, "❤")
-      .replace(new RegExp(`${gelin}\\s*[?&❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤ ${damat}`);
+      .replace(/\uFFFD/g, KALP)
+      .replace(/\u2764(?!\uFE0F)/g, KALP)
+      .replace(/\uFE0F{2,}/g, "\uFE0F")
+      .replace(new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ${KALP} ${damat}`);
 
   const [slug, setSlug] = useState(baslangicSlug || DEFAULT_DAVETIYE_SLUG);
   const [mesajSablonu, setMesajSablonu] = useState(
@@ -398,6 +400,15 @@ export default function WhatsappYonet({
             rel="noopener noreferrer"
             className="btn btn-eylem"
             style={{ background: "#25D366", color: "#ffffff", borderColor: "#1da851" }}
+            onClick={(e) => {
+              const isMobile =
+                typeof navigator !== "undefined" &&
+                /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+              if (isMobile) {
+                e.preventDefault();
+                window.location.href = `whatsapp://send?text=${encodeURIComponent(genelMesaj)}`;
+              }
+            }}
           >
             WhatsApp&apos;ta Test Et
           </a>
@@ -577,7 +588,7 @@ export default function WhatsappYonet({
                             color: "#1b5e20",
                             borderColor: "#81c784",
                           }}
-                          onClick={async () => {
+                          onClick={async (e) => {
                             try {
                               if (navigator.clipboard) {
                                 await navigator.clipboard.writeText(kisiselMesaj);
@@ -589,6 +600,20 @@ export default function WhatsappYonet({
                             setDavetliler((prev) =>
                               prev.map((item) => (item.id === d.id ? { ...item, whatsapp_acildi_mi: 1 } : item)),
                             );
+
+                            const isMobile =
+                              typeof navigator !== "undefined" &&
+                              /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+                            if (isMobile) {
+                              e.preventDefault();
+                              const telRakamlar = d.telefon ? telefonNormalize(d.telefon) : "";
+                              const encodeMesaj = encodeURIComponent(kisiselMesaj);
+                              const nativeUrl = telRakamlar
+                                ? `whatsapp://send?phone=${telRakamlar}&text=${encodeMesaj}`
+                                : `whatsapp://send?text=${encodeMesaj}`;
+                              window.location.href = nativeUrl;
+                            }
                           }}
                         >
                           {d.telefon ? "💬 Numaraya Gönder" : "💬 WhatsApp'ta Aç"}

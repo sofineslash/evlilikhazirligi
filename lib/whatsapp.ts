@@ -141,25 +141,27 @@ export function whatsappMesajiUret(params: WhatsappMesajParams): string {
 }
 
 /**
- * WhatsApp baglantisi olusturur:
- * Numara varsa dogrudan o kisiye gonderim (https://wa.me/905xxxxxxxxx?text=...),
- * numara yoksa genel acilis (https://api.whatsapp.com/send?text=...).
+ * WhatsApp bağlantısı oluşturur:
+ * Numara varsa doğrudan o kişiye gönderim (https://web.whatsapp.com/send?phone=905xxxxxxxxx&text=...),
+ * numara yoksa genel açılış (https://web.whatsapp.com/send?text=...).
  *
- * KRİTİK: URL aktarımında U+FE0F varyasyon seçicisi WhatsApp Web'de elmas içinde
- * soru işaretine () yol açar. Bu nedenle URL encode edilirken FE0F temizlenir.
+ * KRİTİK ÇÖZÜM:
+ * https://wa.me/ ve https://api.whatsapp.com/ sunucuları HTTP 302 yönlendirmesi
+ * yaparken tüm UTF-8 emojileri (özellikle kırmızı kalp ❤️) bozarak %EF%BF%BD ( elmas soru işareti)
+ * haline getirir.
+ * Doğrudan https://web.whatsapp.com/send kullanıldığında sunucu yönlendirmesi olmaz,
+ * tarayıcının JavaScript'i (decodeURIComponent) emojiyi %100 kusursuz ve kırmızı kalp olarak okur.
  */
 export function whatsappGonderUrl(veri: {
   telefon?: string | null;
   mesaj: string;
 }): string {
-  // FE0F varyasyon seçicisini URL'den temizle (WhatsApp Web soru işareti bug'ını önler)
-  const temizMesaj = veri.mesaj.replace(/\uFE0F/g, "");
-  const encodeMesaj = encodeURIComponent(temizMesaj);
+  const encodeMesaj = encodeURIComponent(veri.mesaj);
   const telRakamlar = veri.telefon ? telefonNormalize(veri.telefon) : "";
 
   if (telRakamlar) {
-    return `https://wa.me/${telRakamlar}?text=${encodeMesaj}`;
+    return `https://web.whatsapp.com/send?phone=${telRakamlar}&text=${encodeMesaj}`;
   }
 
-  return `https://api.whatsapp.com/send?text=${encodeMesaj}`;
+  return `https://web.whatsapp.com/send?text=${encodeMesaj}`;
 }
