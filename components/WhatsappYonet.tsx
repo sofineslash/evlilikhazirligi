@@ -16,7 +16,7 @@ import {
   whatsappGonderUrl,
   VARSAYILAN_WHATSAPP_SABLONU,
 } from "@/lib/whatsapp";
-import { siteUrl, DEFAULT_DAVETIYE_SLUG } from "@/lib/site";
+import { siteUrl, DEFAULT_DAVETIYE_SLUG, telefonNormalize } from "@/lib/site";
 import { TARIH_METNI, SAAT_METNI, CFG } from "@/lib/config";
 
 export default function WhatsappYonet({
@@ -1175,11 +1175,14 @@ export default function WhatsappYonet({
                 </button>
               </div>
 
+              {/* 3. SIRADAKİ DAVETLİYE GEÇME BUTONU */}
+              <div>
                 {aktifDavetli ? (
                   <button
                     type="button"
                     className="btn"
                     style={{
+                      width: "100%",
                       padding: "0.55rem",
                       display: "flex",
                       alignItems: "center",
@@ -1210,6 +1213,7 @@ export default function WhatsappYonet({
                     type="button"
                     className="btn"
                     style={{
+                      width: "100%",
                       padding: "0.55rem",
                       display: "flex",
                       alignItems: "center",
