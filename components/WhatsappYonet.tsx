@@ -13,6 +13,7 @@ import {
 import {
   misafirAdiFormatla,
   whatsappMesajiUret,
+  whatsappVideoMesajiUret,
   whatsappGonderUrl,
   VARSAYILAN_WHATSAPP_SABLONU,
 } from "@/lib/whatsapp";
@@ -193,7 +194,22 @@ export default function WhatsappYonet({
   const videoWhatsappGonder = async (davetli?: Davetli | null, metinleAc = false) => {
     const secili = davetli !== undefined ? davetli : videoSecilenDavetli;
     const videoUrl = videoHazirUrl || "/davetiye-video.mp4";
-    const mesaj = secili
+
+    // Video altına gelecek özel açıklama metni
+    const videoMesaj = secili
+      ? whatsappVideoMesajiUret({
+          gelin,
+          damat,
+          url: siteUrl(`/davet/${slug}?g=${secili.token}`),
+        })
+      : whatsappVideoMesajiUret({
+          gelin,
+          damat,
+          url: siteUrl(`/davet/${slug}`),
+        });
+
+    // Klasik linkli metin
+    const metinMesaj = secili
       ? whatsappMesajiUret({
           sablon: mesajSablonu,
           gelin,
@@ -206,10 +222,12 @@ export default function WhatsappYonet({
         })
       : genelMesaj;
 
-    // 1. Metni panoya kopyala
+    const aktifPaylasimMetni = metinleAc ? metinMesaj : videoMesaj;
+
+    // 1. İlgili metni panoya kopyala
     try {
       if (navigator.clipboard) {
-        await navigator.clipboard.writeText(mesaj);
+        await navigator.clipboard.writeText(aktifPaylasimMetni);
         setVideoKopyalandi(true);
         setTimeout(() => setVideoKopyalandi(false), 3500);
       }
@@ -235,7 +253,7 @@ export default function WhatsappYonet({
           await navigator.share({
             files: [file],
             title: `${gelin} ❤️ ${damat} Nişan Davetiyesi`,
-            text: mesaj,
+            text: videoMesaj,
           });
           setVideoPaylasimDurumu("✓ WhatsApp'ta video başarıyla paylaşıldı!");
           setTimeout(() => setVideoPaylasimDurumu(null), 5000);
@@ -262,12 +280,12 @@ export default function WhatsappYonet({
     if (metinleAc) {
       hedefWpUrl = whatsappGonderUrl({
         telefon: secili?.telefon,
-        mesaj,
+        mesaj: metinMesaj,
       });
     } else {
-      hedefWpUrl = telRakam
-        ? `https://web.whatsapp.com/send?phone=${telRakam}`
-        : `https://web.whatsapp.com/`;
+      hedefWpUrl = isMobile
+        ? (telRakam ? `https://wa.me/${telRakam}` : `https://wa.me/`)
+        : (telRakam ? `https://web.whatsapp.com/send?phone=${telRakam}` : `https://web.whatsapp.com/`);
     }
 
     window.open(hedefWpUrl, "whatsapp_web");
@@ -317,6 +335,12 @@ export default function WhatsappYonet({
     salon: CFG.SALON_AD,
     url: aktifUrl,
     misafir: aktifDavetli?.ad_soyad,
+  });
+
+  const aktifVideoMesaj = whatsappVideoMesajiUret({
+    gelin,
+    damat,
+    url: aktifUrl,
   });
 
   return (
@@ -1100,6 +1124,63 @@ export default function WhatsappYonet({
               </div>
             )}
 
+            {/* Video Altına Gelecek Açıklama Önizlemesi */}
+            <div
+              style={{
+                background: "#f9fbf9",
+                border: "1px solid #c8e6c9",
+                borderRadius: "8px",
+                padding: "0.6rem 0.8rem",
+                marginBottom: "0.6rem",
+                fontSize: "0.82rem",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "0.4rem",
+                  color: "#2e7d32",
+                  fontWeight: 700,
+                  fontSize: "0.78rem",
+                }}
+              >
+                <span>📝 Video Altı Açıklaması (Kişiye Özel Linkli):</span>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    padding: "0.2rem 0.5rem",
+                    fontSize: "0.72rem",
+                    background: "#e8f5e9",
+                    borderColor: "#a5d6a7",
+                    color: "#2e7d32",
+                  }}
+                  onClick={() => kopyala(aktifVideoMesaj, "video-caption-preview")}
+                >
+                  {kopyalandiUrl === "video-caption-preview" ? "✓ Kopyalandı" : "📋 Kopyala"}
+                </button>
+              </div>
+              <pre
+                style={{
+                  margin: 0,
+                  fontFamily: "inherit",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  lineHeight: 1.45,
+                  color: "#333",
+                  background: "#fff",
+                  padding: "0.5rem",
+                  borderRadius: "6px",
+                  border: "1px solid #e0e0e0",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {aktifVideoMesaj}
+              </pre>
+            </div>
+
             {/* Butonlar ve Paylaşım Seçenekleri */}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               {/* 1. ÖNCELİKLİ BUTON: VİDEOLU PAYLAŞ (TEK MESAJ: VİDEO + ALTI AÇIKLAMA) */}
@@ -1275,12 +1356,12 @@ export default function WhatsappYonet({
                   }}
                 >
                   <div style={{ fontWeight: 700, marginBottom: "0.3rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span>💡</span> 200 Kişiye Hızlı Gönderim İpuçları:
+                    <span>🎬</span> Tek Mesajda Video + Açıklama Gönderme:
                   </div>
-                  <ol style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.45 }}>
-                    <li>Videoyu yukarıdaki <strong>Videoyu İndir (1 Kez)</strong> butonundan bilgisayarınıza 1 kez indirin.</li>
-                    <li><strong>WhatsApp&apos;ı Aç</strong> dediğinizde aynı WhatsApp sekmesi açılır ve mesajınız otomatik kopyalanır (200 sekme birikmez).</li>
-                    <li>Sohbete videoyu sürükleyip mesajınızı yapıştırın (<strong>Cmd+V / Ctrl+V</strong>).</li>
+                  <ol style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.5 }}>
+                    <li>İndirdiğiniz videoyu WhatsApp sohbet penceresine <strong>sürükleyip bırakın</strong> (oynatılabilir video önizlemesi açılır).</li>
+                    <li>WhatsApp&apos;ın videonun altında açtığı <strong>&quot;Açıklama ekle...&quot;</strong> kutusuna tıklayıp <strong>Cmd+V (Yapıştır)</strong> yapın!</li>
+                    <li>Gönder&apos;e bastığınızda video ve kişiye özel davetiyeniz <strong>tek parça</strong> olarak gider (link kartı çıkmaz).</li>
                     <li>Buradan <strong>Gönderildi Say &amp; Sonraki ➡️</strong> butonuna basarak sıradaki davetliye geçin.</li>
                   </ol>
                 </div>

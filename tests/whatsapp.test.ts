@@ -9,6 +9,7 @@ import {
 import {
   misafirAdiFormatla,
   whatsappMesajiUret,
+  whatsappVideoMesajiUret,
   whatsappGonderUrl,
   VARSAYILAN_WHATSAPP_SABLONU,
 } from "../lib/whatsapp";
@@ -119,6 +120,20 @@ describe("lib/whatsapp", () => {
       mesaj: "Genel Davet",
     });
     expect(urlGenel).toContain("https://api.whatsapp.com/send?text=Genel%20Davet");
+  });
+
+  it("whatsappVideoMesajiUret: kullanicinin istedigi video aciklama formatini tam olarak uretir", () => {
+    const videoMesaj = whatsappVideoMesajiUret({
+      gelin: "Kübranur",
+      damat: "Ömür",
+      url: "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5",
+    });
+
+    expect(videoMesaj).toContain("Kübranur ❤️ Ömür");
+    expect(videoMesaj).toContain("nişanımıza davetlisiniz");
+    expect(videoMesaj).toContain(
+      "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5 online davetiyemize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz."
+    );
   });
 });
 

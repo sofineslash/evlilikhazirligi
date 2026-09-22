@@ -46,6 +46,38 @@ Nişanımıza bekliyoruz, birlikte güzel bir anı paylaşmak dileğiyle.
 Davet detayları ve katılım için:
 {link}`;
 
+export const VARSAYILAN_VIDEO_WHATSAPP_SABLONU = `{cift}
+nişanımıza davetlisiniz
+
+{link} online davetiyemize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz.`;
+
+/**
+ * Video altı açıklama (caption) mesajını üretir.
+ */
+export function whatsappVideoMesajiUret(params: {
+  gelin: string;
+  damat: string;
+  url: string;
+  sablon?: string | null;
+}): string {
+  const { gelin, damat, url, sablon } = params;
+  let metin = sablon && sablon.trim().length > 0
+    ? sablon
+    : VARSAYILAN_VIDEO_WHATSAPP_SABLONU;
+
+  const KALP = "❤️";
+  const cift = `${gelin} ${KALP} ${damat}`;
+
+  metin = metin
+    .replace(/\uFFFD/g, KALP)
+    .replace(/\u2764(?!\uFE0F)/g, KALP)
+    .replace(/\uFE0F{2,}/g, "\uFE0F")
+    .replace(/\{cift\}/gi, cift)
+    .replace(/\{link\}/gi, url);
+
+  return metin.trim();
+}
+
 /**
  * WhatsApp paylasim mesajini dinamik alanlar ve yer tutucular ile uretir.
  */
