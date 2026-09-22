@@ -36,10 +36,9 @@ export default function WhatsappYonet({
 }) {
   const sanitizeMesaj = (txt: string) =>
     (txt || "")
-      .replace(/\uFFFD/g, "❤️")
-      .replace(/\u2764(?!\uFE0F)/g, "❤️")
-      .replace(/\uFE0F{2,}/g, "\uFE0F")
-      .replace(new RegExp(`${gelin}\\s*[?&❤️❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤️ ${damat}`);
+      .replace(/\uFE0F/g, "")
+      .replace(/\uFFFD/g, "❤")
+      .replace(new RegExp(`${gelin}\\s*[?&❤\\uFFFD]+\\s*${damat}`, "gi"), `${gelin} ❤ ${damat}`);
 
   const [slug, setSlug] = useState(baslangicSlug || DEFAULT_DAVETIYE_SLUG);
   const [mesajSablonu, setMesajSablonu] = useState(
@@ -191,7 +190,7 @@ export default function WhatsappYonet({
     }
   };
 
-  const videoWhatsappGonder = async (davetli?: Davetli | null) => {
+  const videoWhatsappGonder = async (davetli?: Davetli | null, metinleAc = false) => {
     const secili = davetli !== undefined ? davetli : videoSecilenDavetli;
     const videoUrl = videoHazirUrl || "/davetiye-video.mp4";
     const mesaj = secili
@@ -254,13 +253,23 @@ export default function WhatsappYonet({
     }
 
     // 3. Masaüstü / PC / Mac:
-    // NOT: Kullanıcı isteği gereği videoyu her seferinde otomatik indirmiyoruz.
-    // Kullanıcı videoyu tek tıkla 'Videoyu İndir (1 Kez)' butonuyla indirebilir.
-    // 200 kişiye gönderirken 200 ayrı sekme açılmaması için 'whatsapp_web' pencere adı kullanılır.
-    const hedefWpUrl = whatsappGonderUrl({
-      telefon: secili?.telefon,
-      mesaj,
-    });
+    // EĞER metinleAc=true ise URL'ye metin verilir (link kartı çıkar).
+    // EĞER metinleAc=false ise (VİDEOLU PAYLAŞIM):
+    // WhatsApp boş açılır, böylece o istenmeyen web link kartı videonun yerini almaz!
+    // Mesaj zaten panoya kopyalanmıştır. Kullanıcı videoyu sürükleyip alttaki kutuya yapıştırır (Cmd+V).
+    const telRakam = secili?.telefon ? telefonNormalize(secili.telefon) : "";
+    let hedefWpUrl = "";
+    if (metinleAc) {
+      hedefWpUrl = whatsappGonderUrl({
+        telefon: secili?.telefon,
+        mesaj,
+      });
+    } else {
+      hedefWpUrl = telRakam
+        ? `https://web.whatsapp.com/send?phone=${telRakam}`
+        : `https://web.whatsapp.com/`;
+    }
+
     window.open(hedefWpUrl, "whatsapp_web");
 
     if (secili) {
@@ -1093,7 +1102,7 @@ export default function WhatsappYonet({
 
             {/* Butonlar ve Paylaşım Seçenekleri */}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              {/* 1. ÖNCELİKLİ BUTON: WHATSAPP'I AÇ (MESAJ KOPYALANIR & TEK SEKMEDE AÇILIR) */}
+              {/* 1. ÖNCELİKLİ BUTON: VİDEOLU PAYLAŞ (TEK MESAJ: VİDEO + ALTI AÇIKLAMA) */}
               <button
                 type="button"
                 className="btn btn-eylem"
@@ -1101,28 +1110,28 @@ export default function WhatsappYonet({
                   background: "#25D366",
                   color: "#ffffff",
                   borderColor: "#1da851",
-                  padding: "0.7rem 1rem",
-                  fontSize: "0.92rem",
+                  padding: "0.75rem 1rem",
+                  fontSize: "0.95rem",
                   fontWeight: 700,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "0.15rem",
+                  gap: "0.2rem",
                   boxShadow: "0 4px 12px rgba(37, 211, 102, 0.3)",
                   cursor: "pointer",
                 }}
-                onClick={() => videoWhatsappGonder(aktifDavetli)}
+                onClick={() => videoWhatsappGonder(aktifDavetli, false)}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <span>💬</span> {aktifDavetli ? `${aktifDavetli.ad_soyad} İçin WhatsApp'ı Aç` : "WhatsApp'ta Aç"}
+                  <span>🎬</span> {aktifDavetli ? `${aktifDavetli.ad_soyad} İçin Videolu Paylaş` : "Videolu Paylaş"}
                 </div>
                 <span style={{ fontSize: "0.72rem", fontWeight: 400, opacity: 0.95 }}>
-                  (Mesaj panoya kopyalanır • Tek sekmede WhatsApp açılır • Video indirilmez)
+                  (Metin panoya kopyalanır • Boş sohbet açılır • Videoyu sürükleyip alttaki kutuya Cmd+V ile yapıştırın)
                 </span>
               </button>
 
-              {/* 2. İKİNCİL BUTONLAR: 1 KEZ İNDİR VE GÖNDERİLDİ İŞARETLE */}
+              {/* 2. ALTERNATİF BUTONLAR: 1 KEZ İNDİR & SADECE METİN/LİNK */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                 <a
                   href={videoHazirUrl || "/davetiye-video.mp4"}
@@ -1144,6 +1153,27 @@ export default function WhatsappYonet({
                 >
                   <span>⬇️</span> Videoyu İndir (1 Kez)
                 </a>
+
+                <button
+                  type="button"
+                  className="btn"
+                  style={{
+                    padding: "0.55rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.3rem",
+                    fontSize: "0.82rem",
+                    background: "#f5f5f5",
+                    borderColor: "#ccc",
+                    color: "#333",
+                  }}
+                  title="Sadece linkli metin olarak WhatsApp'ı açar"
+                  onClick={() => videoWhatsappGonder(aktifDavetli, true)}
+                >
+                  <span>💬</span> Sadece Linkli Metin
+                </button>
+              </div>
 
                 {aktifDavetli ? (
                   <button

@@ -112,12 +112,17 @@ export function whatsappMesajiUret(params: WhatsappMesajParams): string {
  * WhatsApp baglantisi olusturur:
  * Numara varsa dogrudan o kisiye gonderim (https://wa.me/905xxxxxxxxx?text=...),
  * numara yoksa genel acilis (https://api.whatsapp.com/send?text=...).
+ *
+ * KRİTİK: URL aktarımında U+FE0F varyasyon seçicisi WhatsApp Web'de elmas içinde
+ * soru işaretine () yol açar. Bu nedenle URL encode edilirken FE0F temizlenir.
  */
 export function whatsappGonderUrl(veri: {
   telefon?: string | null;
   mesaj: string;
 }): string {
-  const encodeMesaj = encodeURIComponent(veri.mesaj);
+  // FE0F varyasyon seçicisini URL'den temizle (WhatsApp Web soru işareti bug'ını önler)
+  const temizMesaj = veri.mesaj.replace(/\uFE0F/g, "");
+  const encodeMesaj = encodeURIComponent(temizMesaj);
   const telRakamlar = veri.telefon ? telefonNormalize(veri.telefon) : "";
 
   if (telRakamlar) {
