@@ -56,11 +56,25 @@ export default function WhatsappYonet({
   const [videoSecilenDavetli, setVideoSecilenDavetli] = useState<Davetli | null>(null);
   const [videoYuzde, setVideoYuzde] = useState(0);
   const [videoAsama, setVideoAsama] = useState("Hazırlanıyor…");
-  const [videoUretiliyor, setVideoUretiliyor] = useState(false);
-  const [videoHazirUrl, setVideoHazirUrl] = useState<string | null>("/davetiye-video.mp4");
+  const [videoHazirUrl, setVideoHazirUrl] = useState<string | null>(null);
   const [videoKopyalandi, setVideoKopyalandi] = useState(false);
   const [videoPaylasimDurumu, setVideoPaylasimDurumu] = useState<string | null>(null);
   const [masaustuRehberGoster, setMasaustuRehberGoster] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/video?durum=1")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.varMi) {
+          setVideoHazirUrl(`/davetiye-video.mp4?v=${d.sonGuncellemeMs || Date.now()}`);
+        } else {
+          setVideoHazirUrl(`/davetiye-video.mp4?v=${Date.now()}`);
+        }
+      })
+      .catch(() => {
+        setVideoHazirUrl(`/davetiye-video.mp4?v=${Date.now()}`);
+      });
+  }, []);
 
   // Form durumlari
   const [ayarState, ayarAction, ayarBekliyor] = useActionState(

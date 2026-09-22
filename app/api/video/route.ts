@@ -10,14 +10,24 @@ export async function GET(req: NextRequest) {
   const durum = davetiyeVideosuVarMi();
 
   if (durumIste) {
-    return NextResponse.json({
-      ok: true,
-      ...durum,
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        ...durum,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      },
+    );
   }
 
-  // Doğrudan videoya yönlendir
-  return NextResponse.redirect(new URL(VARSAYILAN_VIDEO_URL, req.url));
+  // Doğrudan videoya yönlendir (cache-bust ekle)
+  const hedefUrl = `${VARSAYILAN_VIDEO_URL}?v=${durum.sonGuncellemeMs || Date.now()}`;
+  const res = NextResponse.redirect(new URL(hedefUrl, req.url));
+  res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  return res;
 }
 
 export async function POST(req: NextRequest) {

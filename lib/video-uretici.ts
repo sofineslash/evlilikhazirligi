@@ -4,6 +4,8 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import ffmpegPath from "ffmpeg-static";
 
+import { muzikDosyaYolu } from "./muzik";
+
 const execAsync = promisify(exec);
 
 export const VARSAYILAN_VIDEO_YOLU = "public/davetiye-video.mp4";
@@ -71,7 +73,8 @@ export async function davetiyeVideosuUret(secenekler?: {
 
     const coverImg = path.join(cwd, "public/tema3/zarf_cover.jpg");
     const introVideo = path.join(cwd, "public/tema3/orijinal_intro_20260911223616.mp4");
-    const sesDosyasi = path.join(cwd, "public/tema3/muzik.mp3");
+    const sesDosyasi =
+      muzikDosyaYolu() || path.join(cwd, "public/muzik/davetiye.mp3");
 
     const part1Cover = path.join(tmpDir, "part1_cover.mp4");
     const part2Intro = path.join(tmpDir, "part2_intro.mp4");
@@ -114,7 +117,7 @@ export async function davetiyeVideosuUret(secenekler?: {
     );
 
     await execAsync(
-      `"${ffmpegPath}" -y -f concat -safe 0 -i "${concatList}" -i "${sesDosyasi}" -c:v libx264 -preset fast -crf 22 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest -af "afade=t=in:ss=0:d=1.5,afade=t=out:st=19.5:d=2.3" "${ciktiYol}"`,
+      `"${ffmpegPath}" -y -f concat -safe 0 -i "${concatList}" -ss 2.65 -i "${sesDosyasi}" -c:v libx264 -preset fast -crf 22 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -af "volume=1.8,afade=t=in:ss=0:d=0.5,afade=t=out:st=19.5:d=2.4" "${ciktiYol}"`,
     );
 
     // Geçici dosyaları temizle
