@@ -6,3 +6,7 @@ data
 medya
 tests
 *.log
+.github
+.claude
+docker-compose.yml
+*.md
