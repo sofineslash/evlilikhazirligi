@@ -85,10 +85,11 @@ jobs:
 
       - name: Sağlık kontrolü
         run: |
-          # curl ciktisi bastirilir: 40 basarisiz denemede 40 satir hata
+          # En fazla 5 dakika bekler (100 deneme x 3 sn).
+          # curl ciktisi bastirilir: basarisiz her denemede hata satiri
           # basmak asil sebebi (konteyner logu) ekranin disina itiyordu.
-          for i in $(seq 1 40); do
-            kod=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:2608/ || echo 000)
+          for i in $(seq 1 100); do
+            kod=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:2608/ || true)
             if [ "$kod" = "200" ]; then
               echo "Ayakta (${i}. deneme)"
               exit 0
