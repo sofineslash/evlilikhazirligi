@@ -12,16 +12,17 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN npm install -g tsx@4.23.15 && npm cache clean --force
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
-RUN npm install -g tsx@4.23.15 && npm cache clean --force
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY next.config.ts tsconfig.json ./
-COPY db ./db
-COPY scripts ./scripts
-COPY lib ./lib
-RUN mkdir -p /srv/data /srv/medya/scenes /srv/medya/muzik && chown -R node:node /srv /app
+COPY --from=builder --chown=node:node /app/.next ./.next
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --chown=node:node next.config.ts tsconfig.json ./
+COPY --chown=node:node db ./db
+COPY --chown=node:node scripts ./scripts
+COPY --chown=node:node lib ./lib
+RUN mkdir -p /srv/data /srv/medya/scenes /srv/medya/muzik \
+    && chown -R node:node /srv && chown node:node /app
 USER node
 EXPOSE 2608
 CMD ["sh", "-c", "tsx scripts/migrate.ts && npm run start"]
