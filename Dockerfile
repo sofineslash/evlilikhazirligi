@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
+RUN npm install -g tsx@4.23.15 && npm cache clean --force
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY next.config.ts tsconfig.json ./
@@ -23,4 +24,4 @@ COPY lib ./lib
 RUN mkdir -p /srv/data /srv/medya/scenes /srv/medya/muzik && chown -R node:node /srv /app
 USER node
 EXPOSE 2608
-CMD ["sh", "-c", "npx tsx scripts/migrate.ts && npm run start"]
+CMD ["sh", "-c", "tsx scripts/migrate.ts && npm run start"]
