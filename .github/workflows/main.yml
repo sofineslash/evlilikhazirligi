@@ -72,14 +72,16 @@ jobs:
             -v /srv/nisan-medya:/m \
             alpine:3 sh -c 'mkdir -p /m/scenes /m/anlar /m/muzik && chown -R 1000:1000 /d /m'
 
-      - name: Onceki konteyneri durdur
-        run: docker compose down --remove-orphans || true
-
+      # Once derle: bu sirada eski konteyner calismaya devam eder,
+      # site kapanmaz. Derleme bitince konteyner saniyeler icinde degisir.
       # Migration'lar konteynerin CMD'sinde calisiyor (migrate && start).
       # Hepsi `INSERT OR IGNORE` / `CREATE TABLE IF NOT EXISTS` — mevcut
       # metinleri, aile isimlerini ve ayarlari EZMEZ.
-      - name: Derle ve baslat
-        run: docker compose up -d --build
+      - name: Derle
+        run: docker compose build
+
+      - name: Baslat
+        run: docker compose up -d --remove-orphans
 
       - name: Sağlık kontrolü
         run: |
