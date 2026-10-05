@@ -94,15 +94,36 @@ export async function davetiyeVideosuUret(secenekler?: {
     // 3. ADIM: Davetiye kartı (720x1280 tam ekran, alt kenar yumuşatmalarıyla net sabit görünüm - 15 saniye)
     const sayfaGorsel = path.join(cwd, "public/tema3/davetiye-kart-uzun.png");
 
-    // Chrome varsa ve yeniden üretim istenmişse kartı en güncel haliyle yakala (720x1280 tam ekran)
-    const chromeYolu = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-    if (secenekler?.guncelle && fs.existsSync(chromeYolu)) {
-      try {
-        await execAsync(
-          `"${chromeYolu}" --headless --disable-gpu --screenshot="${sayfaGorsel}" --window-size=720,1280 --hide-scrollbars "http://localhost:2608/video-karti"`,
+    /* Kart gorseli yeniden cekilecekse tarayici gerekiyor.
+       DIKKAT: sunucuda (linux konteyner) tarayici YOK. O yuzden canlida bu
+       adim atlanir ve video, depoya islenmis `davetiye-kart-uzun.png`
+       dosyasindan uretilir. Kart tasariminda bir sey degisirse bu PNG'nin
+       yerelde yeniden uretilip islenmesi SART; yoksa site guncellenir ama
+       video eski karti gostermeye devam eder.
+       Yol tek bir makineye gomulu degil, aday listesinden bulunuyor. */
+    const chromeAdaylari = [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+    ];
+    const chromeYolu = chromeAdaylari.find((y) => fs.existsSync(y));
+    if (secenekler?.guncelle) {
+      if (!chromeYolu) {
+        // Sessizce gecmesin: eski kartla video uretildigi anlasilmali.
+        console.warn(
+          "Kart görseli YENİLENMEDİ: tarayıcı bulunamadı. " +
+            "Video, depodaki davetiye-kart-uzun.png ile üretiliyor.",
         );
-      } catch (e) {
-        console.warn("Kart görseli güncelleme atlandı:", e);
+      } else {
+        try {
+          await execAsync(
+            `"${chromeYolu}" --headless --disable-gpu --screenshot="${sayfaGorsel}" --window-size=720,1280 --hide-scrollbars "http://localhost:2608/video-karti"`,
+          );
+        } catch (e) {
+          console.warn("Kart görseli güncelleme atlandı:", e);
+        }
       }
     }
 
