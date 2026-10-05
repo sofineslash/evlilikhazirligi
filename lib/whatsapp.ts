@@ -47,7 +47,10 @@ Davet detayları ve katılım için:
 {link}`;
 
 export const VARSAYILAN_VIDEO_WHATSAPP_SABLONU = `{cift}
-nişanımıza davetlisiniz
+
+Merhaba 🌸
+Bizim için çok özel olan bu güzel günde sizleri de aramızda görmekten mutluluk duyarız. 💍🤍
+Nişan davetiyemizi sizinle paylaşmak istedik. Bu güzel günümüzde yanımızda olmanız ve mutluluğumuzu birlikte paylaşmamız bizi çok mutlu eder.
 
 {link} online davetiyemize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz.`;
 
