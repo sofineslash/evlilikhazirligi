@@ -134,7 +134,7 @@ describe("lib/whatsapp", () => {
 
     expect(videoMesaj).toContain("Kübranur ❤️ Ömür");
     expect(videoMesaj).toContain(
-      "Merhaba 🌸\n\nBizim için çok özel olan bu güzel günde sizleri de aramızda görmekten mutluluk duyarız. 💍🤍\nNişan davetiyemizi sizinle paylaşmak istedik. Bu güzel günümüzde yanımızda olmanız ve mutluluğumuzu birlikte paylaşmamız bizi çok mutlu eder."
+      "Merhaba 🌸\n\nBizim için çok özel olan bu güzel günde, nişan davetiyemizi sizinle paylaşmaktan ve mutluluğumuzu birlikte yaşamak üzere sizleri de aramızda görmekten büyük mutluluk duyuyoruz. 💍🤍"
     );
     // Tarih/salon sablona ELLE yazilmamali — yer tutucudan gelmeli, yoksa
     // gun degistiginde mesaj sessizce eski bilgiyi gonderir.
