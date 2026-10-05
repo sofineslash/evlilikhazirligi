@@ -369,7 +369,9 @@ export default function VideoKartiSayfasi() {
                 fontWeight: 500,
               }}
             >
-              Nişan törenimizde sizleri de aramızda görmekten mutluluk duyarız.
+              Bizim için çok özel olan bu güzel günde, nişan davetiyemizi sizinle
+              paylaşmaktan ve mutluluğumuzu birlikte yaşamak üzere sizleri de aramızda
+              görmekten büyük mutluluk duyuyoruz.
             </p>
           </div>
 

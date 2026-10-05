@@ -47,6 +47,23 @@ export function davetiyeVideosuVarMi(videoYolu = VARSAYILAN_VIDEO_YOLU): {
  * 3. 6.8s - 15s: Davetiye sayfasının akıcı aşağı kayışı
  * 4. Fon müziği miksi (giriş ve çıkışta yumuşak fade)
  */
+/**
+ * Kart gorselini yakalamak icin kullanilabilecek tarayiciyi bulur.
+ *
+ * Disa aciliyor cunku `npm run kart:yenile` ayni kontrolu ONCEDEN yapip
+ * anlamli bir hata verebilsin. Iki yerde ayri liste tutulsaydi biri
+ * guncellenince digeri sessizce ayrisirdi.
+ */
+export function tarayiciBul(): string | undefined {
+  return [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+  ].find((y) => fs.existsSync(y));
+}
+
 export async function davetiyeVideosuUret(secenekler?: {
   misafirAd?: string;
   guncelle?: boolean;
@@ -101,14 +118,7 @@ export async function davetiyeVideosuUret(secenekler?: {
        yerelde yeniden uretilip islenmesi SART; yoksa site guncellenir ama
        video eski karti gostermeye devam eder.
        Yol tek bir makineye gomulu degil, aday listesinden bulunuyor. */
-    const chromeAdaylari = [
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-      "/Applications/Chromium.app/Contents/MacOS/Chromium",
-      "/usr/bin/google-chrome",
-      "/usr/bin/chromium",
-      "/usr/bin/chromium-browser",
-    ];
-    const chromeYolu = chromeAdaylari.find((y) => fs.existsSync(y));
+    const chromeYolu = tarayiciBul();
     if (secenekler?.guncelle) {
       if (!chromeYolu) {
         // Sessizce gecmesin: eski kartla video uretildigi anlasilmali.

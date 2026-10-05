@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "hash": "tsx scripts/hash.ts",
-    "sahne:optimize": "tsx scripts/sahne-optimize.ts"
+    "sahne:optimize": "tsx scripts/sahne-optimize.ts",
+    "kart:yenile": "tsx scripts/kart-yenile.ts"
   },
   "dependencies": {
     "@ffprobe-installer/ffprobe": "^2.1.2",
