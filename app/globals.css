@@ -3097,10 +3097,14 @@ label.an-sec input:focus-visible + .btn {
   font-size: 0.95rem;
   line-height: 1.5;
 }
+/* Soyad ALTIN, ad koyu. Ayri bicimde de ayni kural isliyor: artik satirin
+   tamami degil, yalnizca soyad parcasi bu sinifi aliyor. Renk video
+   kartindaki #8c651e ile AYNI — iki yerde farkli altin tutmak, biri
+   degisince digerinin sessizce ayrismasi demek. */
 .tema2-aile-sutun .aile-soyad {
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #1a130c;
+  color: #8c651e;
 }
 
 /* Tören & Salon Bölümü */

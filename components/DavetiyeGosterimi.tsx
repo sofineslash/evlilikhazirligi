@@ -250,18 +250,22 @@ export default function DavetiyeGosterimi({
                   <div className="aileler bel bel-2">
                     {gelin.satirlar.length > 0 && (
                       <div className="aile-sutun">
-                        {gelin.satirlar.map((satir, i) => (
-                          <span key={i} className={gelin.ortakSoyad && i === 1 ? "aile-soyad" : ""}>
-                            {satir}
+                        {gelin.parcali.map((p, i) => (
+                          <span key={i}>
+                            {p.ad}
+                            {p.ad && p.soyad ? " " : ""}
+                            {p.soyad && <span className="aile-soyad">{p.soyad}</span>}
                           </span>
                         ))}
                       </div>
                     )}
                     {damat.satirlar.length > 0 && (
                       <div className="aile-sutun">
-                        {damat.satirlar.map((satir, i) => (
-                          <span key={i} className={damat.ortakSoyad && i === 1 ? "aile-soyad" : ""}>
-                            {satir}
+                        {damat.parcali.map((p, i) => (
+                          <span key={i}>
+                            {p.ad}
+                            {p.ad && p.soyad ? " " : ""}
+                            {p.soyad && <span className="aile-soyad">{p.soyad}</span>}
                           </span>
                         ))}
                       </div>

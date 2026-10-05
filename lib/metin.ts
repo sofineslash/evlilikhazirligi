@@ -38,7 +38,21 @@ export function metinYaz(anahtar: string, deger: string): void {
  *   "birlikte" -> ["Havva & Cemil", "ÇETİNKAYA"]      soyad altta, ortalanmis
  *   "ayri"     -> ["Havva ÇETİNKAYA", "Cemil BUDAK"]  her biri kendi satirinda
  */
-export type EbeveynBlok = { satirlar: string[]; ortakSoyad: boolean };
+/**
+ * Tek bir gorunen satir, AD ve SOYAD ayri.
+ *
+ * Ayri tutuluyor cunku ikisi farkli renkte: ad koyu, soyad altin. Birlesik
+ * metinden ayirmaya calismak ("Nurten Kazanasmaz"i bosluktan bolmek) iki
+ * adli ya da iki kelimelik soyadi olan kisilerde yanlis yere bolerdi.
+ */
+export type EbeveynSatir = { ad: string; soyad: string };
+export type EbeveynBlok = {
+  /** Duz metin hali — baslik, paylasim metni gibi renksiz yerler icin. */
+  satirlar: string[];
+  /** Renklendirilerek cizilecek hali. satirlar ile AYNI sirada. */
+  parcali: EbeveynSatir[];
+  ortakSoyad: boolean;
+};
 
 export function ebeveynSatirlari(
   anneAd: string, anneSoyad: string,
@@ -47,20 +61,30 @@ export function ebeveynSatirlari(
 ): EbeveynBlok {
   const a = anneAd.trim(), b = babaAd.trim();
   const as = anneSoyad.trim(), bs = babaSoyad.trim();
-  if (!a && !b) return { satirlar: [], ortakSoyad: false };
+  if (!a && !b) return { satirlar: [], parcali: [], ortakSoyad: false };
 
   if (bicim === "birlikte" && a && b) {
     const soyad = bs || as;                       // ikisi ayni varsayilir
+    const adlar = `${a} & ${b}`;
     return soyad
-      ? { satirlar: [`${a} & ${b}`, soyad], ortakSoyad: true }
-      : { satirlar: [`${a} & ${b}`], ortakSoyad: false };
+      ? {
+          satirlar: [adlar, soyad],
+          // Ortak soyad KENDI satirinda: ilk satirda soyad yok, ikincisinde ad yok.
+          parcali: [{ ad: adlar, soyad: "" }, { ad: "", soyad }],
+          ortakSoyad: true,
+        }
+      : { satirlar: [adlar], parcali: [{ ad: adlar, soyad: "" }], ortakSoyad: false };
   }
 
+  // Ayri bicim: her ebeveyn kendi satirinda, adi ve soyadi ayri parcalar
+  const parcali = [
+    a ? { ad: a, soyad: as } : null,
+    b ? { ad: b, soyad: bs } : null,
+  ].filter(Boolean) as EbeveynSatir[];
+
   return {
-    satirlar: [
-      a && `${a}${as ? " " + as : ""}`,
-      b && `${b}${bs ? " " + bs : ""}`,
-    ].filter(Boolean) as string[],
+    satirlar: parcali.map((p) => (p.soyad ? `${p.ad} ${p.soyad}` : p.ad)),
+    parcali,
     ortakSoyad: false,
   };
 }

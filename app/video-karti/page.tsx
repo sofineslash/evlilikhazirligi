@@ -1,5 +1,5 @@
 import { CFG, TARIH_METNI, SAAT_METNI } from "@/lib/config";
-import { metin } from "@/lib/metin";
+import { metin, ebeveynSatirlari } from "@/lib/metin";
 import { sahneYolu } from "@/lib/sahneler";
 
 export const dynamic = "force-dynamic";
@@ -7,6 +7,20 @@ export const dynamic = "force-dynamic";
 export default function VideoKartiSayfasi() {
   const gelin = metin("gelin_ad") || CFG.GELIN.replace(/\s+.*$/, "");
   const damat = metin("damat_ad") || CFG.DAMAT.replace(/\s+.*$/, "");
+
+  /* Aile isimleri KODA GOMULU degil, davetiyeyle AYNI kaynaktan.
+     Gomulu olsaydi yonetim panelinden isim degistirince site guncellenir
+     ama video eski ismi gostermeye devam ederdi. */
+  const gelinAile = ebeveynSatirlari(
+    metin("gelin_anne_ad"), metin("gelin_anne_soyad"),
+    metin("gelin_baba_ad"), metin("gelin_baba_soyad"),
+    (metin("gelin_bicim") || "birlikte") as "birlikte" | "ayri",
+  );
+  const damatAile = ebeveynSatirlari(
+    metin("damat_anne_ad"), metin("damat_anne_soyad"),
+    metin("damat_baba_ad"), metin("damat_baba_soyad"),
+    (metin("damat_bicim") || "birlikte") as "birlikte" | "ayri",
+  );
 
   const ciftGorsel = sahneYolu("02-cift") || "/tema3/cift-kapanis.jpg";
   const gelinPng = sahneYolu("06-gelin");
@@ -371,37 +385,23 @@ export default function VideoKartiSayfasi() {
               margin: "6px 0",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <span style={{ fontSize: "21px", fontWeight: 700, color: "#2d2319" }}>
-                Satu &amp; Akif
-              </span>
-              <span
-                style={{
-                  fontSize: "20px",
-                  fontWeight: 700,
-                  color: "#8c651e",
-                  letterSpacing: "1.2px",
-                }}
-              >
-                YAVAŞ
-              </span>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <span style={{ fontSize: "21px", fontWeight: 700, color: "#2d2319" }}>
-                Nurten KAZANASMAZ
-              </span>
-              <span
-                style={{
-                  fontSize: "20px",
-                  fontWeight: 700,
-                  color: "#8c651e",
-                  letterSpacing: "1.2px",
-                }}
-              >
-                Cemal ÖZ
-              </span>
-            </div>
+            {[gelinAile, damatAile].map((aile, s) => (
+              <div key={s} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                {aile.parcali.map((p, i) => (
+                  <span key={i} style={{ fontSize: "21px", fontWeight: 700, color: "#2d2319" }}>
+                    {p.ad}
+                    {p.ad && p.soyad ? " " : ""}
+                    {p.soyad && (
+                      /* Soyad ALTIN — ad koyu kalir. Ayri bicimde her satir
+                         kendi soyadini tasidigi icin kural ikisinde de ayni. */
+                      <span style={{ color: "#8c651e", letterSpacing: "1.2px" }}>
+                        {p.soyad.toLocaleUpperCase("tr")}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
 
           {/* 6. BLOK: TÖREN VE SALON BÖLÜMÜ (İkram ve Kokteyl kaldırıldı, ferah butonlar) */}
