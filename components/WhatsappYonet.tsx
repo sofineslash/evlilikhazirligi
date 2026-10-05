@@ -202,11 +202,17 @@ export default function WhatsappYonet({
       ? whatsappVideoMesajiUret({
           gelin,
           damat,
+          tarih: TARIH_METNI,
+          saat: SAAT_METNI,
+          salon: CFG.SALON_AD,
           url: siteUrl(`/davet/${slug}?g=${secili.token}`),
         })
       : whatsappVideoMesajiUret({
           gelin,
           damat,
+          tarih: TARIH_METNI,
+          saat: SAAT_METNI,
+          salon: CFG.SALON_AD,
           url: siteUrl(`/davet/${slug}`),
         });
 
@@ -342,6 +348,9 @@ export default function WhatsappYonet({
   const aktifVideoMesaj = whatsappVideoMesajiUret({
     gelin,
     damat,
+    tarih: TARIH_METNI,
+    saat: SAAT_METNI,
+    salon: CFG.SALON_AD,
     url: aktifUrl,
   });
 

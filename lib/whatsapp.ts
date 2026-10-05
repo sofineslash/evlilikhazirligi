@@ -52,8 +52,12 @@ Merhaba 🌸
 Bizim için çok özel olan bu güzel günde sizleri de aramızda görmekten mutluluk duyarız. 💍🤍
 Nişan davetiyemizi sizinle paylaşmak istedik. Bu güzel günümüzde yanımızda olmanız ve mutluluğumuzu birlikte paylaşmamız bizi çok mutlu eder.
 
-{link}
-online davetiyenize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz.`;
+📅 {tarih} {saat}
+📍 {salon}
+
+⤵️ Online davetiyeniz üzerinden salon konumuna ulaşabilir, katılım bilginizi paylaşabilir ve nişan günü çektiğiniz görselleri bizimle paylaşarak hatıra bırakabilirsiniz.
+
+{link}`;
 
 /**
  * Video altı açıklama (caption) mesajını üretir.
@@ -62,9 +66,15 @@ export function whatsappVideoMesajiUret(params: {
   gelin: string;
   damat: string;
   url: string;
+  /* Tarih/saat/salon ZORUNLU: sablona elle yazilsaydi, gun ya da salon
+     degistiginde mesaj sessizce eski bilgiyi gondermeye devam ederdi.
+     Tip zorunlu tuttugu icin yeni bir cagri yeri bunlari atlayamaz. */
+  tarih: string;
+  saat: string;
+  salon: string;
   sablon?: string | null;
 }): string {
-  const { gelin, damat, url, sablon } = params;
+  const { gelin, damat, url, tarih, saat, salon, sablon } = params;
   let metin = sablon && sablon.trim().length > 0
     ? sablon
     : VARSAYILAN_VIDEO_WHATSAPP_SABLONU;
@@ -77,6 +87,9 @@ export function whatsappVideoMesajiUret(params: {
     .replace(/\u2764(?!\uFE0F)/g, KALP)
     .replace(/\uFE0F{2,}/g, "\uFE0F")
     .replace(/\{cift\}/gi, cift)
+    .replace(/\{tarih\}/gi, tarih)
+    .replace(/\{saat\}/gi, saat)
+    .replace(/\{salon\}/gi, salon)
     .replace(/\{link\}/gi, url);
 
   return metin.trim();

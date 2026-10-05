@@ -126,6 +126,9 @@ describe("lib/whatsapp", () => {
     const videoMesaj = whatsappVideoMesajiUret({
       gelin: "Kübranur",
       damat: "Ömür",
+      tarih: "29 Ekim 2026, Perşembe",
+      saat: "19:00",
+      salon: "Asır Davet Balo & Kına Pendik Düğün Salonu",
       url: "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5",
     });
 
@@ -133,9 +136,17 @@ describe("lib/whatsapp", () => {
     expect(videoMesaj).toContain(
       "Merhaba 🌸\nBizim için çok özel olan bu güzel günde sizleri de aramızda görmekten mutluluk duyarız. 💍🤍\nNişan davetiyemizi sizinle paylaşmak istedik. Bu güzel günümüzde yanımızda olmanız ve mutluluğumuzu birlikte paylaşmamız bizi çok mutlu eder."
     );
+    // Tarih/salon sablona ELLE yazilmamali — yer tutucudan gelmeli, yoksa
+    // gun degistiginde mesaj sessizce eski bilgiyi gonderir.
+    expect(videoMesaj).toContain("📅 29 Ekim 2026, Perşembe 19:00");
+    expect(videoMesaj).toContain("📍 Asır Davet Balo & Kına Pendik Düğün Salonu");
     expect(videoMesaj).toContain(
-      "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5\nonline davetiyenize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz."
+      "⤵️ Online davetiyeniz üzerinden salon konumuna ulaşabilir, katılım bilginizi paylaşabilir ve nişan günü çektiğiniz görselleri bizimle paylaşarak hatıra bırakabilirsiniz."
     );
+    // Link mesajin SONUNDA
+    expect(videoMesaj.endsWith("https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5")).toBe(true);
+    // Yer tutucu artigi kalmamali
+    expect(videoMesaj).not.toMatch(/\{(cift|tarih|saat|salon|link)\}/);
   });
 });
 
