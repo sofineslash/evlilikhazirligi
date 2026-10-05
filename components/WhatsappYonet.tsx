@@ -437,7 +437,7 @@ export default function WhatsappYonet({
 
         {/* Davetli Ekleme Formu */}
         <form action={ekleAction} className="admin-davetli-form">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+          <div className="admin-izgara-2">
             <div>
               <label htmlFor="ad_soyad" className="kucuk">Adı Soyadı *</label>
               <input
@@ -461,7 +461,7 @@ export default function WhatsappYonet({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: "0.75rem", marginTop: "0.6rem", alignItems: "flex-end" }}>
+          <div className="admin-izgara-3" style={{ marginTop: "0.6rem" }}>
             <div>
               <label htmlFor="masa_no" className="kucuk">Masa No</label>
               <input
@@ -495,7 +495,7 @@ export default function WhatsappYonet({
         </form>
 
         {/* Davetli Tablosu */}
-        <div style={{ marginTop: "1.4rem", overflowX: "auto" }}>
+        <div className="admin-davetli-tablo-kaydir" style={{ marginTop: "1.4rem" }}>
           <table className="admin-davetli-tablo">
             <thead>
               <tr>
@@ -528,7 +528,7 @@ export default function WhatsappYonet({
 
                 return (
                   <tr key={d.id} style={d.yonlendiren_ad ? { background: "#f8fafc" } : undefined}>
-                    <td>
+                    <td data-etiket="Davetli">
                       <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                         {d.yonlendiren_ad && (
                           <span style={{ color: "#0284c7", fontWeight: 700, fontSize: "0.95rem" }} title="Yönlendirilen Davetli">
@@ -564,7 +564,7 @@ export default function WhatsappYonet({
                         {d.telefon}
                       </div>
                     </td>
-                    <td>
+                    <td data-etiket="Özel Link">
                       <button
                         type="button"
                         className="btn"
@@ -574,7 +574,7 @@ export default function WhatsappYonet({
                         {kopyalandiUrl === d.id ? "✓ Kopyalandı" : "🔗 Link Kopyala"}
                       </button>
                     </td>
-                    <td>
+                    <td data-etiket="WhatsApp">
                       <div style={{ display: "flex", gap: "0.35rem", alignItems: "center", flexWrap: "wrap" }}>
                         <a
                           href={kisiselWpUrl}
@@ -650,7 +650,7 @@ export default function WhatsappYonet({
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td data-etiket="Açılma">
                       {d.acilma_sayisi > 0 ? (
                         <span style={{ color: "#2e7d32", fontWeight: 600, fontSize: "0.82rem" }}>
                           Açtı ({d.acilma_sayisi} kez)
@@ -659,7 +659,7 @@ export default function WhatsappYonet({
                         <span style={{ color: "#999", fontSize: "0.8rem" }}>Henüz açmadı</span>
                       )}
                     </td>
-                    <td>
+                    <td data-etiket="RSVP">
                       {d.durum === "geliyor" ? (
                         <span style={{ color: "#2e7d32", fontWeight: 600, fontSize: "0.82rem" }}>
                           Katılacak ({d.kisi_sayisi} kişi)
@@ -672,7 +672,7 @@ export default function WhatsappYonet({
                         <span style={{ color: "#888", fontSize: "0.8rem" }}>Bekliyor</span>
                       )}
                     </td>
-                    <td style={{ textAlign: "center" }}>
+                    <td data-etiket="Gönderildi" style={{ textAlign: "center" }}>
                       <input
                         type="checkbox"
                         checked={d.gonderildi_mi === 1}
@@ -680,7 +680,7 @@ export default function WhatsappYonet({
                         title="Gönderildi olarak işaretle"
                       />
                     </td>
-                    <td>
+                    <td data-etiket="İşlem">
                       <div style={{ display: "flex", gap: "0.3rem" }}>
                         <button
                           type="button"
@@ -724,7 +724,7 @@ export default function WhatsappYonet({
         </h3>
 
         <form action={ayarAction}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+          <div className="admin-izgara-2" style={{ marginBottom: "1rem" }}>
             <div>
               <label htmlFor="davetiye_slug" style={{ fontWeight: 600 }}>
                 Davetiye URL Bağlantısı (Slug)
@@ -1238,7 +1238,7 @@ export default function WhatsappYonet({
               </button>
 
               {/* 2. ALTERNATİF BUTONLAR: 1 KEZ İNDİR & SADECE METİN/LİNK */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+              <div className="admin-izgara-2 admin-izgara-dar">
                 <a
                   href={videoHazirUrl || "/davetiye-video.mp4"}
                   download="kubranur-omur-davetiye.mp4"

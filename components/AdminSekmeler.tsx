@@ -37,6 +37,18 @@ export default function AdminSekmeler({ sekmeler }: { sekmeler: Sekme[] }) {
     history.replaceState(null, "", "#" + id);
   };
 
+  /* Serit dar ekranda yana kayiyor. Secili sekme gorunur alanin disinda
+     kalirsa kullanici hangisinde oldugunu goremiyor — gorunur alana cek.
+     `block: "nearest"` SART: yoksa tarayici sayfayi da dikey kaydirip
+     paneli ekranin disina itiyor. */
+  useEffect(() => {
+    const serit = seritRef.current;
+    if (!serit) return;
+    const btn = serit.querySelector<HTMLButtonElement>(`#sekme-${CSS.escape(aktif)}`);
+    if (!btn || serit.scrollWidth <= serit.clientWidth) return;
+    btn.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  }, [aktif]);
+
   /* Ok tuslariyla gezinme — sekme serilerinde beklenen davranis. */
   const tus = (e: React.KeyboardEvent) => {
     const yon = { ArrowRight: 1, ArrowLeft: -1 }[e.key];

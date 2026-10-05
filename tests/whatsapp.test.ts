@@ -134,7 +134,7 @@ describe("lib/whatsapp", () => {
       "Merhaba 🌸\nBizim için çok özel olan bu güzel günde sizleri de aramızda görmekten mutluluk duyarız. 💍🤍\nNişan davetiyemizi sizinle paylaşmak istedik. Bu güzel günümüzde yanımızda olmanız ve mutluluğumuzu birlikte paylaşmamız bizi çok mutlu eder."
     );
     expect(videoMesaj).toContain(
-      "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5 online davetiyemize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz."
+      "https://kubranur.omuroz.com.tr/davet/omur-kubra?g=TIxiX7-MCLC5\nonline davetiyenize ulaşabilir, katılım durumunuzu bildirebilir ve nişan günümüzde çektiğiniz güzel fotoğrafları bizimle paylaşabilirsiniz."
     );
   });
 });

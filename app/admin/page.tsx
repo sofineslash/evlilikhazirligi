@@ -75,14 +75,14 @@ export default async function Admin() {
             etiket: "Kayıtlar",
             rozet: kayitlar.length ? String(kayitlar.length) : undefined,
             icerik: (
-              <table>
+              <table className="admin-kayit-tablo">
                 <thead>
                   <tr><th>Ad soyad</th><th>Durum</th><th>Kişi</th><th>Dilek</th><th></th></tr>
                 </thead>
                 <tbody>
                   {kayitlar.map((k) => (
                     <tr key={k.id}>
-                      <td>
+                      <td data-etiket="Ad soyad">
                         <strong>{k.ad_soyad}</strong>{" "}
                         {k.yonlendiren_ad && (
                           <span
@@ -102,7 +102,7 @@ export default async function Admin() {
                         {k.cift_isaretli === 1 && <span className="rozet">çift?</span>}{" "}
                         {k.tek_kelime === 1 && <span className="rozet">tek kelime</span>}
                       </td>
-                      <td>
+                      <td data-etiket="Durum">
                         {k.geliyor === 1 ? (
                           <span style={{ color: "#2e7d32", fontWeight: 600 }}>Katılacak</span>
                         ) : k.geliyor === 2 ? (
@@ -111,8 +111,8 @@ export default async function Admin() {
                           <span style={{ color: "#c62828" }}>Katılamayacak</span>
                         )}
                       </td>
-                      <td>{k.kisi_sayisi || "—"}</td>
-                      <td>
+                      <td data-etiket="Kişi">{k.kisi_sayisi || "—"}</td>
+                      <td data-etiket="Dilek">
                         {k.dilek ? (
                           <>
                             <div>{k.dilek}</div>
@@ -124,7 +124,7 @@ export default async function Admin() {
                           </>
                         ) : "—"}
                       </td>
-                      <td>
+                      <td data-etiket="İşlem">
                         <form action={async () => { "use server"; await kayitSil(k.id); }}>
                           <button className="btn" style={kucukBtn}>Sil</button>
                         </form>

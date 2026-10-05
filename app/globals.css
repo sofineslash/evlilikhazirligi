@@ -4177,3 +4177,140 @@ label.an-sec input:focus-visible + .btn {
 
 
 
+
+/* ======================================================================
+   YONETIM PANELI — MOBIL
+   Panel masaustu icin yazilmisti: 7 sutunlu tablolar, zorlanmis iki
+   sutunlu izgaralar ve sarkan sekme seridi telefonda kullanilamiyordu
+   (olculdu: davetli tablosu 375px ekranda 687px, 288px'lik pencereden
+   yana kaydirilarak okunuyordu). Asagidaki kurallar YALNIZCA dar
+   ekranda devreye girer; masaustu gorunumu degismez.
+   ====================================================================== */
+
+/* Genis ekranda tablo yine yana kayabilsin (sutunlar sigmazsa) */
+.admin-davetli-tablo-kaydir { overflow-x: auto; }
+
+/* Izgaralar: satir ici style yerine sinif — medya sorgusu ancak boyle
+   devreye girebiliyor, satir ici style'i ezemez. */
+.admin-izgara-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.admin-izgara-3 { display: grid; grid-template-columns: 1fr 2fr auto; gap: .75rem; align-items: flex-end; }
+.admin-izgara-dar { gap: .5rem; }
+
+@media (max-width: 680px) {
+  .admin-izgara-2,
+  .admin-izgara-3 { grid-template-columns: 1fr; }
+  .admin-izgara-3 > * { align-self: stretch; }
+
+  /* Kart ic bosluklari: 1.4rem telefonda icerige yer birakmiyor */
+  .admin-kart { padding: 1rem .85rem; border-radius: 12px; }
+
+  /* 260px'lik alt sinir 375px ekranda butonlari disari itiyordu */
+  .admin-url-input { min-width: 0; width: 100%; flex-basis: 100%; }
+  .admin-url-kutu > .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* ---- SEKME SERIDI ----
+     Sarmak yerine TEK SATIRDA yana kayiyor. Sarinca 7 sekme dort
+     duzensiz satira bolunuyor ve hangisinin secili oldugu kayboluyordu. */
+  .sekme-serit {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Sagda devami oldugunu gosteren silinme — yoksa kaydirilabildigi
+       anlasilmiyor. */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
+  .sekme-serit::-webkit-scrollbar { display: none; }
+  .sekme-btn { scroll-snap-align: start; flex: none; padding: .7rem .7rem; font-size: .9rem; }
+
+  /* ---- TABLOLAR -> KART ----
+     Her satir kendi kutusuna, her hucre "Etiket: deger" seklinde.
+     Yana kaydirmali tablo telefonda okunmuyordu. */
+  .admin-kayit-tablo,
+  .admin-davetli-tablo {
+    display: block;
+    width: 100%;
+    font-size: .9rem;
+  }
+  .admin-kayit-tablo thead,
+  .admin-davetli-tablo thead { display: none; }   /* etiketler hucrelere tasindi */
+  .admin-kayit-tablo tbody,
+  .admin-davetli-tablo tbody { display: block; }
+  .admin-kayit-tablo tr,
+  .admin-davetli-tablo tr {
+    display: block;
+    margin-bottom: .7rem;
+    padding: .2rem .75rem .55rem;
+    border: 1px solid rgba(197, 160, 89, .35);
+    border-radius: 12px;
+    background: #fffdf8;
+  }
+  .admin-kayit-tablo td,
+  .admin-davetli-tablo td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    width: auto;
+    padding: .45rem 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .06);
+    text-align: left !important;   /* satir ici textAlign:center'i ezer */
+  }
+  .admin-kayit-tablo tr td:last-child,
+  .admin-davetli-tablo tr td:last-child { border-bottom: none; }
+
+  /* Etiket sutunu: sabit genislikte, deger hizali kalsin */
+  .admin-kayit-tablo td[data-etiket]::before,
+  .admin-davetli-tablo td[data-etiket]::before {
+    content: attr(data-etiket);
+    flex: 0 0 5.6rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--sessiz);
+  }
+  /* Degerin kendisi kalan yeri alsin ve TASMASIN */
+  .admin-kayit-tablo td > *,
+  .admin-davetli-tablo td > * { min-width: 0; }
+  .admin-davetli-tablo td[data-etiket="WhatsApp"] > div { flex: 1 1 100%; }
+
+  /* Bos hucre satiri gorsel gurultu — gizle */
+  .admin-kayit-tablo td:empty,
+  .admin-davetli-tablo td:empty { display: none; }
+
+  /* Tablonun yana kaydirilan sarmalayicisi artik gereksiz */
+  .admin-davetli-tablo-kaydir { overflow-x: visible !important; }
+
+  /* ---- DOKUNMA HEDEFLERI ----
+     Olculen en kucuk hedef 13x13 (gonderildi kutucugu) idi; parmakla
+     isabet ettirmek mumkun degil. */
+  /* !important SART: butonlarin satir ici style'inda minHeight: 32 var,
+     siniftan gelen deger onu ezemiyor. */
+  .admin-kayit-tablo .btn,
+  .admin-davetli-tablo .btn {
+    min-height: 40px !important;
+    padding-top: .45rem !important;
+    padding-bottom: .45rem !important;
+  }
+  .admin-davetli-tablo input[type="checkbox"] {
+    width: 28px;
+    height: 28px;
+    margin: .25rem 0;
+    accent-color: var(--birincil);
+  }
+  /* Galeri secim kutucugu da parmakla isabet ettirilebilsin */
+  .galeri-izgara input[type="checkbox"] { width: 28px; height: 28px; }
+}
+
+/* Cok dar telefonlar: etiket ustte, deger altta — yan yana sigmiyor */
+@media (max-width: 400px) {
+  .admin-kayit-tablo td,
+  .admin-davetli-tablo td { flex-direction: column; align-items: flex-start; gap: .25rem; }
+  .admin-kayit-tablo td[data-etiket]::before,
+  .admin-davetli-tablo td[data-etiket]::before { flex: none; }
+}
