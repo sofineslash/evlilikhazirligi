@@ -4435,3 +4435,35 @@ label.an-sec input:focus-visible + .btn {
   .wa-kalem { flex-direction: column; align-items: flex-start; gap: .15rem; }
   .wa-gunluk { font-size: .7rem; max-height: 11rem; }
 }
+
+/* ---------- Taraf (kız / erkek) ---------- */
+.wa-taraf-serit { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.wa-taraf-btn {
+  appearance: none; font: inherit; font-weight: 600; font-size: .9rem;
+  display: inline-flex; align-items: center; gap: .4rem;
+  min-height: 42px; padding: .5rem .85rem;
+  border: 1.5px solid var(--cizgi); border-radius: 999px;
+  background: #fff; color: var(--sessiz); cursor: pointer;
+}
+.wa-taraf-btn:hover { border-color: color-mix(in srgb, var(--birincil) 40%, transparent); }
+.wa-taraf-btn.secili {
+  border-color: var(--birincil);
+  background: color-mix(in srgb, var(--birincil) 10%, #fff);
+  color: var(--birincil);
+}
+.wa-taraf-btn:focus-visible { outline: 3px solid var(--zit); outline-offset: 2px; }
+
+.taraf-rozet {
+  display: inline-block; font-size: .74rem; font-weight: 700;
+  padding: .15rem .5rem; border-radius: 999px; white-space: nowrap;
+}
+.taraf-gelin { background: #fce7f3; color: #9d174d; }
+.taraf-damat { background: #e0f2fe; color: #075985; }
+
+/* Satir ici taraf secici — tabloyu sismesin diye dar */
+.taraf-sec { min-width: 7.5rem; padding: .3rem .4rem; font-size: .8rem; }
+
+@media (max-width: 680px) {
+  .taraf-sec { min-width: 0; width: 100%; }
+  .wa-taraf-btn { font-size: .85rem; padding: .45rem .7rem; }
+}

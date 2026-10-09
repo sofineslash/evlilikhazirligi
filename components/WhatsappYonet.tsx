@@ -7,6 +7,7 @@ import {
   davetliSilAction,
   davetliTokenYenileAction,
   davetliGonderildiAction,
+  davetliTarafAction,
   davetliWhatsappAcildiAction,
   whatsappAyarlariKaydetAction,
 } from "@/lib/admin";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/whatsapp";
 import { siteUrl, DEFAULT_DAVETIYE_SLUG, telefonNormalize } from "@/lib/site";
 import { TARIH_METNI, SAAT_METNI, CFG } from "@/lib/config";
+import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
 
 export default function WhatsappYonet({
   baslangicSlug,
@@ -49,6 +51,18 @@ export default function WhatsappYonet({
   );
   const [ogTur, setOgTur] = useState(baslangicOgTur || "dinamik");
   const [davetliler, setDavetliler] = useState<Davetli[]>(baslangicDavetliler);
+  /* Taraf suzgeci: kiz tarafi ve erkek tarafi kendi listesine baksin.
+     "hepsi" varsayilan — kimse gorunmez olmasin. */
+  const [tarafSuzgec, setTarafSuzgec] = useState<DavetliTaraf | "hepsi">("hepsi");
+  const gorunenDavetliler =
+    tarafSuzgec === "hepsi" ? davetliler : davetliler.filter((d) => d.taraf === tarafSuzgec);
+
+  /* Taraf degisimi iyimser yazilir: secim aninda listede gorunsun,
+     sunucu yanitini beklemek kullaniciya "tiklamadi mi?" hissi veriyordu. */
+  const tarafDegistir = async (id: string, yeni: DavetliTaraf | null) => {
+    setDavetliler((p) => p.map((x) => (x.id === id ? { ...x, taraf: yeni } : x)));
+    await davetliTarafAction(id, yeni);
+  };
 
   // Kopyalandi bildirimleri
   const [kopyalandiUrl, setKopyalandiUrl] = useState<string | null>(null);
@@ -472,6 +486,14 @@ export default function WhatsappYonet({
 
           <div className="admin-izgara-3" style={{ marginTop: "0.6rem" }}>
             <div>
+              <label htmlFor="taraf" className="kucuk">Taraf</label>
+              <select id="taraf" name="taraf" className="admin-input" defaultValue="">
+                <option value="">Belirsiz</option>
+                <option value="gelin">Kız tarafı</option>
+                <option value="damat">Erkek tarafı</option>
+              </select>
+            </div>
+            <div>
               <label htmlFor="masa_no" className="kucuk">Masa No</label>
               <input
                 id="masa_no"
@@ -503,12 +525,35 @@ export default function WhatsappYonet({
           {ekleState?.hata && <p className="hata kucuk" style={{ marginTop: "0.4rem" }}>{ekleState.hata}</p>}
         </form>
 
+        {/* Taraf suzgeci */}
+        <div className="wa-taraf-serit" style={{ marginTop: "1.4rem" }}>
+          {(["hepsi", "gelin", "damat"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              className={`wa-taraf-btn${tarafSuzgec === t ? " secili" : ""}`}
+              onClick={() => setTarafSuzgec(t)}
+            >
+              {t === "hepsi" ? "Hepsi" : t === "gelin" ? "👰 Kız tarafı" : "🤵 Erkek tarafı"}
+              <span className="sekme-rozet">
+                {t === "hepsi" ? davetliler.length : davetliler.filter((d) => d.taraf === t).length}
+              </span>
+            </button>
+          ))}
+          {davetliler.some((d) => !d.taraf) && (
+            <span className="kucuk" style={{ alignSelf: "center", color: "#999" }}>
+              {davetliler.filter((d) => !d.taraf).length} kişinin tarafı atanmamış
+            </span>
+          )}
+        </div>
+
         {/* Davetli Tablosu */}
-        <div className="admin-davetli-tablo-kaydir" style={{ marginTop: "1.4rem" }}>
+        <div className="admin-davetli-tablo-kaydir" style={{ marginTop: ".8rem" }}>
           <table className="admin-davetli-tablo">
             <thead>
               <tr>
                 <th>Davetli</th>
+                <th>Taraf</th>
                 <th>Özel Link</th>
                 <th>WhatsApp</th>
                 <th>Açılma</th>
@@ -518,7 +563,7 @@ export default function WhatsappYonet({
               </tr>
             </thead>
             <tbody>
-              {davetliler.map((d) => {
+              {gorunenDavetliler.map((d) => {
                 const kisiselUrl = siteUrl(`/davet/${slug}?g=${d.token}`);
                 const kisiselMesaj = whatsappMesajiUret({
                   sablon: mesajSablonu,
@@ -572,6 +617,20 @@ export default function WhatsappYonet({
                         {d.masa_no && d.telefon && " · "}
                         {d.telefon}
                       </div>
+                    </td>
+                    <td data-etiket="Taraf">
+                      <select
+                        className="admin-input taraf-sec"
+                        value={d.taraf ?? ""}
+                        aria-label={`${d.ad_soyad} için taraf`}
+                        onChange={(e) =>
+                          tarafDegistir(d.id, (e.target.value || null) as DavetliTaraf | null)
+                        }
+                      >
+                        <option value="">Belirsiz</option>
+                        <option value="gelin">Kız tarafı</option>
+                        <option value="damat">Erkek tarafı</option>
+                      </select>
                     </td>
                     <td data-etiket="Özel Link">
                       <button
@@ -714,9 +773,9 @@ export default function WhatsappYonet({
                   </tr>
                 );
               })}
-              {davetliler.length === 0 && (
+              {gorunenDavetliler.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="kucuk" style={{ textAlign: "center", padding: "1.5rem" }}>
+                  <td colSpan={8} className="kucuk" style={{ textAlign: "center", padding: "1.5rem" }}>
                     Henüz kayıtlı davetli yok. Yukarıdaki formdan ilk davetlinizi ekleyebilirsiniz.
                   </td>
                 </tr>

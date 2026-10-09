@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Davetli } from "@/lib/davetliler";
+import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
 
 type WaDurum = "kapali" | "baglaniyor" | "qr" | "bagli";
 type KalemDurum =
@@ -16,6 +17,7 @@ type Ilerleme = {
   kalemler: { id: string; ad: string; durum: KalemDurum; mesaj?: string }[];
   gunluk: string[];
   onayBekleyen: string | null;
+  oturumVar: boolean;
 };
 
 const UC = "/api/admin/wa";
@@ -45,12 +47,17 @@ const KALEM_YAZI: Record<KalemDurum, string> = {
  * goruntuyu duzenli yenilemek gerekiyor.
  */
 export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] }) {
+  /* Taraf basina AYRI oturum: kiz tarafi kendi numarasindan, erkek tarafi
+     kendi numarasindan gonderiyor. Panel hangi tarafa bakiyorsa onun
+     durumunu gosterir. */
+  const [taraf, setTaraf] = useState<DavetliTaraf>("gelin");
   const [ilerleme, setIlerleme] = useState<Ilerleme | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [mesgul, setMesgul] = useState(false);
   const [ekranMs, setEkranMs] = useState(0);
   const [acik, setAcik] = useState(false);
 
+  const [belirsizlerDahil, setBelirsizlerDahil] = useState(false);
   const [mod, setMod] = useState<"onay" | "otomatik">("onay");
   const [videoGonder, setVideoGonder] = useState(true);
   const [enAz, setEnAz] = useState(25);
@@ -59,16 +66,23 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
 
   const gunlukRef = useRef<HTMLPreElement>(null);
 
-  const hedefler = davetliler.filter((d) => d.gonderildi_mi !== 1 && d.telefon);
-  const telefonsuz = davetliler.filter((d) => d.gonderildi_mi !== 1 && !d.telefon);
+  const bekleyen = davetliler.filter((d) => d.gonderildi_mi !== 1);
+  const hedefler = bekleyen.filter(
+    (d) => d.telefon && (d.taraf === taraf || (belirsizlerDahil && !d.taraf)),
+  );
+  const telefonsuz = bekleyen.filter((d) => !d.telefon && d.taraf === taraf);
+  const belirsiz = bekleyen.filter((d) => !d.taraf && d.telefon);
 
   const yokla = useCallback(async () => {
     try {
-      const c = await fetch(`${UC}`, { cache: "no-store" });
+      const c = await fetch(`${UC}?taraf=${taraf}`, { cache: "no-store" });
       if (!c.ok) return;
       setIlerleme(await c.json());
     } catch { /* ag kesintisi — bir sonraki yoklamada toparlanir */ }
-  }, []);
+  }, [taraf]);
+
+  // Taraf degisince eski tarafin ilerlemesi ekranda kalmasin
+  useEffect(() => { setIlerleme(null); setHata(null); }, [taraf]);
 
   /* Panel kapaliyken yoklamayi DURDUR: aksi halde admin paneli acik
      kaldigi surece saniyede bir istek gider ve sunucuda bos yere
@@ -98,7 +112,7 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
     setHata(null);
     setMesgul(true);
     try {
-      const c = await fetch(`${UC}?is=${is}`, {
+      const c = await fetch(`${UC}?is=${is}&taraf=${taraf}`, {
         method: "POST",
         headers: govde ? { "content-type": "application/json" } : undefined,
         body: govde ? JSON.stringify(govde) : undefined,
@@ -123,8 +137,22 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
     <section className="admin-kart">
       <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
         <span>🤖</span> Toplu WhatsApp Gönderimi
-        <span className={`wa-rozet wa-${durum}`}>{DURUM_YAZI[durum]}</span>
       </h3>
+
+      {/* Taraf secici — her tarafin kendi numarasi, kendi listesi */}
+      <div className="wa-taraf-serit">
+        {(["gelin", "damat"] as DavetliTaraf[]).map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={`wa-taraf-btn${taraf === t ? " secili" : ""}`}
+            onClick={() => setTaraf(t)}
+          >
+            {t === "gelin" ? "👰 " : "🤵 "}{TARAF_ETIKET[t]}
+            {taraf === t && <span className={`wa-rozet wa-${durum}`}>{DURUM_YAZI[durum]}</span>}
+          </button>
+        ))}
+      </div>
 
       {!acik ? (
         <>
@@ -150,9 +178,30 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
           <div className="wa-bolum">
             <h4>1. Bağlantı</h4>
             {durum === "bagli" ? (
-              <p className="kucuk" style={{ color: "#2e7d32", fontWeight: 600 }}>
-                ✓ WhatsApp Web bağlı. Oturum sunucuda saklanıyor, tekrar QR istemez.
-              </p>
+              <>
+                <p className="kucuk" style={{ color: "#2e7d32", fontWeight: 600 }}>
+                  ✓ {TARAF_ETIKET[taraf]} numarası bağlı. Oturum sunucuda saklanıyor, tekrar QR istemez.
+                </p>
+                <button
+                  type="button" className="btn" disabled={mesgul || calisiyor}
+                  style={{ marginTop: ".5rem" }}
+                  onClick={() => {
+                    if (!confirm(
+                      `${TARAF_ETIKET[taraf]} için WhatsApp oturumu kapatılsın mı?\n\n` +
+                      "Kayıtlı oturum silinir; yeniden bağlanırken QR istenir ve " +
+                      "farklı bir numara bağlayabilirsiniz. Bu işlem geri alınamaz.",
+                    )) return;
+                    void istek("cikis");
+                  }}
+                >
+                  Çıkış yap / numarayı değiştir
+                </button>
+                {calisiyor && (
+                  <p className="kucuk" style={{ color: "#a8462a", marginTop: ".4rem" }}>
+                    Gönderim sürerken çıkış yapılamaz. Önce durdurun.
+                  </p>
+                )}
+              </>
             ) : (
               <>
                 <button
@@ -161,8 +210,15 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
                   disabled={mesgul || durum === "baglaniyor" || durum === "qr"}
                   onClick={() => istek("baglan")}
                 >
-                  {durum === "kapali" ? "WhatsApp'a bağlan" : "Bağlanılıyor…"}
+                  {durum === "kapali"
+                    ? `${TARAF_ETIKET[taraf]} numarasına bağlan`
+                    : "Bağlanılıyor…"}
                 </button>
+                {durum === "kapali" && ilerleme?.oturumVar && (
+                  <p className="kucuk" style={{ marginTop: ".4rem", color: "#666" }}>
+                    Bu taraf için kayıtlı bir oturum var — QR istemeden açılması beklenir.
+                  </p>
+                )}
                 {durum === "qr" && (
                   <p className="kucuk" style={{ marginTop: ".5rem" }}>
                     Telefonunuzda <strong>WhatsApp &gt; Ayarlar &gt; Bağlı cihazlar &gt; Cihaz
@@ -176,7 +232,7 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 className="wa-ekran"
-                src={`${UC}?is=ekran&t=${ekranMs}`}
+                src={`${UC}?is=ekran&taraf=${taraf}&t=${ekranMs}`}
                 alt="Sunucudaki WhatsApp Web ekranı"
               />
             )}
@@ -230,13 +286,24 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
               />
               <span>Davetiye videosunu da gönder (kapalıysa yalnızca metin gider)</span>
             </label>
+            {belirsiz.length > 0 && (
+              <label className="wa-onay">
+                <input
+                  type="checkbox" checked={belirsizlerDahil} disabled={calisiyor}
+                  onChange={(e) => setBelirsizlerDahil(e.target.checked)}
+                />
+                <span>
+                  Tarafı atanmamış {belirsiz.length} davetli de bu numaradan gönderilsin
+                </span>
+              </label>
+            )}
           </div>
 
           {/* 3) GÖNDERİM */}
           <div className="wa-bolum">
             <h4>3. Gönderim</h4>
             <p className="kucuk" style={{ color: "#666" }}>
-              Gönderilecek: <strong>{hedefler.length}</strong> davetli
+              {TARAF_ETIKET[taraf]} · Gönderilecek: <strong>{hedefler.length}</strong> davetli
               {telefonsuz.length > 0 && ` · ${telefonsuz.length} kişinin telefonu yok, atlanacak`}
               {" "}· Zaten gönderilmiş olanlara <strong>tekrar gönderilmez</strong>.
             </p>
@@ -248,7 +315,8 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
                 disabled={mesgul || calisiyor || durum !== "bagli" || hedefler.length === 0}
                 onClick={() =>
                   istek("gonder", {
-                    mod, videoGonder, enAzBekleme: enAz, enCokBekleme: enCok, gunlukSinir: sinir,
+                    mod, videoGonder, belirsizlerDahil,
+                    enAzBekleme: enAz, enCokBekleme: enCok, gunlukSinir: sinir,
                   })
                 }
               >

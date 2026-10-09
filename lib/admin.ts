@@ -21,6 +21,8 @@ import {
   davetliSil,
   davetliTokenYenile,
   davetliGonderildiGuncelle,
+  davetliTarafGuncelle,
+  tarafDogrula,
   davetliWhatsappAcildiGuncelle,
 } from "./davetliler";
 import { slugSanitize, DEFAULT_DAVETIYE_SLUG } from "./site";
@@ -191,6 +193,7 @@ export async function davetliEkleAction(_prev: unknown, form: FormData) {
   const izinliKisi = Number(form.get("izinli_kisi_sayisi") || CFG.KISI_MAX);
   const masaNo = String(form.get("masa_no") ?? "").trim();
   const notlar = String(form.get("notlar") ?? "").trim();
+  const taraf = tarafDogrula(form.get("taraf"));
 
   try {
     const davetli = davetliEkle({
@@ -199,6 +202,7 @@ export async function davetliEkleAction(_prev: unknown, form: FormData) {
       izinliKisiSayisi: izinliKisi,
       masaNo: masaNo || null,
       notlar: notlar || null,
+      taraf,
     });
     revalidatePath("/admin");
     return { ok: true, davetli };
@@ -226,6 +230,13 @@ export async function davetliTokenYenileAction(id: string) {
 export async function davetliGonderildiAction(id: string, gonderildi: boolean) {
   if (!(await adminMi())) return;
   davetliGonderildiGuncelle(id, gonderildi);
+  revalidatePath("/admin");
+}
+
+/** Davetliyi kiz/erkek tarafina atama (null = belirsiz) */
+export async function davetliTarafAction(id: string, taraf: "gelin" | "damat" | null) {
+  if (!(await adminMi())) return;
+  davetliTarafGuncelle(id, taraf);
   revalidatePath("/admin");
 }
 

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { adminMi } from "@/lib/admin";
 import {
-  baglan, durum, ekranGoruntusu, ilerleme, gonderimBaslat, durdur, onayla, kapat,
+  baglan, durum, ekranGoruntusu, ilerleme, gonderimBaslat, durdur, onayla, kapat, cikisYap,
   type GonderSecenek,
 } from "@/lib/wa-gonderici";
+import { tarafDogrula, type DavetliTaraf } from "@/lib/davetliler";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,12 @@ export const dynamic = "force-dynamic";
  * hesabini kullaniyor — yetkisiz birine acilmasi, onun adina mesaj
  * gonderilmesi demek.
  */
+/* Taraf ZORUNLU ve dogrulanir: gecersiz bir deger sessizce "gelin"e
+   dusseydi, erkek tarafinin numarasindan kiz tarafina mesaj gidebilirdi. */
+function taraf(req: Request): DavetliTaraf | null {
+  return tarafDogrula(new URL(req.url).searchParams.get("taraf"));
+}
+
 async function yetki(): Promise<NextResponse | null> {
   if (!(await adminMi())) {
     return NextResponse.json({ mesaj: "Yetkisiz." }, { status: 401 });
@@ -29,9 +36,11 @@ export async function GET(req: Request) {
   if (red) return red;
 
   const is = new URL(req.url).searchParams.get("is");
+  const t = taraf(req);
+  if (!t) return NextResponse.json({ mesaj: "Taraf belirtilmedi." }, { status: 400 });
 
   if (is === "ekran") {
-    const g = await ekranGoruntusu();
+    const g = await ekranGoruntusu(t);
     if (!g) return NextResponse.json({ mesaj: "Tarayıcı kapalı." }, { status: 409 });
     return new NextResponse(new Uint8Array(g), {
       headers: { "content-type": "image/jpeg", "cache-control": "no-store" },
@@ -39,8 +48,8 @@ export async function GET(req: Request) {
   }
 
   // Varsayilan: durum + ilerleme birlikte (istemci tek istekle izlesin)
-  const d = await durum();
-  return NextResponse.json({ ok: true, ...ilerleme(), durum: d }, {
+  const d = await durum(t);
+  return NextResponse.json({ ok: true, ...ilerleme(t), durum: d, taraf: t }, {
     headers: { "cache-control": "no-store" },
   });
 }
@@ -50,11 +59,13 @@ export async function POST(req: Request) {
   if (red) return red;
 
   const is = new URL(req.url).searchParams.get("is");
+  const t = taraf(req);
+  if (!t) return NextResponse.json({ mesaj: "Taraf belirtilmedi." }, { status: 400 });
 
   try {
     if (is === "baglan") {
       // Arka planda yurur; istemci durumu yoklayarak QR'i gorur.
-      void baglan().catch(() => {});
+      void baglan(t).catch(() => {});
       return NextResponse.json({ ok: true });
     }
 
@@ -65,6 +76,8 @@ export async function POST(req: Request) {
         return Number.isFinite(n) ? Math.min(ust, Math.max(alt, Math.round(n))) : varsayilan;
       };
       const sec: GonderSecenek = {
+        taraf: t,
+        belirsizlerDahil: g.belirsizlerDahil === true,     // varsayilan KAPALI
         mod: g.mod === "otomatik" ? "otomatik" : "onay",   // varsayilan GUVENLI taraf
         enAzBekleme: sayi(g.enAzBekleme, 25, 5, 600),
         enCokBekleme: sayi(g.enCokBekleme, 60, 5, 900),
@@ -80,17 +93,23 @@ export async function POST(req: Request) {
     if (is === "onay") {
       const g = await req.json().catch(() => ({}));
       const c = g.cevap === "atla" ? "atla" : g.cevap === "dur" ? "dur" : "gonder";
-      onayla(c);
+      onayla(t, c);
       return NextResponse.json({ ok: true });
     }
 
     if (is === "dur") {
-      durdur();
+      durdur(t);
       return NextResponse.json({ ok: true });
     }
 
     if (is === "kapat") {
-      await kapat();
+      await kapat(t);
+      return NextResponse.json({ ok: true });
+    }
+
+    /* Oturumu silip QR'i yeniden istetir — baska bir numara baglanabilsin. */
+    if (is === "cikis") {
+      await cikisYap(t);
       return NextResponse.json({ ok: true });
     }
 

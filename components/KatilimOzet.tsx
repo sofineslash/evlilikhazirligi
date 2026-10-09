@@ -1,4 +1,5 @@
 import type { Davetli } from "@/lib/davetliler";
+import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
 
 type Kayit = { geliyor: number; kisi_sayisi: number };
 
@@ -81,6 +82,36 @@ export default function KatilimOzet({
           {" "}Beklenen misafir sayısı: <strong>{gelenKisi}</strong>
         </p>
       </section>
+
+      {/* Taraf kirilimi: kiz tarafi ve erkek tarafi kendi cevresini
+          takip ediyor, toplam sayi ikisi icin de anlamsiz kaliyordu. */}
+      {davetliler.some((d) => d.taraf) && (
+        <section className="admin-kart">
+          <h3 style={{ marginTop: 0 }}>👰🤵 Taraflara göre</h3>
+          <div className="ozet-izgara">
+            {(["gelin", "damat"] as DavetliTaraf[]).map((t) => {
+              const grup = davetliler.filter((d) => d.taraf === t);
+              const g = grup.filter((d) => d.durum === "geliyor");
+              return (
+                <div key={t} className="ozet-kutu" style={{ gridColumn: "span 2" }}>
+                  <span className="ozet-etiket" style={{ fontSize: ".9rem" }}>{TARAF_ETIKET[t]}</span>
+                  <span className="ozet-deger">{grup.length}</span>
+                  <span className="ozet-alt">
+                    {grup.filter((d) => d.gonderildi_mi === 1).length} gönderildi ·{" "}
+                    {g.length} katılacak ({g.reduce((x, d) => x + (d.kisi_sayisi || 1), 0)} kişi)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {davetliler.some((d) => !d.taraf) && (
+            <p className="kucuk" style={{ marginTop: ".6rem", color: "#666" }}>
+              {davetliler.filter((d) => !d.taraf).length} davetlinin tarafı atanmamış — WhatsApp
+              Paylaşım sekmesindeki listeden atayabilirsiniz.
+            </p>
+          )}
+        </section>
+      )}
 
       {kayitlar.length > 0 && (
         <section className="admin-kart">

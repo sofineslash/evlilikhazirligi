@@ -5,6 +5,10 @@ import { CFG } from "./config";
 
 export type DavetliDurum = "bekliyor" | "geliyor" | "gelemiyor" | "belirsiz";
 
+/* Taraf sabitleri lib/taraf.ts icinde — istemci bilesenleri de
+   kullandigi icin veritabani katmanindan ayri tutuluyor. */
+export { TARAF_ETIKET, tarafDogrula, type DavetliTaraf } from "./taraf";
+import { tarafDogrula, type DavetliTaraf } from "./taraf";
 export type Davetli = {
   id: string;
   davetiye_id: string;
@@ -24,6 +28,7 @@ export type Davetli = {
   notlar: string | null;
   yonlendiren_davetli_id?: string | null;
   yonlendiren_ad?: string | null;
+  taraf: DavetliTaraf | null;
   olusturuldu: string;
   guncellendi: string;
 };
@@ -93,6 +98,7 @@ export function davetliEkle(veri: {
   izinliKisiSayisi?: number;
   masaNo?: string | null;
   notlar?: string | null;
+  taraf?: DavetliTaraf | null;
   davetiyeId?: string;
 }): Davetli {
   const id = crypto.randomUUID();
@@ -108,8 +114,8 @@ export function davetliEkle(veri: {
       `INSERT INTO davetliler (
         id, davetiye_id, ad_soyad, telefon, token,
         kisi_sayisi, izinli_kisi_sayisi, durum, gonderildi_mi,
-        whatsapp_acildi_mi, masa_no, notlar, olusturuldu, guncellendi
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'bekliyor', 0, 0, ?, ?, ?, ?)`,
+        whatsapp_acildi_mi, masa_no, notlar, taraf, olusturuldu, guncellendi
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'bekliyor', 0, 0, ?, ?, ?, ?, ?)`,
     )
     .run(
       id,
@@ -121,6 +127,7 @@ export function davetliEkle(veri: {
       izinli,
       veri.masaNo ? metinSanitize(veri.masaNo, 30) : null,
       veri.notlar ? metinSanitize(veri.notlar, 250) : null,
+      tarafDogrula(veri.taraf),
       simdi,
       simdi,
     );
@@ -142,6 +149,13 @@ export function davetlileriListele(davetiyeId = DEFAULT_DAVETIYE_ID): Davetli[] 
     if (e instanceof Error && /no such table/i.test(e.message)) return [];
     throw e;
   }
+}
+
+/** Davetlinin tarafini degistirir. null = belirsiz. */
+export function davetliTarafGuncelle(id: string, taraf: DavetliTaraf | null): void {
+  db()
+    .prepare("UPDATE davetliler SET taraf = ?, guncellendi = ? WHERE id = ?")
+    .run(tarafDogrula(taraf), new Date().toISOString(), id);
 }
 
 /**

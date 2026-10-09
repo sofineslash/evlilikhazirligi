@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Davetli } from "@/lib/davetliler";
+import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
 import { davetliGonderildiAction } from "@/lib/admin";
 
 /**
@@ -18,12 +19,14 @@ export default function GonderilenlerListesi({
 }) {
   const [davetliler, setDavetliler] = useState<Davetli[]>(baslangic);
   const [ara, setAra] = useState("");
+  const [taraf, setTaraf] = useState<DavetliTaraf | "hepsi">("hepsi");
   const [suzgec, setSuzgec] = useState<"hepsi" | "acmayan" | "yanitsiz">("hepsi");
   const [islemdeki, setIslemdeki] = useState<string | null>(null);
 
   const liste = useMemo(() => {
     const t = ara.trim().toLocaleLowerCase("tr");
     return davetliler.filter((d) => {
+      if (taraf !== "hepsi" && d.taraf !== taraf) return false;
       if (suzgec === "acmayan" && d.acilma_sayisi > 0) return false;
       if (suzgec === "yanitsiz" && d.durum !== "bekliyor") return false;
       if (!t) return true;
@@ -32,7 +35,7 @@ export default function GonderilenlerListesi({
         (d.telefon ?? "").includes(t)
       );
     });
-  }, [davetliler, ara, suzgec]);
+  }, [davetliler, ara, suzgec, taraf]);
 
   /* Geri alma: yanlislikla "gonderildi" isaretlenen biri tekrar gonderim
      listesine donebilmeli, yoksa o kisiye davetiye hic gitmiyor. */
@@ -75,6 +78,23 @@ export default function GonderilenlerListesi({
       <section className="admin-kart">
         <h3 style={{ marginTop: 0 }}>📤 Gönderilenler ({davetliler.length})</h3>
 
+        {/* Taraf: kiz tarafi ve erkek tarafi kendi listesine baksin */}
+        <div className="wa-taraf-serit" style={{ marginBottom: ".8rem" }}>
+          {(["hepsi", "gelin", "damat"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              className={`wa-taraf-btn${taraf === t ? " secili" : ""}`}
+              onClick={() => setTaraf(t)}
+            >
+              {t === "hepsi" ? "Hepsi" : t === "gelin" ? "👰 Kız tarafı" : "🤵 Erkek tarafı"}
+              <span className="sekme-rozet">
+                {t === "hepsi" ? davetliler.length : davetliler.filter((d) => d.taraf === t).length}
+              </span>
+            </button>
+          ))}
+        </div>
+
         <div className="sekme-serit" style={{ marginBottom: "1rem", borderBottom: "none" }}>
           <button
             type="button"
@@ -113,6 +133,7 @@ export default function GonderilenlerListesi({
             <thead>
               <tr>
                 <th>Davetli</th>
+                <th>Taraf</th>
                 <th>Açılma</th>
                 <th>RSVP</th>
                 <th>İşlem</th>
@@ -130,6 +151,13 @@ export default function GonderilenlerListesi({
                         {d.telefon}
                       </div>
                     </div>
+                  </td>
+                  <td data-etiket="Taraf">
+                    {d.taraf ? (
+                      <span className={`taraf-rozet taraf-${d.taraf}`}>{TARAF_ETIKET[d.taraf]}</span>
+                    ) : (
+                      <span className="kucuk" style={{ color: "#999" }}>Belirsiz</span>
+                    )}
                   </td>
                   <td data-etiket="Açılma">
                     {d.acilma_sayisi > 0 ? (
@@ -157,7 +185,7 @@ export default function GonderilenlerListesi({
               ))}
               {liste.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="kucuk" style={{ textAlign: "center", padding: "1.5rem" }}>
+                  <td colSpan={5} className="kucuk" style={{ textAlign: "center", padding: "1.5rem" }}>
                     Bu süzgece uyan davetli yok.
                   </td>
                 </tr>
