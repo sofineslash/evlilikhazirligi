@@ -65,6 +65,7 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
   const [sinir, setSinir] = useState(60);
 
   const gunlukRef = useRef<HTMLPreElement>(null);
+  const onayRef = useRef<HTMLDivElement>(null);
 
   const bekleyen = davetliler.filter((d) => d.gonderildi_mi !== 1);
   const hedefler = bekleyen.filter(
@@ -84,15 +85,22 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
   // Taraf degisince eski tarafin ilerlemesi ekranda kalmasin
   useEffect(() => { setIlerleme(null); setHata(null); }, [taraf]);
 
-  /* Panel kapaliyken yoklamayi DURDUR: aksi halde admin paneli acik
-     kaldigi surece saniyede bir istek gider ve sunucuda bos yere
-     ekran goruntusu uretilir. */
+  /* Panel KAPALIYKEN de yoklanir, yalnizca daha seyrek.
+     Eskiden kapaliyken durup kalıyordu: sayfa yenilendiginde `acik`
+     sifirlaniyor, onay kutusu hic cizilmiyor ve sunucudaki gonderim
+     kimsenin gormedigi bir onayi bekleyip zaman asimina ugruyordu.
+     Durum ucu ekran goruntusu uretmiyor, bu yoklama ucuz. */
   useEffect(() => {
-    if (!acik) return;
     void yokla();
-    const t = setInterval(yokla, 1500);
+    const t = setInterval(yokla, acik ? 1500 : 5000);
     return () => clearInterval(t);
   }, [acik, yokla]);
+
+  /* Sunucuda is varsa panel kendiliginden acilsin — kullanici sayfayi
+     yenilediginde devam eden gonderimi kaybetmesin. */
+  useEffect(() => {
+    if (!acik && ilerleme && (ilerleme.calisiyor || ilerleme.onayBekleyen)) setAcik(true);
+  }, [acik, ilerleme]);
 
   // Ekran goruntusu yalnizca baglanti kurulana kadar ve gonderim sirasinda gerekli
   useEffect(() => {
@@ -107,6 +115,17 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
     const el = gunlukRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [ilerleme?.gunluk?.length]);
+
+  /* Onay istendiginde kutuyu goruns alana cek ve sekme basligini degistir:
+     kullanici baska bir sekmedeyse bile beklendigini gorsun. */
+  const onayId = ilerleme?.onayBekleyen ?? null;
+  useEffect(() => {
+    if (!onayId) return;
+    onayRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    const asilBaslik = document.title;
+    document.title = "⏳ Onay bekleniyor — " + asilBaslik;
+    return () => { document.title = asilBaslik; };
+  }, [onayId]);
 
   const istek = async (is: string, govde?: unknown) => {
     setHata(null);
@@ -337,12 +356,14 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
             {hata && <p className="hata kucuk" style={{ marginTop: ".5rem" }}>{hata}</p>}
           </div>
 
-          {/* ONAY KUTUSU */}
+          {/* ONAY KUTUSU — ekranin altina YAPISIK.
+              Eskiden panelin dibinde duruyordu; kullanici kendisinden onay
+              beklendigini fark etmeyip gonderim zaman asimina ugradi. */}
           {onayli && (
-            <div className="wa-onay-kutu">
+            <div className="wa-onay-kutu" ref={onayRef}>
               <p>
-                <strong>{onayli.ad}</strong> için mesaj hazır. Sunucudaki ekranda kontrol edip
-                karar verin.
+                ⏳ <strong>{onayli.ad}</strong> için mesaj hazır — <strong>sizin onayınız
+                bekleniyor</strong>. Sunucudaki ekranda kontrol edip karar verin.
               </p>
               <div className="butonlar" style={{ justifyContent: "flex-start" }}>
                 <button type="button" className="btn btn-birincil" disabled={mesgul}

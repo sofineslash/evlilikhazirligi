@@ -300,12 +300,35 @@ export function onayla(taraf: DavetliTaraf, cevap: "gonder" | "atla" | "dur") {
   if (o.onayBekleyen) o.onayCevabi = cevap;
 }
 
-async function onayBekle(o: Oturum, id: string): Promise<"gonder" | "atla" | "dur"> {
+/** Onay beklerken bu sureden sonra vazgecilir. */
+const ONAY_ZAMAN_ASIMI_MS = 30 * 60_000;
+
+/**
+ * Kullanicinin "Gonder / Atla / Durdur" karari beklenir.
+ *
+ * Bekleme GUNLUGE YAZILIR: eskiden hicbir satir dusmuyordu ve gonderim
+ * on dakika boyunca sessizce bekleyip "Durduruldu." diyerek bitiyordu —
+ * kullanici kendisinden onay beklendigini hic anlamadan.
+ */
+async function onayBekle(o: Oturum, id: string, ad: string): Promise<"gonder" | "atla" | "dur"> {
   o.onayBekleyen = id;
   o.onayCevabi = null;
+  yaz(o, `${ad} için ONAYINIZ BEKLENİYOR — "Gönder", "Atla" ya da "Durdur" seçin.`);
   const basla = Date.now();
-  while (!o.onayCevabi && Date.now() - basla < 10 * 60_000) await bekle(400);
+  let hatirlatildi = false;
+  while (!o.onayCevabi && Date.now() - basla < ONAY_ZAMAN_ASIMI_MS) {
+    await bekle(400);
+    if (!hatirlatildi && Date.now() - basla > 5 * 60_000) {
+      yaz(o, "Hâlâ onay bekleniyor. Yanıt verilmezse 30 dakikada durdurulacak.");
+      hatirlatildi = true;
+    }
+  }
+  const zamanAsimi = !o.onayCevabi;
   const c = o.onayCevabi ?? "dur";
+  if (zamanAsimi) {
+    yaz(o, `ONAY GELMEDİ (${Math.round(ONAY_ZAMAN_ASIMI_MS / 60_000)} dk) — gönderim durduruldu. ` +
+           "Onaylı modda her kişi için panelden onay vermeniz gerekiyor.");
+  }
   o.onayBekleyen = null;
   o.onayCevabi = null;
   return c;
@@ -422,7 +445,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
 
           if (sec.mod === "onay") {
             isaretle("onay-bekliyor");
-            const c = await onayBekle(o, d.id);
+            const c = await onayBekle(o, d.id, d.ad_soyad);
             if (c === "dur") { isaretle("bekliyor"); yaz(o, "Durduruldu."); break; }
             if (c === "atla") { await onizlemeyiKapat(p); isaretle("atlandi"); yaz(o, `Atlandı: ${d.ad_soyad}`); continue; }
           }
