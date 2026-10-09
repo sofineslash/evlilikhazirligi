@@ -4487,3 +4487,11 @@ label.an-sec input:focus-visible + .btn {
 @media (prefers-reduced-motion: reduce) {
   .wa-onay-kutu { animation: none; }
 }
+
+/* Hata anında kaydedilen WhatsApp ekranları */
+.wa-hatalar { display: grid; gap: .7rem; margin-top: .8rem; }
+.wa-hatalar a { display: block; text-decoration: none; color: var(--sessiz); }
+.wa-hata-gorsel {
+  display: block; width: 100%; max-width: 420px;
+  border: 1px solid var(--cizgi); border-radius: 10px; background: #fff;
+}

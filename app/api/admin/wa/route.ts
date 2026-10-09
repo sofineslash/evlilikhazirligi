@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { adminMi } from "@/lib/admin";
 import {
   baglan, durum, ekranGoruntusu, ilerleme, gonderimBaslat, durdur, onayla, kapat, cikisYap,
+  gunlukOku, hataGoruntuleri, hataGoruntusuOku,
   type GonderSecenek,
 } from "@/lib/wa-gonderici";
 import { tarafDogrula, type DavetliTaraf } from "@/lib/davetliler";
@@ -43,6 +44,33 @@ export async function GET(req: Request) {
     const g = await ekranGoruntusu(t);
     if (!g) return NextResponse.json({ mesaj: "Tarayıcı kapalı." }, { status: 409 });
     return new NextResponse(new Uint8Array(g), {
+      headers: { "content-type": "image/jpeg", "cache-control": "no-store" },
+    });
+  }
+
+  /* Kalici gunluk — konteyner yeniden baslasa da duruyor. Duz metin
+     dondurulur ki dogrudan indirilip paylasilabilsin. */
+  if (is === "gunluk") {
+    return new NextResponse(gunlukOku(t), {
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "content-disposition": `attachment; filename="whatsapp-${t}.log"`,
+        "cache-control": "no-store",
+      },
+    });
+  }
+
+  if (is === "hatalar") {
+    return NextResponse.json({ ok: true, gorseller: hataGoruntuleri() }, {
+      headers: { "cache-control": "no-store" },
+    });
+  }
+
+  if (is === "hata-gorsel") {
+    const ad = new URL(req.url).searchParams.get("ad") ?? "";
+    const veri = hataGoruntusuOku(ad);
+    if (!veri) return NextResponse.json({ mesaj: "Bulunamadı." }, { status: 404 });
+    return new NextResponse(new Uint8Array(veri), {
       headers: { "content-type": "image/jpeg", "cache-control": "no-store" },
     });
   }

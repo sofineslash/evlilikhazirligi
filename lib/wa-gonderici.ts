@@ -37,6 +37,11 @@ const PROFIL_KOK =
 
 const profilYolu = (taraf: DavetliTaraf) => path.join(PROFIL_KOK, taraf);
 
+/* Gunluk ve hata goruntuleri DISKE yazilir.
+   Bellekteki dizi her konteyner yeniden baslayisinda (yani her deploy'da)
+   siliniyordu; sorun incelenecekken kayit kalmiyordu. */
+const GUNLUK_KOK = path.join(path.dirname(PROFIL_KOK), "wa-gunluk");
+
 const VIDEO_YOLU = path.join(process.cwd(), "public", "davetiye-video.mp4");
 
 export type WaDurum = "kapali" | "baglaniyor" | "qr" | "bagli";
@@ -96,9 +101,66 @@ function oturum(taraf: DavetliTaraf): Oturum {
 }
 
 function yaz(o: Oturum, s: string) {
-  const t = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const simdi = new Date();
+  const t = simdi.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   o.gunluk.push(`${t}  ${s}`);
   if (o.gunluk.length > 300) o.gunluk = o.gunluk.slice(-300);
+  /* Diske ekleme en iyi caba — basarisiz olursa gonderim durmasin. */
+  try {
+    fs.mkdirSync(GUNLUK_KOK, { recursive: true });
+    fs.appendFileSync(
+      path.join(GUNLUK_KOK, `${o.taraf}.log`),
+      `${simdi.toISOString()}  ${s}\n`,
+    );
+  } catch { /* gunluk yazilamadi, akis devam etsin */ }
+}
+
+/** Hata anindaki WhatsApp ekranini kaydeder; dosya adini doner. */
+async function hataGoruntusu(o: Oturum, etiket: string): Promise<string | null> {
+  if (!o.page || o.page.isClosed()) return null;
+  try {
+    fs.mkdirSync(GUNLUK_KOK, { recursive: true });
+    const ad = `hata-${o.taraf}-${etiket}-${Date.now()}.jpg`;
+    const veri = await o.page.screenshot({ type: "jpeg", quality: 55 });
+    await fs.promises.writeFile(path.join(GUNLUK_KOK, ad), new Uint8Array(veri));
+    return ad;
+  } catch {
+    return null;
+  }
+}
+
+/** Kalici gunlugu okur (panelde gosterilsin / indirilsin diye). */
+export function gunlukOku(taraf: DavetliTaraf, satir = 400): string {
+  try {
+    const metin = fs.readFileSync(path.join(GUNLUK_KOK, `${taraf}.log`), "utf8");
+    return metin.split("\n").slice(-satir).join("\n");
+  } catch {
+    return "(kayıtlı günlük yok)";
+  }
+}
+
+/** Kaydedilmis hata goruntulerinin adlari, yeniden eskiye. */
+export function hataGoruntuleri(): string[] {
+  try {
+    return fs
+      .readdirSync(GUNLUK_KOK)
+      .filter((a) => a.startsWith("hata-") && a.endsWith(".jpg"))
+      .sort()
+      .reverse()
+      .slice(0, 30);
+  } catch {
+    return [];
+  }
+}
+
+/** Tek bir hata goruntusunu okur. */
+export function hataGoruntusuOku(ad: string): Buffer | null {
+  if (!/^hata-[a-z0-9-]+\.jpg$/i.test(ad)) return null;   // yol gecisi engeli
+  try {
+    return fs.readFileSync(path.join(GUNLUK_KOK, ad));
+  } catch {
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------- tarayici */
@@ -162,7 +224,7 @@ async function onizlemeAcildiMi(p: Page): Promise<boolean> {
     .catch(() => false);
 }
 
-async function onizlemeBekle(p: Page, enFazlaMs = 45_000): Promise<boolean> {
+async function onizlemeBekle(p: Page, enFazlaMs = 15_000): Promise<boolean> {
   const basla = Date.now();
   while (Date.now() - basla < enFazlaMs) {
     if (await onizlemeAcildiMi(p)) return true;
@@ -322,7 +384,7 @@ async function girdiyeVer(p: Page, yol: string): Promise<boolean> {
     const girdi = p.locator(sec).first();
     if (!(await girdi.count().catch(() => 0))) continue;
     try {
-      await girdi.setInputFiles(yol, { timeout: 20_000 });
+      await girdi.setInputFiles(yol, { timeout: 10_000 });
       if (await onizlemeBekle(p)) return true;
     } catch { /* sonraki aday */ }
   }
@@ -634,6 +696,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
         const isaretle = (durum: KalemDurum, mesaj?: string) =>
           o.kalemDurumlari.set(d.id, { ad: d.ad_soyad, durum, mesaj });
 
+        const kisiBasladi = Date.now();
         try {
           isaretle("gonderiliyor");
           if (!(await sohbetAc(p, d.telefon!))) {
@@ -666,7 +729,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
 
           if (videoVar) {
             await gonderTikla(p);                 // 1) video
-            if (!(await mesajDustuMu(p, oncekiGiden, 180_000))) {
+            if (!(await mesajDustuMu(p, oncekiGiden, 60_000))) {
               throw new Error("Video sohbete düşmedi — gönderilmiş sayılmadı.");
             }
             const videoSonrasi = await gidenMesajSayisi(p);
@@ -687,7 +750,8 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           davetliGonderildiGuncelle(d.id, true);  // "Gönderilenler"e taşınır
           isaretle("gonderildi");
           o.gonderilenSayi++;
-          yaz(o, `Gönderildi: ${d.ad_soyad} (${o.gonderilenSayi}/${o.toplamSayi})`);
+          yaz(o, `Gönderildi: ${d.ad_soyad} (${o.gonderilenSayi}/${o.toplamSayi}) ` +
+                 `— ${Math.round((Date.now() - kisiBasladi) / 1000)} sn sürdü`);
 
           if (sec.mod !== "onay" && i < kuyruk.length - 1) {
             const s = rastgele(sec.enAzBekleme * 1000, sec.enCokBekleme * 1000);
@@ -697,7 +761,11 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
         } catch (e) {
           const m = String(e instanceof Error ? e.message : e).split("\n")[0];
           isaretle("hata", m);
-          yaz(o, `HATA (${d.ad_soyad}): ${m}`);
+          /* Hata anindaki ekran kaydedilir: "neden olmadi" sorusunu
+             tahminle degil goruntuyle cevaplayabilmek icin. */
+          const gorsel = await hataGoruntusu(o, d.ad_soyad.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20));
+          yaz(o, `HATA (${d.ad_soyad}) ${Math.round((Date.now() - kisiBasladi) / 1000)} sn: ${m}` +
+                 (gorsel ? ` · ekran görüntüsü: ${gorsel}` : ""));
           if (!tekrar) basarisiz.push(d);
         }
 

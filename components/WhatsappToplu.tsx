@@ -68,6 +68,15 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
 
   const gunlukRef = useRef<HTMLPreElement>(null);
   const onayRef = useRef<HTMLDivElement>(null);
+  const [hatalar, setHatalar] = useState<string[]>([]);
+
+  const hatalariGetir = async () => {
+    try {
+      const c = await fetch(`${UC}?is=hatalar&taraf=${taraf}`, { cache: "no-store" });
+      const v = await c.json().catch(() => ({}));
+      setHatalar(Array.isArray(v.gorseller) ? v.gorseller : []);
+    } catch { setHatalar([]); }
+  };
 
   const bekleyen = davetliler.filter((d) => d.gonderildi_mi !== 1);
   const hedefler = bekleyen.filter(
@@ -412,6 +421,31 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
 
               {ilerleme.gunluk.length > 0 && (
                 <pre className="wa-gunluk" ref={gunlukRef}>{ilerleme.gunluk.join("\n")}</pre>
+              )}
+
+              {/* Kalici kayitlar: konteyner yeniden baslasa da duruyor */}
+              <div className="butonlar" style={{ justifyContent: "flex-start", marginTop: ".6rem" }}>
+                <a className="btn" href={`${UC}?is=gunluk&taraf=${taraf}`}>
+                  Günlüğü indir
+                </a>
+                <button type="button" className="btn" onClick={hatalariGetir}>
+                  Hata ekranlarını göster
+                </button>
+              </div>
+
+              {hatalar.length > 0 && (
+                <div className="wa-hatalar">
+                  <p className="kucuk" style={{ color: "#666" }}>
+                    Hata anında sunucudaki WhatsApp ekranı — en yeniden eskiye:
+                  </p>
+                  {hatalar.map((ad) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <a key={ad} href={`${UC}?is=hata-gorsel&taraf=${taraf}&ad=${ad}`} target="_blank" rel="noreferrer">
+                      <img className="wa-hata-gorsel" src={`${UC}?is=hata-gorsel&taraf=${taraf}&ad=${ad}`} alt={ad} />
+                      <span className="kucuk">{ad}</span>
+                    </a>
+                  ))}
+                </div>
               )}
             </div>
           )}
