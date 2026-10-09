@@ -747,6 +747,10 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
         };
         try {
           isaretle("gonderiliyor");
+          /* Kisi BASLARKEN satir dusuyor. Eskiden yalnizca bitince
+             yaziliyordu; takilirsa gunlukte sessiz bir bosluk kaliyor ve
+             nerede durdugu anlasilmiyordu. */
+          yaz(o, `→ ${d.ad_soyad} (${i + 1}/${kuyruk.length}) işleniyor… ${d.telefon}`);
           if (!(await sohbetAc(p, d.telefon!, d.ad_soyad))) {
             isaretle("bulunamadi", "Numara WhatsApp'ta bulunamadı");
             yaz(o, `BULUNAMADI: ${d.ad_soyad} (${d.telefon})`);
@@ -755,6 +759,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           }
 
           adim("sohbet");
+          yaz(o, `   sohbet açıldı, video ekleniyor…`);
           const { videoMesaj } = mesajlariHazirla(d, slug);
 
           // Video onizlemesi ONAYDAN ONCE hazirlanir ki kullanici ne
@@ -762,6 +767,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           if (videoVar) {
             await videoEkle(o, p, VIDEO_YOLU);
             adim("video-ekle");
+            yaz(o, `   video eklendi, gönderiliyor…`);
           }
           else { await p.locator(YAZMA_KUTUSU).first().click(); await satirSatirYaz(p, videoMesaj); }
 
@@ -788,6 +794,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
               );
             }
             adim("video-gonder");
+            yaz(o, `   video gitti, metin yazılıyor…`);
             const videoSonrasi = await gidenMesajSayisi(p);
             await p.locator(YAZMA_KUTUSU).first().click();
             await satirSatirYaz(p, videoMesaj);   // 2) metin (link önizlemesi burada çıkar)
