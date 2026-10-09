@@ -78,7 +78,9 @@ export async function POST(req: Request) {
       const sec: GonderSecenek = {
         taraf: t,
         belirsizlerDahil: g.belirsizlerDahil === true,     // varsayilan KAPALI
-        mod: g.mod === "otomatik" ? "otomatik" : "onay",   // varsayilan GUVENLI taraf
+        /* Varsayilan OTOMATIK — kullanicinin istegi. Koruma onayda degil,
+           kisiler arasi rastgele beklemede ve gunluk ust sinirda. */
+        mod: g.mod === "onay" ? "onay" : "otomatik",
         enAzBekleme: sayi(g.enAzBekleme, 25, 5, 600),
         enCokBekleme: sayi(g.enCokBekleme, 60, 5, 900),
         gunlukSinir: sayi(g.gunlukSinir, 60, 1, 300),

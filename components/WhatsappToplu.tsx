@@ -58,7 +58,9 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
   const [acik, setAcik] = useState(false);
 
   const [belirsizlerDahil, setBelirsizlerDahil] = useState(false);
-  const [mod, setMod] = useState<"onay" | "otomatik">("onay");
+  /* Varsayilan OTOMATIK: kullanici her kisiyi tek tek onaylamak
+     istemiyor. Onayli mod secenek olarak duruyor. */
+  const [mod, setMod] = useState<"onay" | "otomatik">("otomatik");
   const [videoGonder, setVideoGonder] = useState(true);
   const [enAz, setEnAz] = useState(25);
   const [enCok, setEnCok] = useState(60);
@@ -188,9 +190,9 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
         <>
           <div className="wa-uyari">
             <strong>Dikkat:</strong> Toplu otomatik gönderim WhatsApp&apos;ın kullanım
-            şartlarına aykırıdır ve hesabınız kısıtlanabilir. Riski azaltmak için kişiler
-            arasında rastgele bekleme ve günlük üst sınır var. İlk seferde
-            <strong> Onaylı</strong> modda 3-5 kişiyle deneyin.
+            şartlarına aykırıdır ve hesabınız kısıtlanabilir. Riski azaltan şey kişiler
+            arasındaki rastgele bekleme ve günlük üst sınır — ikisini de düşürmeyin.
+            İlk denemede <strong>günlük üst sınırı 3-5</strong> yapıp sonucu görün.
           </div>
 
           {/* 1) BAĞLANTI */}
@@ -269,8 +271,8 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
                   onChange={(e) => setMod(e.target.value as "onay" | "otomatik")}
                   disabled={calisiyor}
                 >
-                  <option value="onay">Onaylı — her kişide bana sor</option>
                   <option value="otomatik">Otomatik — durmadan gönder</option>
+                  <option value="onay">Onaylı — her kişide bana sor</option>
                 </select>
               </label>
               <label className="wa-alan">
