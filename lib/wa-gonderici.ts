@@ -275,7 +275,7 @@ async function sohbetBasligi(p: Page): Promise<string> {
  * mesaj yanlis kisiye gidebilirdi. Bu yuzden BASLIGIN DEGISTIGI de
  * aranir.
  */
-async function araVeAc(p: Page, terim: string): Promise<boolean> {
+async function araVeAc(p: Page, terim: string, beklenenAd?: string): Promise<boolean> {
   const oncekiBaslik = await sohbetBasligi(p);
   const kutu = p.locator(ARAMA).first();
   await kutu.waitFor({ state: "visible", timeout: 20_000 });
@@ -311,6 +311,15 @@ async function araVeAc(p: Page, terim: string): Promise<boolean> {
       const aranan = terim.replace(/\D/g, "");
       const basliktaki = baslik.replace(/\D/g, "");
       if (aranan.length >= 7 && basliktaki.endsWith(aranan.slice(-7))) return true;
+      /* Rehberde KAYITLI kisilerde baslikta numara degil ISIM yaziyor;
+         rakam karsilastirmasi bu yuzden hic tutmuyordu ve tekrar
+         denemelerde "bulunamadi" deniyordu. */
+      if (
+        beklenenAd &&
+        baslik.toLocaleLowerCase("tr").includes(beklenenAd.trim().toLocaleLowerCase("tr"))
+      ) {
+        return true;
+      }
     }
     await bekle(400);
   }
@@ -324,11 +333,11 @@ async function araVeAc(p: Page, terim: string): Promise<boolean> {
  * baska bir Ahmet'e davetiye gidebilir. Yanlis kisiye nisan daveti
  * gondermek geri alinamaz.
  */
-async function sohbetAc(p: Page, telefon: string): Promise<boolean> {
+async function sohbetAc(p: Page, telefon: string, ad?: string): Promise<boolean> {
   const rakam = telefonNormalize(telefon);
   if (!rakam) return false;
   for (const bicim of [...new Set(["+" + rakam, rakam.replace(/^90/, "")])]) {
-    if (await araVeAc(p, bicim)) return true;
+    if (await araVeAc(p, bicim, ad)) return true;
   }
   return false;
 }
@@ -491,10 +500,27 @@ async function teslimBekle(p: Page, enFazlaMs = 120_000) {
  */
 async function gidenMesajSayisi(p: Page): Promise<number> {
   return p
-    .evaluate(
-      () =>
-        document.querySelectorAll('#main [data-id^="true_"], #main div.message-out').length,
-    )
+    .evaluate(() => {
+      const say = (sec: string) => document.querySelectorAll(sec).length;
+      const giden =
+        say('#main [data-id^="true_"]') ||
+        say('#main div.message-out') ||
+        say('#main [data-testid="msg-container"] ~ * [data-icon^="msg-"]');
+      if (giden > 0) return giden;
+      /* HIC GIDEN GORUNMUYOR. Iki ihtimal var ve ayirt etmek SART:
+         (a) gercekten hic mesaj yok,
+         (b) secicilerimiz bu WhatsApp surumunu goremiyor.
+         Mesaj listesinde herhangi bir satir var mi diye bakiyoruz; hic
+         yoksa "sayamiyorum" (-1) donuyoruz ki gonderim bosu bosuna
+         basarisiz sayilmasin. Eskiden bu durumda 0 donuyordu ve gonderilen
+         mesajlar "sohbete düşmedi" diye reddediliyordu. */
+      const herhangi =
+        say('#main [data-id]') ||
+        say('#main [role="row"]') ||
+        say("#main div.message-in") ||
+        say("#main div.message-out");
+      return herhangi > 0 ? 0 : -1;
+    })
     .catch(() => -1);
 }
 
@@ -721,7 +747,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
         };
         try {
           isaretle("gonderiliyor");
-          if (!(await sohbetAc(p, d.telefon!))) {
+          if (!(await sohbetAc(p, d.telefon!, d.ad_soyad))) {
             isaretle("bulunamadi", "Numara WhatsApp'ta bulunamadı");
             yaz(o, `BULUNAMADI: ${d.ad_soyad} (${d.telefon})`);
             if (!tekrar) basarisiz.push(d);
@@ -753,7 +779,13 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           if (videoVar) {
             await gonderTikla(p);                 // 1) video
             if (!(await mesajDustuMu(p, oncekiGiden, 60_000))) {
-              throw new Error("Video sohbete düşmedi — gönderilmiş sayılmadı.");
+              const simdiki = await gidenMesajSayisi(p);
+              const gorsel = await hataGoruntusu(o, "video-dusmedi");
+              throw new Error(
+                `Video sohbete düşmedi — gönderilmiş sayılmadı. ` +
+                  `(giden mesaj: önce ${oncekiGiden}, sonra ${simdiki})` +
+                  (gorsel ? ` · ekran: ${gorsel}` : ""),
+              );
             }
             adim("video-gonder");
             const videoSonrasi = await gidenMesajSayisi(p);
