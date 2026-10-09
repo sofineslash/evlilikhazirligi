@@ -137,8 +137,39 @@ async function tarayiciHazirla(o: Oturum): Promise<Page> {
 const SOHBET_LISTESI = '#pane-side, [data-icon="new-chat-outline"], [aria-label="Chat list"]';
 const QR = "canvas, [data-ref]";
 const YAZMA_KUTUSU = 'footer div[contenteditable="true"]';
+/* GONDER DUGMESI — SEcici DAR tutuluyor.
+   Eskiden `aria-label*="önder"` ve `*="end"` vardi; Turkce arayuzde
+   MIKROFON dugmesi ("Sesli mesaj gönder") de bunlara uyuyordu. Video
+   eklenemediginde mikrofon "gonder dugmesi" sanilip metin tek basina
+   gonderiliyordu — video olmadan giden mesajlarin sebebi buydu. */
 const GONDER_DUGMESI =
-  '[data-icon*="send"], [aria-label="Send"], [aria-label="Gönder"], button[aria-label*="önder"], button[aria-label*="end"]';
+  '[data-icon="send"], [data-icon="send-light"], [data-icon="send-filled"], ' +
+  '[data-icon="wds-ic-send-filled"], ' +
+  'button[aria-label="Gönder"], button[aria-label="Send"], ' +
+  'div[role="button"][aria-label="Gönder"], div[role="button"][aria-label="Send"]';
+
+/* Eklenen ortamin onizlemesi: WhatsApp blob: kaynakli bir video/gorsel
+   ciziyor. Sinif adlarina degil buna bakiyoruz — sinif adlari her
+   guncellemede degisiyor, blob onizleme davranisi degismiyor. */
+async function onizlemeAcildiMi(p: Page): Promise<boolean> {
+  return p
+    .evaluate(() => {
+      const m = document.querySelectorAll(
+        'video[src^="blob:"], img[src^="blob:"], video[src^="mediastream:"]',
+      );
+      return m.length > 0;
+    })
+    .catch(() => false);
+}
+
+async function onizlemeBekle(p: Page, enFazlaMs = 45_000): Promise<boolean> {
+  const basla = Date.now();
+  while (Date.now() - basla < enFazlaMs) {
+    if (await onizlemeAcildiMi(p)) return true;
+    await bekle(500);
+  }
+  return false;
+}
 const ARAMA = '#side div[contenteditable="true"], [aria-label="Search input textbox"], [data-tab="3"]';
 
 async function girisBekle(o: Oturum, p: Page, zamanAsimi = 300_000): Promise<void> {
@@ -209,13 +240,56 @@ async function satirSatirYaz(p: Page, yazi: string) {
 }
 
 /** Videoyu gizli dosya girdisine verir, onizleme acilir. */
-async function videoEkle(p: Page, yol: string) {
-  const girdi = p
-    .locator('input[type="file"][accept*="video"], input[type="file"][accept*="image"], input[type="file"]')
-    .first();
-  await girdi.waitFor({ state: "attached", timeout: 15_000 });
-  await girdi.setInputFiles(yol);
-  await p.locator(GONDER_DUGMESI).first().waitFor({ state: "visible", timeout: 60_000 });
+/**
+ * Videoyu sohbete ekler ve ONIZLEMENIN ACILDIGINI DOGRULAR.
+ *
+ * Dogrulama sart: eskiden yalnizca "bir gonder dugmesi gorundu mu" diye
+ * bakiliyordu. Video eklenmediginde bile bu kosul saglanabiliyor ve mesaj
+ * videosuz gidiyordu. Artik onizleme acilmazsa HATA veriliyor — videosuz
+ * sessizce gondermektense o kisiyi atlamak yeg.
+ *
+ * Iki yol denenir: once gizli dosya girdisi (setInputFiles), olmazsa
+ * yapistirma olayi (kardes proje "Paylasim"da calisan yontem).
+ */
+async function videoEkle(o: Oturum, p: Page, yol: string) {
+  // 1) Gizli dosya girdisi — ortam kabul eden girdiyi sec, ilkini degil.
+  const adaylar = [
+    'input[type="file"][accept*="video"]',
+    'input[type="file"][accept*="image"]',
+    'input[type="file"]',
+  ];
+  for (const sec of adaylar) {
+    const girdi = p.locator(sec).first();
+    if (!(await girdi.count().catch(() => 0))) continue;
+    try {
+      await girdi.setInputFiles(yol, { timeout: 20_000 });
+      if (await onizlemeBekle(p)) return;
+    } catch { /* sonraki adaya gec */ }
+  }
+
+  // 2) Yapistirma olayi — dosya girdisi ise yaramadiysa
+  yaz(o, "Dosya girdisiyle eklenemedi, yapıştırma yöntemi deneniyor…");
+  const veri = await fs.promises.readFile(yol);
+  await p.locator(YAZMA_KUTUSU).first().click().catch(() => {});
+  await p.evaluate(
+    async ({ b64, ad }) => {
+      const ikili = atob(b64);
+      const dizi = new Uint8Array(ikili.length);
+      for (let i = 0; i < ikili.length; i++) dizi[i] = ikili.charCodeAt(i);
+      const dosya = new File([dizi], ad, { type: "video/mp4" });
+      const dt = new DataTransfer();
+      dt.items.add(dosya);
+      const hedef =
+        document.querySelector('footer div[contenteditable="true"]') ?? document.body;
+      hedef.dispatchEvent(
+        new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true }),
+      );
+    },
+    { b64: veri.toString("base64"), ad: path.basename(yol) },
+  );
+  if (await onizlemeBekle(p)) return;
+
+  throw new Error("Video önizlemesi açılmadı — videosuz göndermemek için atlandı.");
 }
 
 async function gonderTikla(p: Page) {
@@ -440,7 +514,10 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
 
           // Video onizlemesi ONAYDAN ONCE hazirlanir ki kullanici ne
           // gidecegini gorerek onaylasin.
-          if (videoVar) await videoEkle(p, VIDEO_YOLU);
+          if (videoVar) {
+            await videoEkle(o, p, VIDEO_YOLU);
+            yaz(o, `${d.ad_soyad}: video eklendi, önizleme açık.`);
+          }
           else { await p.locator(YAZMA_KUTUSU).first().click(); await satirSatirYaz(p, videoMesaj); }
 
           if (sec.mod === "onay") {
