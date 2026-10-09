@@ -342,10 +342,12 @@ async function sohbetAc(o: Oturum, p: Page, telefon: string, ad?: string): Promi
      ("5385620923") once deneniyor. */
   const bicimler = [...new Set([rakam.replace(/^90/, ""), rakam, "+" + rakam])];
   for (const bicim of bicimler) {
-    if (await araVeAc(p, bicim, ad)) {
-      if (bicim !== bicimler[0]) yaz(o, `   (sohbet "${bicim}" biçimiyle bulundu)`);
-      return true;
-    }
+    const t0 = Date.now();
+    const ok = await araVeAc(p, bicim, ad);
+    /* Her bicimin kac sn surdugu yazilir: sohbet acilisi 31 sn suruyordu
+       ve nereye gittigi gunlukten okunamiyordu. */
+    yaz(o, `   arama "${bicim}": ${ok ? "açıldı" : "açılmadı"} (${Math.round((Date.now() - t0) / 1000)} sn)`);
+    if (ok) return true;
   }
   return false;
 }
@@ -496,18 +498,22 @@ async function videoEkle(o: Oturum, p: Page, yol: string) {
  * Enter → son care body'ye Enter. Hicbiri tutmazsa ekranda NE OLDUGU
  * gunluge dokuluyor.
  */
-async function gonderTikla(o: Oturum, p: Page): Promise<void> {
+async function gonderTikla(o: Oturum, p: Page): Promise<string> {
+  const tanim = (e: Element) =>
+    `${e.tagName.toLowerCase()}[data-icon=${e.getAttribute("data-icon") ?? "-"}][aria-label=${e.getAttribute("aria-label") ?? "-"}]`;
+
   // 1) Dar secici
   const dar = p.locator(GONDER_DUGMESI).first();
   if (await dar.count().catch(() => 0)) {
     try {
+      const ne = await dar.evaluate((e) => `${e.tagName.toLowerCase()}[data-icon=${e.getAttribute("data-icon") ?? "-"}][aria-label=${e.getAttribute("aria-label") ?? "-"}]`);
       await dar.click({ timeout: 5000 });
-      return;
+      return `dar seçici → ${ne}`;
     } catch { /* sonraki yol */ }
   }
 
   // 2) DOM'da gonder benzeri oge — mikrofon/sesli olanlar DISARIDA
-  const tiklandi = await p
+  const dom = await p
     .evaluate(() => {
       const adaylar = [...document.querySelectorAll('[data-icon], [aria-label], [role="button"], button')]
         .filter((e) => {
@@ -516,16 +522,16 @@ async function gonderTikla(o: Oturum, p: Page): Promise<void> {
           if (/sesli|voice|ptt|mikrofon|\bmic\b|kaydet|record/.test(`${ikon} ${etiket}`)) return false;
           return /send/.test(ikon) || /^(gönder|send)$/.test(etiket.trim());
         }) as HTMLElement[];
-      // Onizleme katmani en ustte oldugu icin genelde SONUNCU dogru olani
       const hedef = adaylar[adaylar.length - 1];
-      if (!hedef) return false;
-      (hedef.closest('[role="button"], button') as HTMLElement | null ?? hedef).click();
-      return true;
+      if (!hedef) return null;
+      const tiklanan = (hedef.closest('[role="button"], button') as HTMLElement | null) ?? hedef;
+      tiklanan.click();
+      return `${adaylar.length} aday, sonuncusu: ${hedef.tagName.toLowerCase()}[data-icon=${hedef.getAttribute("data-icon") ?? "-"}][aria-label=${hedef.getAttribute("aria-label") ?? "-"}] → tıklanan: ${tiklanan.tagName.toLowerCase()}`;
     })
-    .catch(() => false);
-  if (tiklandi) return;
+    .catch(() => null);
+  if (dom) return `DOM taraması → ${dom}`;
 
-  // 3) Aciklama kutusuna ODAKLAN, sonra Enter (eski yedek burada hata ediyordu)
+  // 3) Aciklama kutusuna ODAKLAN, sonra Enter
   const aciklama = p
     .locator('div[contenteditable="true"][data-tab], div[contenteditable="true"][aria-label]')
     .last();
@@ -533,13 +539,14 @@ async function gonderTikla(o: Oturum, p: Page): Promise<void> {
     try {
       await aciklama.click({ timeout: 4000 });
       await p.keyboard.press("Enter");
-      return;
+      return "açıklama kutusu + Enter";
     } catch { /* son care */ }
   }
 
   // 4) Son care + ekranda ne var dokumu
   yaz(o, "   gönder düğmesi bulunamadı — " + (await gonderAdayDokumu(p)));
   await p.keyboard.press("Enter");
+  return "son çare Enter";
 }
 
 /** Ekrandaki dugme benzeri ogeleri gunluge dokmek icin. */
@@ -596,6 +603,52 @@ async function gidenMesajSayisi(p: Page): Promise<number> {
     .catch(() => -1);
 }
 
+/** Sohbetteki TUM mesaj satirlari (gelen+giden) — secicilere bagimsiz ikinci sinyal. */
+async function sohbetSatirSayisi(p: Page): Promise<number> {
+  return p
+    .evaluate(
+      () =>
+        document.querySelectorAll('#main [data-id]').length ||
+        document.querySelectorAll('#main [role="row"]').length,
+    )
+    .catch(() => -1);
+}
+
+type Dogrulama = { tamam: boolean; sinyal: string; zayif: boolean };
+
+/**
+ * Gonderimi COKLU SINYALLE dogrular.
+ *
+ * Gercek gunlukte tek sinyale (giden mesaj sayaci) dayaniyorduk ve sayac
+ * bu WhatsApp surumunde "0"da takiliyordu — mesaj gitmis de olsa
+ * gitmemis de olsa. Artik uc sinyal:
+ *   1) giden mesaj sayisi artti            (guclu)
+ *   2) toplam satir sayisi artti           (guclu)
+ *   3) onizleme KAPANDI                    (zayif — iptal de kapatir)
+ * Zayif sinyalde gonderim sayilir ama gunlukte acikca UYARI olarak yazilir.
+ */
+async function gonderimiDogrula(
+  p: Page,
+  once: { giden: number; satir: number },
+  onizlemeVardi: boolean,
+  enFazlaMs: number,
+): Promise<Dogrulama> {
+  const basla = Date.now();
+  while (Date.now() - basla < enFazlaMs) {
+    const [giden, satir, onizleme] = await Promise.all([
+      gidenMesajSayisi(p), sohbetSatirSayisi(p), onizlemeAcildiMi(p),
+    ]);
+    if (once.giden >= 0 && giden > once.giden) return { tamam: true, sinyal: `giden ${once.giden}→${giden}`, zayif: false };
+    if (once.satir >= 0 && satir > once.satir) return { tamam: true, sinyal: `satır ${once.satir}→${satir}`, zayif: false };
+    if (onizlemeVardi && !onizleme && Date.now() - basla > 4000) {
+      // Onizleme kapandi ama sayac artmadi: zayif kanit
+      return { tamam: true, sinyal: "yalnızca önizleme kapandı (sayaç artmadı)", zayif: true };
+    }
+    await bekle(600);
+  }
+  return { tamam: false, sinyal: "hiçbir sinyal gelmedi", zayif: false };
+}
+
 /**
  * Gonderimden sonra mesajin sohbete GERCEKTEN dustugunu dogrular.
  *
@@ -604,16 +657,6 @@ async function gidenMesajSayisi(p: Page): Promise<number> {
  * donuyor ve kayit "gonderildi" isaretleniyordu — gonderilmemis mesajlar
  * gonderilmis gorunuyordu.
  */
-async function mesajDustuMu(p: Page, oncekiSayi: number, enFazlaMs = 30_000): Promise<boolean> {
-  if (oncekiSayi < 0) return true;            // sayilamadiysa engel olma
-  const basla = Date.now();
-  while (Date.now() - basla < enFazlaMs) {
-    const simdi = await gidenMesajSayisi(p);
-    if (simdi > oncekiSayi) return true;
-    await bekle(600);
-  }
-  return false;
-}
 
 /* --------------------------------------------------------------- disari */
 
@@ -853,32 +896,57 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           /* Gonderim ONCESI giden mesaj sayisi — sonra artmadiysa hicbir
              sey gitmemis demektir ve "gonderildi" demek yalan olur. */
           const oncekiGiden = await gidenMesajSayisi(p);
+          const oncekiSatir = await sohbetSatirSayisi(p);
 
           if (videoVar) {
-            await gonderTikla(o, p);                 // 1) video
-            if (!(await mesajDustuMu(p, oncekiGiden, 60_000))) {
-              const simdiki = await gidenMesajSayisi(p);
+            const onizlemeVardi = await onizlemeAcildiMi(p);
+            const tiklanan = await gonderTikla(o, p);                 // 1) video
+            yaz(o, `   tıklandı: ${tiklanan}`);
+
+            /* Tiklamadan 4 sn sonra DURUMU kaydet: 60 sn sonraki ekran
+               "ne oldu" sorusunu cevaplamiyor, o anki cevapliyor. */
+            await bekle(4000);
+            const [g4, s4, o4] = await Promise.all([gidenMesajSayisi(p), sohbetSatirSayisi(p), onizlemeAcildiMi(p)]);
+            const gorsel4 = await hataGoruntusu(o, "tiklama-sonrasi");
+            yaz(o, `   4 sn sonra: giden ${oncekiGiden}→${g4} · satır ${oncekiSatir}→${s4} · önizleme ${o4 ? "AÇIK" : "kapalı"}` +
+                   (gorsel4 ? ` · ekran: ${gorsel4}` : ""));
+
+            const dv = await gonderimiDogrula(p, { giden: oncekiGiden, satir: oncekiSatir }, onizlemeVardi, 56_000);
+            if (!dv.tamam) {
               const gorsel = await hataGoruntusu(o, "video-dusmedi");
               throw new Error(
-                `Video sohbete düşmedi — gönderilmiş sayılmadı. ` +
-                  `(giden mesaj: önce ${oncekiGiden}, sonra ${simdiki})` +
+                `Video sohbete düşmedi — gönderilmiş sayılmadı. (${dv.sinyal}; giden ${oncekiGiden}, satır ${oncekiSatir})` +
                   (gorsel ? ` · ekran: ${gorsel}` : ""),
               );
             }
-            adim("video-gonder");
+            if (dv.zayif) yaz(o, `   UYARI: ${dv.sinyal} — telefondan teyit edin.`);
+            else yaz(o, `   doğrulandı: ${dv.sinyal}`);
+          adim("video-gonder");
             yaz(o, `   video gitti, metin yazılıyor…`);
-            const videoSonrasi = await gidenMesajSayisi(p);
+            const videoSonrasi = {
+              giden: await gidenMesajSayisi(p),
+              satir: await sohbetSatirSayisi(p),
+            };
             await p.locator(YAZMA_KUTUSU).first().click();
             await satirSatirYaz(p, videoMesaj);   // 2) metin (link önizlemesi burada çıkar)
             await p.keyboard.press("Enter");
-            if (!(await mesajDustuMu(p, videoSonrasi))) {
-              throw new Error("Video gitti ama metin sohbete düşmedi.");
+            const mv = await gonderimiDogrula(p, videoSonrasi, false, 20_000);
+            /* DIKKAT: burada HATA FIRLATMIYORUZ. Video zaten gitti; hata
+               fırlatmak kisiyi "basarisiz" sayip TEKRAR DENETIR ve ayni
+               videoyu ikinci kez gondeririz. Bu yuzden yalnizca uyari. */
+            if (!mv.tamam) {
+              const gorsel = await hataGoruntusu(o, "metin-dusmedi");
+              yaz(o, `   UYARI: video gitti ama metnin düştüğü doğrulanamadı — telefondan teyit edin.` +
+                     (gorsel ? ` · ekran: ${gorsel}` : ""));
+            } else {
+              yaz(o, `   metin doğrulandı: ${mv.sinyal}`);
             }
             adim("metin");
           } else {
             await p.keyboard.press("Enter");
-            if (!(await mesajDustuMu(p, oncekiGiden))) {
-              throw new Error("Mesaj sohbete düşmedi — gönderilmiş sayılmadı.");
+            const dm = await gonderimiDogrula(p, { giden: oncekiGiden, satir: oncekiSatir }, false, 30_000);
+            if (!dm.tamam) {
+              throw new Error(`Mesaj sohbete düşmedi — gönderilmiş sayılmadı. (${dm.sinyal})`);
             }
           }
           /* Metin kucuk; uzun teslim beklemesi gereksiz. Video zaten
