@@ -10,3 +10,8 @@ services:
     volumes:
       - /srv/nisan-data:/srv/data
       - /srv/nisan-medya:/srv/medya
+    # Chromium paylasimli bellegi /dev/shm'de kullaniyor; varsayilan 64 MB
+    # ile WhatsApp Web sekmesi cokuyor.
+    shm_size: "1gb"
+    # Tarayici alt surecleri birakilmasin diye duzgun bir init
+    init: true

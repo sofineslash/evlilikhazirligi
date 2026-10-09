@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
     /* libheif-js 6 MB WASM tasiyor; bundle edilince cozucu bulunamiyor
        ve HEIC sessizce cop goruntuye donusuyordu. */
     "heic-convert", "heic-decode", "libheif-js",
+    /* playwright kendi tarayici ikilisini modul konumundan buluyor */
+    "playwright", "playwright-core",
   ],
 };
 

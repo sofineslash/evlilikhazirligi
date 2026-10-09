@@ -15,6 +15,9 @@ import { galeriAcikMi } from "@/lib/galeri";
 import { muzikDurumu } from "@/lib/muzik";
 import MuzikYukle from "@/components/MuzikYukle";
 import WhatsappYonet from "@/components/WhatsappYonet";
+import WhatsappToplu from "@/components/WhatsappToplu";
+import GonderilenlerListesi from "@/components/GonderilenlerListesi";
+import KatilimOzet from "@/components/KatilimOzet";
 import { davetlileriListele } from "@/lib/davetliler";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +58,11 @@ export default async function Admin() {
   const modu = yuklemeModu();
   const acik = yuklemeAcikMi();
   const davetliler = davetlileriListele();
+  /* Gonderilmis olanlar AYRI sekmede. 66 kisilik listede bitmis olanlarin
+     arada durmasi "siradaki kim" sorusunu her seferinde goz taramasina
+     ceviriyordu. */
+  const bekleyenler = davetliler.filter((d) => d.gonderildi_mi !== 1);
+  const gonderilenler = davetliler.filter((d) => d.gonderildi_mi === 1);
 
   return (
     <main style={{ maxWidth: "52rem" }}>
@@ -70,6 +78,12 @@ export default async function Admin() {
 
       <AdminSekmeler
         sekmeler={[
+          {
+            id: "ozet",
+            etiket: "Özet",
+            icerik: <KatilimOzet davetliler={davetliler} kayitlar={kayitlar} />,
+          },
+
           {
             id: "kayitlar",
             etiket: "Kayıtlar",
@@ -142,17 +156,27 @@ export default async function Admin() {
           {
             id: "whatsapp",
             etiket: "WhatsApp Paylaşım",
-            rozet: davetliler.length > 0 ? String(davetliler.length) : "📱",
+            rozet: bekleyenler.length > 0 ? String(bekleyenler.length) : "📱",
             icerik: (
-              <WhatsappYonet
-                baslangicSlug={metinler["davetiye_slug"] ?? ""}
-                baslangicMesaj={metinler["whatsapp_mesaj"] ?? ""}
-                baslangicOgTur={metinler["whatsapp_og_tur"] ?? "dinamik"}
-                gelin={metinler["gelin_ad"] || "Kübranur"}
-                damat={metinler["damat_ad"] || "Ömür"}
-                davetliler={davetliler}
-              />
+              <>
+                <WhatsappToplu davetliler={davetliler} />
+                <WhatsappYonet
+                  baslangicSlug={metinler["davetiye_slug"] ?? ""}
+                  baslangicMesaj={metinler["whatsapp_mesaj"] ?? ""}
+                  baslangicOgTur={metinler["whatsapp_og_tur"] ?? "dinamik"}
+                  gelin={metinler["gelin_ad"] || "Kübranur"}
+                  damat={metinler["damat_ad"] || "Ömür"}
+                  davetliler={bekleyenler}
+                />
+              </>
             ),
+          },
+
+          {
+            id: "gonderilenler",
+            etiket: "Gönderilenler",
+            rozet: gonderilenler.length ? String(gonderilenler.length) : undefined,
+            icerik: <GonderilenlerListesi davetliler={gonderilenler} />,
           },
 
           {

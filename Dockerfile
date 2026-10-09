@@ -15,6 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN npm install -g tsx@4.23.15 && npm cache clean --force
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
+# Toplu WhatsApp gonderimi icin tarayici. PLAYWRIGHT_BROWSERS_PATH sart:
+# varsayilan konum /root/.cache, uygulama ise `node` kullanicisiyla
+# calisiyor ve oraya erisemiyor.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install --with-deps chromium \
+    && chmod -R a+rX /ms-playwright \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --chown=node:node next.config.ts tsconfig.json ./

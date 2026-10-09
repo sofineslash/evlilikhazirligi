@@ -4318,3 +4318,120 @@ label.an-sec input:focus-visible + .btn {
   .admin-kayit-tablo td[data-etiket]::before,
   .admin-davetli-tablo td[data-etiket]::before { flex: none; }
 }
+
+/* ======================================================================
+   YONETIM: OZET KUTULARI + TOPLU WHATSAPP
+   ====================================================================== */
+
+.ozet-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: .7rem;
+}
+.ozet-kutu {
+  display: flex; flex-direction: column; gap: .15rem;
+  padding: .8rem .9rem;
+  border: 1px solid rgba(197, 160, 89, .3);
+  border-radius: 12px;
+  background: #fffdf8;
+}
+.ozet-deger { font-size: 1.8rem; font-weight: 700; line-height: 1.05; color: #2d2319; }
+.ozet-etiket { font-size: .82rem; font-weight: 600; color: var(--sessiz); }
+.ozet-alt { font-size: .74rem; color: #999; }
+.ozet-iyi  { border-color: color-mix(in srgb, #2e7d32 40%, transparent); }
+.ozet-iyi  .ozet-deger { color: #2e7d32; }
+.ozet-kotu { border-color: color-mix(in srgb, #c62828 35%, transparent); }
+.ozet-kotu .ozet-deger { color: #c62828; }
+.ozet-ara  { border-color: color-mix(in srgb, #e65100 35%, transparent); }
+.ozet-ara  .ozet-deger { color: #e65100; }
+
+/* ---------- Toplu WhatsApp ---------- */
+.wa-rozet {
+  font-size: .72rem; font-weight: 700;
+  padding: .15rem .55rem; border-radius: 999px;
+  background: var(--kagit-koyu); color: var(--sessiz);
+}
+.wa-bagli      { background: #e8f5e9; color: #1b5e20; }
+.wa-qr         { background: #fff3e0; color: #e65100; }
+.wa-baglaniyor { background: #e3f2fd; color: #0d47a1; }
+
+.wa-uyari {
+  margin: .2rem 0 1rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(198, 40, 40, .3);
+  border-left: 4px solid #c62828;
+  border-radius: 8px;
+  background: #fff5f5;
+  font-size: .85rem;
+  line-height: 1.5;
+  color: #5a2020;
+}
+
+.wa-bolum { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--cizgi); }
+.wa-bolum:first-of-type { border-top: none; padding-top: 0; }
+.wa-bolum h4 { margin: 0 0 .6rem; font-size: .95rem; }
+
+.wa-alan { display: flex; flex-direction: column; gap: .25rem; }
+.wa-alan > span { font-size: .8rem; font-weight: 600; color: var(--sessiz); }
+.wa-onay { display: flex; align-items: center; gap: .5rem; margin-top: .8rem; font-size: .88rem; }
+.wa-onay input { width: 20px; height: 20px; accent-color: var(--birincil); }
+
+/* Sunucudaki tarayicinin canli goruntusu — QR buradan okutuluyor */
+.wa-ekran {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin-top: .8rem;
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.wa-onay-kutu {
+  margin-top: 1rem;
+  padding: .9rem;
+  border: 1px solid rgba(197, 160, 89, .5);
+  border-radius: 12px;
+  background: #fffaf0;
+}
+.wa-onay-kutu p { margin: 0 0 .6rem; font-size: .9rem; }
+
+.wa-liste { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .3rem; }
+.wa-kalem {
+  display: flex; justify-content: space-between; align-items: center; gap: .6rem;
+  padding: .4rem .6rem;
+  border: 1px solid var(--cizgi);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: .86rem;
+}
+.wa-k-gonderildi    { border-left-color: #2e7d32; }
+.wa-k-gonderiliyor  { border-left-color: #0d47a1; }
+.wa-k-onay-bekliyor { border-left-color: #e65100; background: #fffaf0; }
+.wa-k-atlandi       { border-left-color: #9e9e9e; }
+.wa-k-bulunamadi,
+.wa-k-hata          { border-left-color: #c62828; background: #fff5f5; }
+
+.wa-gunluk {
+  margin: .8rem 0 0;
+  padding: .7rem .8rem;
+  max-height: 14rem;
+  overflow: auto;
+  border-radius: 10px;
+  background: #1e1a15;
+  color: #e8e0d2;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .76rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 680px) {
+  .ozet-izgara { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .5rem; }
+  .ozet-kutu { padding: .6rem .7rem; }
+  .ozet-deger { font-size: 1.45rem; }
+  .wa-kalem { flex-direction: column; align-items: flex-start; gap: .15rem; }
+  .wa-gunluk { font-size: .7rem; max-height: 11rem; }
+}
