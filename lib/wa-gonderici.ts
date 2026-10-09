@@ -240,35 +240,98 @@ async function satirSatirYaz(p: Page, yazi: string) {
 }
 
 /** Videoyu gizli dosya girdisine verir, onizleme acilir. */
-/**
- * Videoyu sohbete ekler ve ONIZLEMENIN ACILDIGINI DOGRULAR.
- *
- * Dogrulama sart: eskiden yalnizca "bir gonder dugmesi gorundu mu" diye
- * bakiliyordu. Video eklenmediginde bile bu kosul saglanabiliyor ve mesaj
- * videosuz gidiyordu. Artik onizleme acilmazsa HATA veriliyor — videosuz
- * sessizce gondermektense o kisiyi atlamak yeg.
- *
- * Iki yol denenir: once gizli dosya girdisi (setInputFiles), olmazsa
- * yapistirma olayi (kardes proje "Paylasim"da calisan yontem).
- */
-async function videoEkle(o: Oturum, p: Page, yol: string) {
-  // 1) Gizli dosya girdisi — ortam kabul eden girdiyi sec, ilkini degil.
+/** Sohbette hangi dosya girdileri var — gunluge yazmak icin. */
+async function girdiDokumu(p: Page): Promise<string> {
+  return p
+    .evaluate(() => {
+      const g = [...document.querySelectorAll('input[type="file"]')].map(
+        (e) => (e as HTMLInputElement).accept || "(accept yok)",
+      );
+      const a = [...document.querySelectorAll("[data-icon]")]
+        .map((e) => e.getAttribute("data-icon"))
+        .filter((x) => x && /plus|clip|attach|paperclip/i.test(x));
+      return `dosya girdisi: ${g.length ? g.join(" | ") : "YOK"} · ataç ikonu: ${a.join(",") || "YOK"}`;
+    })
+    .catch(() => "(dökum alınamadı)");
+}
+
+/** Ataç (+) menusunu acar — dosya girdileri cogu surumde ancak bundan sonra olusuyor. */
+async function atacMenusunuAc(p: Page): Promise<boolean> {
   const adaylar = [
+    '[data-icon="plus-rounded"]',
+    '[data-icon="attach-menu-plus"]',
+    '[data-icon="plus"]',
+    '[data-icon="clip"]',
+    '[data-icon="paperclip"]',
+    'button[aria-label="Ekle"]',
+    'button[aria-label="Attach"]',
+    'div[role="button"][aria-label="Ekle"]',
+    'div[role="button"][aria-label="Attach"]',
+    'button[title="Ekle"]',
+    'button[title="Attach"]',
+  ];
+  for (const sec of adaylar) {
+    const d = p.locator(sec).first();
+    if (!(await d.count().catch(() => 0))) continue;
+    try {
+      await d.click({ timeout: 5000 });
+      await bekle(900);
+      return true;
+    } catch { /* sonraki aday */ }
+  }
+  return false;
+}
+
+/** Ortam kabul eden gizli girdiye dosyayi verir; onizleme acilirsa true. */
+async function girdiyeVer(p: Page, yol: string): Promise<boolean> {
+  for (const sec of [
     'input[type="file"][accept*="video"]',
     'input[type="file"][accept*="image"]',
     'input[type="file"]',
-  ];
-  for (const sec of adaylar) {
+  ]) {
     const girdi = p.locator(sec).first();
     if (!(await girdi.count().catch(() => 0))) continue;
     try {
       await girdi.setInputFiles(yol, { timeout: 20_000 });
-      if (await onizlemeBekle(p)) return;
-    } catch { /* sonraki adaya gec */ }
+      if (await onizlemeBekle(p)) return true;
+    } catch { /* sonraki aday */ }
+  }
+  return false;
+}
+
+/**
+ * Videoyu sohbete ekler ve ONIZLEMENIN ACILDIGINI DOGRULAR.
+ *
+ * Dogrulama sart: eskiden yalnizca "bir gonder dugmesi gorundu mu" diye
+ * bakiliyordu. Turkce arayuzde MIKROFON dugmesi de o seciciye uyuyordu,
+ * video hic eklenmeden basarili sayilip mesaj metin olarak gidiyordu.
+ *
+ * UC YOL sirayla denenir, cunku WhatsApp Web surumleri farkli davraniyor:
+ *   1) Dogrudan gizli dosya girdisi
+ *   2) Atac (+) menusunu acip girdiyi ortaya cikarmak — cogu surumde
+ *      girdi menu acilmadan DOM'da YOK, birinci yol bu yuzden bos donuyor
+ *   3) Yapistirma olayi (kardes proje "Paylasim"da calisan yontem)
+ *
+ * Hicbiri tutmazsa HATA verilir. Videosuz sessizce gondermektense o
+ * kisiyi atlamak yeg — sessiz gonderim zaten bir kez yasandi.
+ */
+async function videoEkle(o: Oturum, p: Page, yol: string) {
+  // 1) Dogrudan girdi
+  if (await girdiyeVer(p, yol)) return;
+
+  // 2) Atac menusu
+  yaz(o, "Dosya girdisi bulunamadı — ataç (+) menüsü açılıyor. " + (await girdiDokumu(p)));
+  if (await atacMenusunuAc(p)) {
+    if (await girdiyeVer(p, yol)) {
+      yaz(o, "Video ataç menüsünden eklendi.");
+      return;
+    }
+  } else {
+    yaz(o, "Ataç (+) düğmesi bulunamadı.");
   }
 
-  // 2) Yapistirma olayi — dosya girdisi ise yaramadiysa
-  yaz(o, "Dosya girdisiyle eklenemedi, yapıştırma yöntemi deneniyor…");
+  // 3) Yapistirma
+  yaz(o, "Yapıştırma yöntemi deneniyor… " + (await girdiDokumu(p)));
   const veri = await fs.promises.readFile(yol);
   await p.locator(YAZMA_KUTUSU).first().click().catch(() => {});
   await p.evaluate(
@@ -287,9 +350,15 @@ async function videoEkle(o: Oturum, p: Page, yol: string) {
     },
     { b64: veri.toString("base64"), ad: path.basename(yol) },
   );
-  if (await onizlemeBekle(p)) return;
+  if (await onizlemeBekle(p)) {
+    yaz(o, "Video yapıştırma ile eklendi.");
+    return;
+  }
 
-  throw new Error("Video önizlemesi açılmadı — videosuz göndermemek için atlandı.");
+  throw new Error(
+    "Video önizlemesi açılmadı (üç yöntem de denendi) — videosuz göndermemek için atlandı. " +
+      (await girdiDokumu(p)),
+  );
 }
 
 async function gonderTikla(p: Page) {
