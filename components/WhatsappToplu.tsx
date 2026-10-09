@@ -157,6 +157,16 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
     }
   };
 
+  /* Kisi basi gonderim ~35 sn (video yukleme dahil, gunluklerden olculdu). */
+  const KISI_BASI_SN = 35;
+  const tahminiSure = (() => {
+    if (!hedefler.length) return "—";
+    const bekleme = mod === "otomatik" ? ((enAz + enCok) / 2) * (hedefler.length - 1) : 0;
+    const toplamSn = hedefler.length * KISI_BASI_SN + bekleme;
+    const dk = Math.round(toplamSn / 60);
+    return dk >= 60 ? `${Math.floor(dk / 60)} sa ${dk % 60} dk` : `${dk} dk`;
+  })();
+
   const durum = ilerleme?.durum ?? "kapali";
   const calisiyor = ilerleme?.calisiyor ?? false;
   const onayli = ilerleme?.onayBekleyen
@@ -332,6 +342,21 @@ export default function WhatsappToplu({ davetliler }: { davetliler: Davetli[] })
           {/* 3) GÖNDERİM */}
           <div className="wa-bolum">
             <h4>3. Gönderim</h4>
+            {hedefler.length > 0 && (
+              /* Tahmini sure: en buyuk zaman kalemi kisiler arasi bekleme.
+                 Gorunur olsun ki "cok uzun suruyor" dendiginde nereden
+                 kisilacagi belli olsun. */
+              <p className="wa-tahmin">
+                ⏱ Tahmini süre: <strong>{tahminiSure}</strong>
+                {mod === "otomatik" && (
+                  <>
+                    {" "}— bunun <strong>{Math.round(((enAz + enCok) / 2 * (hedefler.length - 1)) / 60)} dk</strong>
+                    &apos;sı kişiler arası bekleme. Hızlandırmak için beklemeyi düşürün;
+                    düşürdükçe WhatsApp&apos;ın hesabı kısıtlama riski artar.
+                  </>
+                )}
+              </p>
+            )}
             <p className="kucuk" style={{ color: "#666" }}>
               {TARAF_ETIKET[taraf]} · Gönderilecek: <strong>{hedefler.length}</strong> davetli
               {telefonsuz.length > 0 && ` · ${telefonsuz.length} kişinin telefonu yok, atlanacak`}

@@ -284,7 +284,17 @@ async function araVeAc(p: Page, terim: string): Promise<boolean> {
   await p.keyboard.press(process.platform === "darwin" ? "Meta+A" : "Control+A");
   await p.keyboard.press("Backspace");
   await p.keyboard.insertText(terim);
-  await bekle(1800);
+  /* Sabit 1800 ms yerine sonuclarin gelmesini BEKLE: cogu aramada
+     sonuc 300-500 ms'de geliyordu, geri kalani bosa gidiyordu. */
+  const sonucBasla = Date.now();
+  while (Date.now() - sonucBasla < 2500) {
+    const varMi = await p
+      .evaluate(() => !!document.querySelector('#pane-side [role="listitem"], #pane-side [data-testid="cell-frame-container"]'))
+      .catch(() => false);
+    if (varMi) break;
+    await bekle(150);
+  }
+  await bekle(250);
   await p.keyboard.press("Enter");
   const basla = Date.now();
   while (Date.now() - basla < 8000) {
@@ -385,7 +395,10 @@ async function girdiyeVer(p: Page, yol: string): Promise<boolean> {
     if (!(await girdi.count().catch(() => 0))) continue;
     try {
       await girdi.setInputFiles(yol, { timeout: 10_000 });
-      if (await onizlemeBekle(p)) return true;
+      /* Kisa bekleme YETERLI: dosya kabul edildiyse onizleme saniyeler
+         icinde cikiyor. Uzun beklemek, yanlis girdiye dustugumuzde her
+         aday icin 15 sn bosa harcamak demekti. */
+      if (await onizlemeBekle(p, 6_000)) return true;
     } catch { /* sonraki aday */ }
   }
   return false;
@@ -697,6 +710,15 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           o.kalemDurumlari.set(d.id, { ad: d.ad_soyad, durum, mesaj });
 
         const kisiBasladi = Date.now();
+        /* Adim adim sure: "cok uzun suruyor" sikayetini tahminle degil
+           olcumle cozebilmek icin her asamanin kac saniye surdugu
+           gunluge yaziliyor. */
+        const sureler: string[] = [];
+        let adimBasi = Date.now();
+        const adim = (ad: string) => {
+          sureler.push(`${ad} ${Math.round((Date.now() - adimBasi) / 1000)}s`);
+          adimBasi = Date.now();
+        };
         try {
           isaretle("gonderiliyor");
           if (!(await sohbetAc(p, d.telefon!))) {
@@ -706,13 +728,14 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
             continue;
           }
 
+          adim("sohbet");
           const { videoMesaj } = mesajlariHazirla(d, slug);
 
           // Video onizlemesi ONAYDAN ONCE hazirlanir ki kullanici ne
           // gidecegini gorerek onaylasin.
           if (videoVar) {
             await videoEkle(o, p, VIDEO_YOLU);
-            yaz(o, `${d.ad_soyad}: video eklendi, önizleme açık.`);
+            adim("video-ekle");
           }
           else { await p.locator(YAZMA_KUTUSU).first().click(); await satirSatirYaz(p, videoMesaj); }
 
@@ -732,6 +755,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
             if (!(await mesajDustuMu(p, oncekiGiden, 60_000))) {
               throw new Error("Video sohbete düşmedi — gönderilmiş sayılmadı.");
             }
+            adim("video-gonder");
             const videoSonrasi = await gidenMesajSayisi(p);
             await p.locator(YAZMA_KUTUSU).first().click();
             await satirSatirYaz(p, videoMesaj);   // 2) metin (link önizlemesi burada çıkar)
@@ -739,19 +763,24 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
             if (!(await mesajDustuMu(p, videoSonrasi))) {
               throw new Error("Video gitti ama metin sohbete düşmedi.");
             }
+            adim("metin");
           } else {
             await p.keyboard.press("Enter");
             if (!(await mesajDustuMu(p, oncekiGiden))) {
               throw new Error("Mesaj sohbete düşmedi — gönderilmiş sayılmadı.");
             }
           }
-          await teslimBekle(p);
+          /* Metin kucuk; uzun teslim beklemesi gereksiz. Video zaten
+             kendi adiminda beklendi. */
+          await teslimBekle(p, 20_000);
 
           davetliGonderildiGuncelle(d.id, true);  // "Gönderilenler"e taşınır
           isaretle("gonderildi");
           o.gonderilenSayi++;
+          adim("teslim");
           yaz(o, `Gönderildi: ${d.ad_soyad} (${o.gonderilenSayi}/${o.toplamSayi}) ` +
-                 `— ${Math.round((Date.now() - kisiBasladi) / 1000)} sn sürdü`);
+                 `— toplam ${Math.round((Date.now() - kisiBasladi) / 1000)} sn ` +
+                 `[${sureler.join(" · ")}]`);
 
           if (sec.mod !== "onay" && i < kuyruk.length - 1) {
             const s = rastgele(sec.enAzBekleme * 1000, sec.enCokBekleme * 1000);

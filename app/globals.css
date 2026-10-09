@@ -4495,3 +4495,15 @@ label.an-sec input:focus-visible + .btn {
   display: block; width: 100%; max-width: 420px;
   border: 1px solid var(--cizgi); border-radius: 10px; background: #fff;
 }
+
+/* Toplu gönderim süre tahmini */
+.wa-tahmin {
+  margin: 0 0 .6rem;
+  padding: .55rem .7rem;
+  border-radius: 8px;
+  background: #fff8e8;
+  border: 1px solid rgba(197, 160, 89, .45);
+  font-size: .85rem;
+  line-height: 1.5;
+  color: #5a4520;
+}
