@@ -197,7 +197,24 @@ async function onizlemeyiKapat(p: Page) {
 }
 
 /** Arama kutusuna numarayi yazip ilk sonucu acar. */
+/** Acik sohbetin baslik yazisi — hangi sohbette oldugumuzu anlamak icin. */
+async function sohbetBasligi(p: Page): Promise<string> {
+  return (
+    (await p.locator('#main header span[dir="auto"]').first().innerText().catch(() => "")) || ""
+  ).trim();
+}
+
+/**
+ * Arama kutusuna yazar ve ilk sonucu acar.
+ *
+ * ONCEKI SOHBET TUZAGI: yalnizca "yazma kutusu gorunur mu" diye bakmak
+ * yetmiyor. Arama hic sonuc vermese bile bir onceki sohbet acik kaldigi
+ * icin yazma kutusu gorunur kaliyor ve sohbet acilmis saniliyordu —
+ * mesaj yanlis kisiye gidebilirdi. Bu yuzden BASLIGIN DEGISTIGI de
+ * aranir.
+ */
 async function araVeAc(p: Page, terim: string): Promise<boolean> {
+  const oncekiBaslik = await sohbetBasligi(p);
   const kutu = p.locator(ARAMA).first();
   await kutu.waitFor({ state: "visible", timeout: 20_000 });
   await onizlemeyiKapat(p);
@@ -209,7 +226,20 @@ async function araVeAc(p: Page, terim: string): Promise<boolean> {
   await p.keyboard.press("Enter");
   const basla = Date.now();
   while (Date.now() - basla < 8000) {
-    if (await p.locator(YAZMA_KUTUSU).first().isVisible().catch(() => false)) return true;
+    const yazmaVar = await p.locator(YAZMA_KUTUSU).first().isVisible().catch(() => false);
+    if (yazmaVar) {
+      const baslik = await sohbetBasligi(p);
+      /* Baslik degistiyse yeni sohbet acilmistir. Onceden hic sohbet
+         acik degilse (baslik bostu) basligin dolmasi yeterli. */
+      if (baslik && baslik !== oncekiBaslik) return true;
+      if (!oncekiBaslik && baslik) return true;
+      /* Ayni sohbet ZATEN acik olabilir (orn. basarisizlarin tekrar
+         denenmesi). Basliktaki rakamlar aranan numarayla ortusuyorsa
+         dogru sohbetteyiz demektir. */
+      const aranan = terim.replace(/\D/g, "");
+      const basliktaki = baslik.replace(/\D/g, "");
+      if (aranan.length >= 7 && basliktaki.endsWith(aranan.slice(-7))) return true;
+    }
     await bekle(400);
   }
   return false;
@@ -376,6 +406,40 @@ async function teslimBekle(p: Page, enFazlaMs = 120_000) {
     if (!bekleyen) return;
     await bekle(700);
   }
+}
+
+/**
+ * Sohbetteki GIDEN mesaj sayisi.
+ *
+ * WhatsApp giden baloncuklari `data-id="true_..."` ile isaretler (true =
+ * benden). Sinif adlari her surumde degisiyor, bu on ek degismiyor.
+ */
+async function gidenMesajSayisi(p: Page): Promise<number> {
+  return p
+    .evaluate(
+      () =>
+        document.querySelectorAll('#main [data-id^="true_"], #main div.message-out').length,
+    )
+    .catch(() => -1);
+}
+
+/**
+ * Gonderimden sonra mesajin sohbete GERCEKTEN dustugunu dogrular.
+ *
+ * Sart: teslimBekle yalnizca "bekleyen saat ikonu kaldi mi" diye bakiyor.
+ * Mesaj hic olusmadiysa o sayi zaten sifir oluyor, fonksiyon aninda
+ * donuyor ve kayit "gonderildi" isaretleniyordu — gonderilmemis mesajlar
+ * gonderilmis gorunuyordu.
+ */
+async function mesajDustuMu(p: Page, oncekiSayi: number, enFazlaMs = 30_000): Promise<boolean> {
+  if (oncekiSayi < 0) return true;            // sayilamadiysa engel olma
+  const basla = Date.now();
+  while (Date.now() - basla < enFazlaMs) {
+    const simdi = await gidenMesajSayisi(p);
+    if (simdi > oncekiSayi) return true;
+    await bekle(600);
+  }
+  return false;
 }
 
 /* --------------------------------------------------------------- disari */
@@ -596,14 +660,27 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
             if (c === "atla") { await onizlemeyiKapat(p); isaretle("atlandi"); yaz(o, `Atlandı: ${d.ad_soyad}`); continue; }
           }
 
+          /* Gonderim ONCESI giden mesaj sayisi — sonra artmadiysa hicbir
+             sey gitmemis demektir ve "gonderildi" demek yalan olur. */
+          const oncekiGiden = await gidenMesajSayisi(p);
+
           if (videoVar) {
             await gonderTikla(p);                 // 1) video
-            await teslimBekle(p);
+            if (!(await mesajDustuMu(p, oncekiGiden, 180_000))) {
+              throw new Error("Video sohbete düşmedi — gönderilmiş sayılmadı.");
+            }
+            const videoSonrasi = await gidenMesajSayisi(p);
             await p.locator(YAZMA_KUTUSU).first().click();
             await satirSatirYaz(p, videoMesaj);   // 2) metin (link önizlemesi burada çıkar)
             await p.keyboard.press("Enter");
+            if (!(await mesajDustuMu(p, videoSonrasi))) {
+              throw new Error("Video gitti ama metin sohbete düşmedi.");
+            }
           } else {
             await p.keyboard.press("Enter");
+            if (!(await mesajDustuMu(p, oncekiGiden))) {
+              throw new Error("Mesaj sohbete düşmedi — gönderilmiş sayılmadı.");
+            }
           }
           await teslimBekle(p);
 
