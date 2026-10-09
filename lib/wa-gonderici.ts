@@ -333,11 +333,19 @@ async function araVeAc(p: Page, terim: string, beklenenAd?: string): Promise<boo
  * baska bir Ahmet'e davetiye gidebilir. Yanlis kisiye nisan daveti
  * gondermek geri alinamaz.
  */
-async function sohbetAc(p: Page, telefon: string, ad?: string): Promise<boolean> {
+async function sohbetAc(o: Oturum, p: Page, telefon: string, ad?: string): Promise<boolean> {
   const rakam = telefonNormalize(telefon);
   if (!rakam) return false;
-  for (const bicim of [...new Set(["+" + rakam, rakam.replace(/^90/, "")])]) {
-    if (await araVeAc(p, bicim, ad)) return true;
+  /* SIRA ONEMLI: gercek gunlukte sohbetin acilmasi 31 sn surdu, cunku
+     once "+90..." deneniyordu ve rehberde kayitli kisilerde tutmuyordu;
+     ikinci bicime gecene kadar her deneme ~11 sn yiyordu. Yerel bicim
+     ("5385620923") once deneniyor. */
+  const bicimler = [...new Set([rakam.replace(/^90/, ""), rakam, "+" + rakam])];
+  for (const bicim of bicimler) {
+    if (await araVeAc(p, bicim, ad)) {
+      if (bicim !== bicimler[0]) yaz(o, `   (sohbet "${bicim}" biçimiyle bulundu)`);
+      return true;
+    }
   }
   return false;
 }
@@ -475,10 +483,74 @@ async function videoEkle(o: Oturum, p: Page, yol: string) {
   );
 }
 
-async function gonderTikla(p: Page) {
-  const d = p.locator(GONDER_DUGMESI).first();
-  try { await d.click({ timeout: 6000 }); }
-  catch { await p.keyboard.press("Enter"); }
+/**
+ * Gonder dugmesine basar.
+ *
+ * Gercek gunlukten: video onizlemesi aciliyor ama mesaj hic gitmiyordu
+ * ("giden mesaj: once 0, sonra 0"). Dar secici bu WhatsApp surumunde
+ * hicbir sey eslestirmiyor, eski yedek olan `Enter` ise ODAK aciklama
+ * kutusunda olmadigi icin bosa gidiyordu.
+ *
+ * Simdi dort yol sirayla: dar secici → onizleme icindeki gonder benzeri
+ * ogeler (SESLI/MIKROFON olanlar haric) → aciklama kutusuna odaklanip
+ * Enter → son care body'ye Enter. Hicbiri tutmazsa ekranda NE OLDUGU
+ * gunluge dokuluyor.
+ */
+async function gonderTikla(o: Oturum, p: Page): Promise<void> {
+  // 1) Dar secici
+  const dar = p.locator(GONDER_DUGMESI).first();
+  if (await dar.count().catch(() => 0)) {
+    try {
+      await dar.click({ timeout: 5000 });
+      return;
+    } catch { /* sonraki yol */ }
+  }
+
+  // 2) DOM'da gonder benzeri oge — mikrofon/sesli olanlar DISARIDA
+  const tiklandi = await p
+    .evaluate(() => {
+      const adaylar = [...document.querySelectorAll('[data-icon], [aria-label], [role="button"], button')]
+        .filter((e) => {
+          const ikon = (e.getAttribute("data-icon") || "").toLowerCase();
+          const etiket = (e.getAttribute("aria-label") || "").toLowerCase();
+          if (/sesli|voice|ptt|mikrofon|\bmic\b|kaydet|record/.test(`${ikon} ${etiket}`)) return false;
+          return /send/.test(ikon) || /^(gönder|send)$/.test(etiket.trim());
+        }) as HTMLElement[];
+      // Onizleme katmani en ustte oldugu icin genelde SONUNCU dogru olani
+      const hedef = adaylar[adaylar.length - 1];
+      if (!hedef) return false;
+      (hedef.closest('[role="button"], button') as HTMLElement | null ?? hedef).click();
+      return true;
+    })
+    .catch(() => false);
+  if (tiklandi) return;
+
+  // 3) Aciklama kutusuna ODAKLAN, sonra Enter (eski yedek burada hata ediyordu)
+  const aciklama = p
+    .locator('div[contenteditable="true"][data-tab], div[contenteditable="true"][aria-label]')
+    .last();
+  if (await aciklama.count().catch(() => 0)) {
+    try {
+      await aciklama.click({ timeout: 4000 });
+      await p.keyboard.press("Enter");
+      return;
+    } catch { /* son care */ }
+  }
+
+  // 4) Son care + ekranda ne var dokumu
+  yaz(o, "   gönder düğmesi bulunamadı — " + (await gonderAdayDokumu(p)));
+  await p.keyboard.press("Enter");
+}
+
+/** Ekrandaki dugme benzeri ogeleri gunluge dokmek icin. */
+async function gonderAdayDokumu(p: Page): Promise<string> {
+  return p
+    .evaluate(() => {
+      const ikonlar = [...new Set([...document.querySelectorAll("[data-icon]")].map((e) => e.getAttribute("data-icon")))];
+      const etiketler = [...new Set([...document.querySelectorAll("[aria-label]")].map((e) => e.getAttribute("aria-label")))];
+      return `ikonlar: ${ikonlar.slice(0, 25).join(",")} · etiketler: ${etiketler.slice(0, 20).join(" | ")}`;
+    })
+    .catch(() => "(dökum alınamadı)");
 }
 
 /** Saat ikonu (gonderiliyor) kaybolana kadar bekler — en iyi caba. */
@@ -751,7 +823,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
              yaziliyordu; takilirsa gunlukte sessiz bir bosluk kaliyor ve
              nerede durdugu anlasilmiyordu. */
           yaz(o, `→ ${d.ad_soyad} (${i + 1}/${kuyruk.length}) işleniyor… ${d.telefon}`);
-          if (!(await sohbetAc(p, d.telefon!, d.ad_soyad))) {
+          if (!(await sohbetAc(o, p, d.telefon!, d.ad_soyad))) {
             isaretle("bulunamadi", "Numara WhatsApp'ta bulunamadı");
             yaz(o, `BULUNAMADI: ${d.ad_soyad} (${d.telefon})`);
             if (!tekrar) basarisiz.push(d);
@@ -783,7 +855,7 @@ export async function gonderimBaslat(sec: GonderSecenek): Promise<void> {
           const oncekiGiden = await gidenMesajSayisi(p);
 
           if (videoVar) {
-            await gonderTikla(p);                 // 1) video
+            await gonderTikla(o, p);                 // 1) video
             if (!(await mesajDustuMu(p, oncekiGiden, 60_000))) {
               const simdiki = await gidenMesajSayisi(p);
               const gorsel = await hataGoruntusu(o, "video-dusmedi");
