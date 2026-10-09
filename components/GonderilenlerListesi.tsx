@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { Davetli } from "@/lib/davetliler";
-import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
-import { davetliGonderildiAction } from "@/lib/admin";
+import type { DavetliTaraf } from "@/lib/taraf";
+import { davetliGonderildiAction, davetliTarafAction } from "@/lib/admin";
 
 /**
  * Gonderimi tamamlanmis davetliler.
@@ -36,6 +36,14 @@ export default function GonderilenlerListesi({
       );
     });
   }, [davetliler, ara, suzgec, taraf]);
+
+  /* Taraf burada da degistirilebilir: gonderilmis biri yanlis tarafta
+     kalirsa listelerin tamami yaniltici olur. Iyimser yazilir — secim
+     aninda satir dogru tarafa gecsin. */
+  const tarafDegistir = async (id: string, yeni: DavetliTaraf | null) => {
+    setDavetliler((p) => p.map((x) => (x.id === id ? { ...x, taraf: yeni } : x)));
+    await davetliTarafAction(id, yeni);
+  };
 
   /* Geri alma: yanlislikla "gonderildi" isaretlenen biri tekrar gonderim
      listesine donebilmeli, yoksa o kisiye davetiye hic gitmiyor. */
@@ -153,11 +161,18 @@ export default function GonderilenlerListesi({
                     </div>
                   </td>
                   <td data-etiket="Taraf">
-                    {d.taraf ? (
-                      <span className={`taraf-rozet taraf-${d.taraf}`}>{TARAF_ETIKET[d.taraf]}</span>
-                    ) : (
-                      <span className="kucuk" style={{ color: "#999" }}>Belirsiz</span>
-                    )}
+                    <select
+                      className="admin-input taraf-sec"
+                      value={d.taraf ?? ""}
+                      aria-label={`${d.ad_soyad} için taraf`}
+                      onChange={(e) =>
+                        tarafDegistir(d.id, (e.target.value || null) as DavetliTaraf | null)
+                      }
+                    >
+                      <option value="">Belirsiz</option>
+                      <option value="gelin">Kız tarafı</option>
+                      <option value="damat">Erkek tarafı</option>
+                    </select>
                   </td>
                   <td data-etiket="Açılma">
                     {d.acilma_sayisi > 0 ? (
