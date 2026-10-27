@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import QRCode from "qrcode";
 import { CFG, TARIH_METNI, SAAT_METNI } from "@/lib/config";
 import { metin } from "@/lib/metin";
 import { sahneYolu } from "@/lib/sahneler";
@@ -18,8 +17,10 @@ export const dynamic = "force-dynamic";
  * üretmek için yerelde `npm run dev` çalışırken /salon/tasarim çekilir ve
  * çıktılar public/salon/ altına konur.
  *
- * QR sunucuda üretilip SVG olarak çiziliyor (görüntü değil): ekran ne kadar
- * büyük olursa olsun kenarları keskin kalır, bulanıklaşıp okunmaz hâle gelmez.
+ * QR, modülleri kalp olan hazır bir görsel (public/salon/qr-kalpli.png,
+ * https://kubranur.omuroz.com.tr/ adresine gider). Telefon okuyucusuna yakın
+ * ZXing ile 1000 px'ten 150 px'e kadar, bulanık hâlde bile okunduğu
+ * doğrulandı. Adres değişirse bu görsel yeniden üretilmelidir.
  */
 export default async function SalonEkrani() {
   if (process.env.NODE_ENV === "production") notFound();
@@ -32,19 +33,6 @@ export default async function SalonEkrani() {
 
   const fotoCift = sahneYolu("02-cift");
   const zemin = sahneYolu("01-kapak") ?? fotoCift;
-
-  /* Hata düzeltme "Q" (~%25): salon ekranında parlama, uzaklık ve hafif
-     açı QR'ı bozabilir; yüksek düzeltme okunabilirliği korur. Modül sayısı
-     yine de az kalır (29×29), yani her modül iri. */
-  const qr = QRCode.create(adres, { errorCorrectionLevel: "Q" });
-  const n = qr.modules.size;
-  const veri = qr.modules.data;
-  let yol = "";
-  for (let y = 0; y < n; y++) {
-    for (let x = 0; x < n; x++) {
-      if (veri[y * n + x]) yol += `M${x} ${y}h1v1h-1z`;
-    }
-  }
 
   const tarih = TARIH_METNI.toLocaleUpperCase("tr").replace(",", " ·");
 
@@ -174,10 +162,10 @@ export default async function SalonEkrani() {
           box-shadow: 0 0 0 7px rgba(214,174,92,.16), 0 24px 60px rgba(0,0,0,.6), 0 0 80px rgba(224,178,88,.22);
         }
         .sl-qr-kutu {
-          flex: none; width: 252px; height: 252px; padding: 14px; box-sizing: border-box;
+          flex: none; width: 276px; height: 276px; padding: 4px; box-sizing: border-box;
           background: #fff; border-radius: 16px; box-shadow: inset 0 0 0 2px rgba(150,110,40,.25);
         }
-        .sl-qr-kutu svg { display: block; width: 100%; height: 100%; }
+        .sl-qr-kutu img { display: block; width: 100%; height: 100%; object-fit: contain; }
         .sl-qr-baslik { font-size: 27px; font-weight: 800; letter-spacing: .14em; color: #8c651e; line-height: 1.25; }
         .sl-qr-yazi { font-size: 21px; font-weight: 500; line-height: 1.5; color: #3b2a14; margin-top: 12px; max-width: 410px; text-wrap: balance; }
         .sl-qr-adres {
@@ -232,16 +220,14 @@ export default async function SalonEkrani() {
 
         <div className="sl-qr">
           <div className="sl-qr-kutu">
-            <svg viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" role="img" aria-label={`QR kod: ${gorunenAdres}`}>
-              <rect width={n} height={n} fill="#ffffff" />
-              <path d={yol} fill="#1f1608" />
-            </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/salon/qr-kalpli.png" alt={`QR kod: ${gorunenAdres}`} />
           </div>
           <div>
-            <div className="sl-qr-baslik">DAVETİYEMİZE<br />ULAŞIN</div>
+            <div className="sl-qr-baslik">ONLİNE<br />DAVETİYEMİZ</div>
             <div className="sl-qr-yazi">
-              Kameranızı okutun, davetiyemizi görün ve fotoğraf
-              ile videolarınızı bizimle paylaşın.
+              QR kod üzerinden bugüne özel çektiğiniz görselleri bizlerle
+              paylaşarak bu güzel günümüzde hatıra bırakabilirsiniz.
             </div>
             <div className="sl-qr-adres">{gorunenAdres}</div>
           </div>
