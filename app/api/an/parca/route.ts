@@ -29,6 +29,18 @@ const OLU_PARCA_MS = 6 * 60 * 60 * 1000;
  * Parcalar gecici bir dosyaya SIRAYLA ekleniyor. Son parca gelince
  * dosya normal boru hattina giriyor (fotograf/video tespiti, kucultme).
  */
+/**
+ * Son parcayla baslayan ISLEME (donusturme) yuklemeye gore tek. Uzun bir
+ * videoda isleme 100 sn'yi asinca tunel baglantiyi kesiyor, telefon son
+ * parcayi yeniden gonderiyor ve ayni video IKI KEZ isleniyordu (dosya da
+ * ustten kesilip bozuluyordu). Ayni kimlikle gelen her istek calisan ise
+ * katilir, bitmisse sonucu bir sure hatirlanir.
+ */
+type IsSonuc = { durum: number; govde: Record<string, unknown> };
+const isler: Map<string, Promise<IsSonuc>> =
+  ((globalThis as { __parcaIsler?: Map<string, Promise<IsSonuc>> }).__parcaIsler ??= new Map());
+const ISI_HATIRLA_MS = 10 * 60_000;
+
 function geciciKlasor(): string {
   const k = path.join(anlarKlasoru(), ".gecici");
   fs.mkdirSync(k, { recursive: true });
@@ -64,7 +76,7 @@ export async function POST(req: Request) {
     (await cihazJetonuDogrula(cerez));
 
   // Parca basina degil, DOSYA basina sinir olsun diye bol: 600 MB / 8 MB = 75 parca
-  const hiz = hizKontrol(istemciAnahtari(req, cihaz), { adet: 1200, pencere_dk: 30 });
+  const hiz = hizKontrol(`parca:${istemciAnahtari(req, cihaz)}`, { adet: 1200, pencere_dk: 30 });
   if (!hiz.ok) return NextResponse.json({ mesaj: hiz.mesaj }, { status: 429 });
 
   if (kullanilanBayt() >= CFG.MEDYA_KOTA_BAYT) {
@@ -84,6 +96,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ mesaj: "Geçersiz parça numarası." }, { status: 400 });
   }
 
+  const calisan = isler.get(id);
+  if (calisan) {
+    const r = await calisan;
+    return NextResponse.json(r.govde, { status: r.durum });
+  }
+
   const govde = Buffer.from(await req.arrayBuffer());
   if (govde.length === 0) return NextResponse.json({ mesaj: "Boş parça." }, { status: 400 });
   if (govde.length > PARCA_MAX) {
@@ -94,15 +112,22 @@ export async function POST(req: Request) {
   if (no === 0) await eskileriTemizle(klasor);
   const yol = path.join(klasor, `${id}.part`);
 
-  /* SIRA KONTROLU: parcalar sirayla eklenmeli. Atlanan bir parca
-     dosyayi sessizce bozar; boyuttan anlayip reddediyoruz. */
+  /* SIRA + TEKRAR KONTROLU. Parca N, dosyada TAM N * PARCA_MAX baytindan
+     baslar (istemci hep ayni boyda parca gonderir).
+     - Daha kisaysa bir parca atlanmis: dosya sessizce bozulur, reddet.
+     - Daha uzunsa AYNI parca daha once gelmis ve istemci yaniti alamadigi
+       icin yeniden gonderiyor. Eskiden bu ikinci kez eklenip videoyu
+       bozuyordu ("Bu video açılamadı"); simdi fazlalik kesilip ustune
+       yazilir, yani tekrar zararsiz. */
   const suanki = await fsp.stat(yol).then((s) => s.size).catch(() => 0);
   if (no === 0 && suanki > 0) await fsp.rm(yol, { force: true });
-  const beklenen = no === 0 ? 0 : suanki;
-  if (no > 0 && beklenen === 0) {
-    return NextResponse.json({ mesaj: "Yükleme bulunamadı, baştan deneyin." }, { status: 409 });
+  const baslangic = no * PARCA_MAX;
+  const mevcut = no === 0 ? 0 : suanki;
+  if (no > 0 && mevcut < baslangic) {
+    return NextResponse.json({ mesaj: "Yükleme eksik kaldı, baştan deneyin." }, { status: 409 });
   }
-  if (suanki + govde.length > TOPLAM_MAX) {
+  if (no > 0 && mevcut > baslangic) await fsp.truncate(yol, baslangic);
+  if (baslangic + govde.length > TOPLAM_MAX) {
     await fsp.rm(yol, { force: true });
     return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 600 MB)." }, { status: 413 });
   }
@@ -113,29 +138,46 @@ export async function POST(req: Request) {
     console.error("parca yazma hatasi", e);
     return NextResponse.json({ mesaj: "Kaydedilemedi. Tekrar deneyin." }, { status: 500 });
   }
+  const yeniBoyut = baslangic + govde.length;
 
   // Son parca degilse yalnizca onay don
   if (no < toplam - 1) {
-    return NextResponse.json({ ok: true, alinan: no, bayt: suanki + govde.length });
+    return NextResponse.json({ ok: true, alinan: no, bayt: yeniBoyut });
   }
 
   /* SON PARCA: dosya zaten diskte — YOLUNU veriyoruz, bellege okumuyoruz.
      400 MB'lik bir videoyu Buffer'a almak sunucuyu bosuna zorluyordu. */
-  try {
-    let yukleyen: string | null = null;
+  const is = (async (): Promise<IsSonuc> => {
     try {
-      yukleyen = decodeURIComponent(req.headers.get("x-yukleyen") ?? "").trim().slice(0, 60) || null;
-    } catch { yukleyen = null; }
+      let yukleyen: string | null = null;
+      try {
+        yukleyen = decodeURIComponent(req.headers.get("x-yukleyen") ?? "").trim().slice(0, 60) || null;
+      } catch { yukleyen = null; }
 
-    const sonuc = await anKaydetVeIsle({ yol, bayt: suanki + govde.length }, yukleyen);
-    await fsp.rm(yol, { force: true });
-    if (!sonuc.ok) return NextResponse.json({ mesaj: sonuc.mesaj }, { status: 415 });
-    return NextResponse.json(sonuc);
-  } catch (e) {
-    await fsp.rm(yol, { force: true }).catch(() => {});
-    console.error("parca birlestirme hatasi", e);
-    return NextResponse.json({ mesaj: "İşlenemedi. Tekrar deneyin." }, { status: 500 });
-  }
+      /* Istemci gonderdigi TOPLAM bayti bildiriyor: birlesen dosya ondan
+         farkliysa video "bozuk" diye degil, "eksik geldi" diye reddedilir. */
+      const beklenenToplam = Number(req.headers.get("x-dosya-bayt"));
+      if (Number.isFinite(beklenenToplam) && beklenenToplam > 0 && beklenenToplam !== yeniBoyut) {
+        await fsp.rm(yol, { force: true });
+        console.error("parca toplam uyusmazligi", { beklenenToplam, yeniBoyut, toplam });
+        return { durum: 409, govde: { mesaj: "Yükleme eksik kaldı. Tekrar deneyin." } };
+      }
+
+      const sonuc = await anKaydetVeIsle({ yol, bayt: yeniBoyut }, yukleyen);
+      await fsp.rm(yol, { force: true });
+      if (!sonuc.ok) return { durum: 415, govde: { mesaj: sonuc.mesaj } };
+      return { durum: 200, govde: sonuc };
+    } catch (e) {
+      await fsp.rm(yol, { force: true }).catch(() => {});
+      console.error("parca birlestirme hatasi", e);
+      return { durum: 500, govde: { mesaj: "İşlenemedi. Tekrar deneyin." } };
+    }
+  })();
+  isler.set(id, is);
+  void is.finally(() => { setTimeout(() => isler.delete(id), ISI_HATIRLA_MS).unref?.(); });
+
+  const r = await is;
+  return NextResponse.json(r.govde, { status: r.durum });
 }
 
 /** Kesilen bir yuklemenin nereden devam edecegini soylar. */

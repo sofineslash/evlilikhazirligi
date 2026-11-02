@@ -38,7 +38,11 @@ export async function POST(req: Request) {
 
   // Hiz siniri ASLA socket adresine anahtarlanmaz — tunel arkasinda
   // butun davetliler tek kovaya duser ve hepsi 429 yer.
-  const hiz = hizKontrol(istemciAnahtari(req, cihaz), { adet: 60, pencere_dk: 10 });
+  /* Kova ADLI ve parca ucundan ayri. Ikisi ayni anahtari paylasirken bir
+     video (300 MB = ~38 parca istegi) fotograflarin hakkini bitiriyor,
+     sonra "Çok fazla deneme" cikiyordu. Sinir da toplu secime gore: her
+     fotograf bir istek, 100+ fotografi olan misafir normal. */
+  const hiz = hizKontrol(`an:${istemciAnahtari(req, cihaz)}`, { adet: 400, pencere_dk: 10 });
   if (!hiz.ok) return NextResponse.json({ mesaj: hiz.mesaj }, { status: 429 });
 
   const uzunluk = Number(req.headers.get("content-length") ?? 0);

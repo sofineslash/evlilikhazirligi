@@ -215,13 +215,19 @@ export default function AnYukle() {
       /* Her parca 3 kez denenir, aralar acilarak. Mobil baglantida tek bir
          parcanin kopmasi butun yuklemeyi bosa cikarmasin. */
       let cevap: Cevap | null = null;
-      for (let deneme = 0; deneme < 3; deneme++) {
+      /* Son parca 6 kez: sunucu o istekte videoyu donusturuyor, uzun
+         videoda tunel 100 sn'de baglantiyi kesebiliyor. Her tekrar ayni
+         calisan ise katiliyor (sunucuda), yani yeniden islenmez. */
+      const hak = sonMu ? 6 : 3;
+      for (let deneme = 0; deneme < hak; deneme++) {
         try {
           cevap = await istek("/api/an/parca", parca, {
             "x-yukleme-id": yuklemeId,
             "x-parca-no": String(i),
             "x-parca-toplam": String(toplam),
-            ...(sonMu ? { "x-yukleyen": kimlik } : {}),
+            ...(sonMu
+              ? { "x-yukleyen": kimlik, "x-dosya-bayt": String(gonderilen + parca.size) }
+              : {}),
           }, (bayt) => yuzdeYaz(k.anahtar, son,
             Math.min(99, Math.round(((gonderilen + bayt) / k.dosya.size) * 100))));
           if (cevap.ok) break;

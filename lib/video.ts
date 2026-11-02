@@ -59,6 +59,31 @@ export type VideoSonuc =
     }
   | { ok: false; mesaj: string };
 
+/**
+ * ffmpeg ile sure/olcu okur — ffprobe CALISMADIGINDA yedek.
+ *
+ * `ffmpeg -i dosya` cikti dosyasi verilmedigi icin hata koduyla biter ama
+ * stderr'e akis bilgisini yazar; onu ayristiriyoruz. ffmpeg zaten video
+ * donusturmek icin gerekli; ffprobe ikilisi bir ortamda bozuksa her video
+ * "acilamadi" olmasin.
+ */
+async function ffmpegIleBilgi(yol: string): Promise<VideoBilgi | null> {
+  let cikti = "";
+  try {
+    await calistir(FFMPEG, ["-hide_banner", "-i", yol], { maxBuffer: 4 * 1024 * 1024 });
+  } catch (e) {
+    cikti = String((e as { stderr?: string }).stderr ?? "");
+  }
+  const olcu = cikti.match(/Stream #\d+:\d+[^\n]*?Video:[^\n]*?[ ,](\d{2,5})x(\d{2,5})(?=[ ,\[])/);
+  if (!olcu) return null;
+  const sure = cikti.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+  return {
+    sure: sure ? Number(sure[1]) * 3600 + Number(sure[2]) * 60 + Number(sure[3]) : 0,
+    genislik: Number(olcu[1]),
+    yukseklik: Number(olcu[2]),
+  };
+}
+
 /** ffprobe ile sure/olcu okur. Cozulemeyen dosya video degildir. */
 export async function videoBilgi(yol: string): Promise<VideoBilgi | null> {
   try {
@@ -87,8 +112,13 @@ export async function videoBilgi(yol: string): Promise<VideoBilgi | null> {
   } catch (e) {
     // Sessiz yutma HATA GIZLIYOR: "video acilamadi" mesaji her sebebi
     // ayni gosteriyordu. Sebep loga yazilsin.
-    console.error("videoBilgi hatasi", { FFPROBE, hata: (e as Error).message });
-    return null;
+    const ayrinti = e as Error & { stderr?: string; code?: string };
+    console.error("videoBilgi hatasi", {
+      FFPROBE, kod: ayrinti.code, hata: ayrinti.message, stderr: ayrinti.stderr?.slice(0, 500),
+    });
+    const yedek = await ffmpegIleBilgi(yol);
+    if (!yedek) console.error("videoBilgi yedegi de basarisiz (ffmpeg)", { FFMPEG });
+    return yedek;
   }
 }
 
