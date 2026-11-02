@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const KABUL_SADE = "image/*,video/*";
+const KABUL_RAW = `${KABUL_SADE},.cr2,.cr3,.nef,.arw,.dng,.raf,.orf,.rw2,.pef`;
+
 type Durum = "bekliyor" | "gonderiliyor" | "tamam" | "hata";
 type Kalem = {
   anahtar: string;
@@ -101,6 +104,14 @@ export default function AnYukle() {
   const [ad, setAd] = useState("");
   const [calisiyor, setCalisiyor] = useState(false);
   const girdiRef = useRef<HTMLInputElement>(null);
+  /* RAW uzantilari accept'e girince Android Chrome galeri (foto secici)
+     yerine eski dosya secicisine dusuyor: yalnizca Kamera / Kamkorder /
+     Dosyalar cikiyor, galeri yok. Dokunmatik cihazlarda sade liste; RAW
+     yuklemesi masaustunde (fare) kaliyor. */
+  const [kabul, setKabul] = useState(KABUL_SADE);
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) setKabul(KABUL_RAW);
+  }, []);
   const urlRef = useRef<string[]>([]);
 
   useEffect(() => {
@@ -248,7 +259,7 @@ export default function AnYukle() {
           ref={girdiRef}
           id="an-dosya"
           type="file"
-          accept="image/*,video/*,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf,.rw2,.pef"
+          accept={kabul}
           multiple
           onChange={(e) => ekle(e.target.files)}
         />
