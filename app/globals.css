@@ -4200,7 +4200,7 @@ label.an-sec input:focus-visible + .btn {
 .admin-izgara-3 { display: grid; grid-template-columns: 1fr 2fr auto; gap: .75rem; align-items: flex-end; }
 .admin-izgara-dar { gap: .5rem; }
 
-@media (max-width: 680px) {
+@media (max-width: 900px) {
   .admin-izgara-2,
   .admin-izgara-3 { grid-template-columns: 1fr; }
   .admin-izgara-3 > * { align-self: stretch; }
@@ -4625,4 +4625,19 @@ body:has(.sn) { background: #120c07; }
   border-radius: 999px !important; color: #2c2014 !important; font-weight: 600 !important; font-size: .84rem !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .05) !important; padding: .52rem 1rem !important; min-height: 42px;
   display: inline-flex; align-items: center; justify-content: center;
+}
+
+
+/* ---- iPhone otomatik yakınlaştırması ----
+   iOS Safari, yazı boyutu 16 px'ten küçük bir alana odaklanınca sayfayı
+   KENDİLİĞİNDEN yakınlaştırır ve kullanıcı geri çekmek zorunda kalır.
+   Ölçüldü: yönetim alanları 14,7 px, misafirin katılım formundaki dilek
+   kutusu 14,72 px'ti. Dokunma hedefi de 44 px'e çıkarıldı. */
+@media (max-width: 900px) {
+  .admin-input, .admin-url-input, .taraf-sec,
+  .admin-kart input[type="text"], .admin-kart input[type="search"], .admin-kart input[type="number"],
+  .admin-kart select, .admin-kart textarea { font-size: 16px; min-height: 44px; }
+}
+@media (max-width: 600px) {
+  .katilim-textarea { font-size: 16px; }
 }
