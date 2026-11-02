@@ -1,4 +1,6 @@
 import { CFG } from "@/lib/config";
+import { metin } from "@/lib/metin";
+import { asamaCoz, etkinlikOku, dugunIcs } from "@/lib/etkinlik";
 
 export const dynamic = "force-dynamic";
 
@@ -6,7 +8,23 @@ function ts(iso: string) {
   return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  // Düğün aşamasında düğün (+ kına) takvimi; nişan yolu aşağıda aynen duruyor.
+  const { asama } = await asamaCoz(new URL(req.url).searchParams.get("asama"));
+  const etk = etkinlikOku(asama);
+  if (etk.tur === "dugun") {
+    const gelin = metin("gelin_ad") || CFG.GELIN;
+    const damat = metin("damat_ad") || CFG.DAMAT;
+    const ics = dugunIcs(etk, gelin, damat);
+    if (!ics) return new Response("Düğün tarihi henüz belirlenmedi.", { status: 404 });
+    return new Response(ics, {
+      headers: {
+        "Content-Type": "text/calendar; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="dugun.ics"',
+      },
+    });
+  }
+
   const bitis = new Date(Date.parse(CFG.TARIH) + 4 * 60 * 60 * 1000).toISOString();
   const ics = [
     "BEGIN:VCALENDAR",

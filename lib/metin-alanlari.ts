@@ -7,6 +7,18 @@
  */
 export const METIN_ALANLARI = [
   {
+    anahtar: "asama",
+    etiket: "Site Aşaması",
+    ipucu: "Misafirlerin göreceği sayfa. Boş bırakırsan «Nişan öncesi» (mevcut davetiye) gösterilir.",
+    cok_satir: false,
+    secenekler: [
+      { deger: "nisan_oncesi",  etiket: "Nişan öncesi — mevcut davetiye (varsayılan)" },
+      { deger: "nisan_sonrasi", etiket: "Nişan sonrası — «Nişanlandık», teşekkür ve fotoğraf slaytı" },
+      { deger: "dugun_oncesi",  etiket: "Düğün öncesi — aynı davetiye, düğün tarihi/salonu ve kına" },
+      { deger: "dugun_sonrasi", etiket: "Düğün sonrası — «Evlendik», teşekkür ve fotoğraf slaytı" },
+    ],
+  },
+  {
     anahtar: "tema_secimi",
     etiket: "Davetiye Teması & Açılış Sahnesi",
     ipucu: "Misafirlerin göreceği ana açılış deneyimi",
@@ -38,6 +50,23 @@ export const METIN_ALANLARI = [
     ipucu: "Tarihin altında görünür, örn. Nişan törenimizde", cok_satir: false },
   { anahtar: "zarf_notu",     etiket: "Zarf — alt not",
     ipucu: "En altta el yazısıyla. Satır sonu koyduğun yerden kırılır.", cok_satir: true },
+
+  { anahtar: "dugun_tarih", etiket: "Düğün tarihi", ipucu: "GG.AA.YYYY — örn. 12.09.2027 (gün adı otomatik hesaplanır)", cok_satir: false },
+  { anahtar: "dugun_saat",  etiket: "Düğün saati",  ipucu: "örn. 19:00 (boşsa 19:00)", cok_satir: false },
+  { anahtar: "dugun_salon", etiket: "Düğün salonu — adı", ipucu: "örn. Asır Davet Balo Salonu", cok_satir: false },
+  { anahtar: "dugun_adres", etiket: "Düğün salonu — adresi", ipucu: "Harita butonları ad ve adresle aranır", cok_satir: false },
+  { anahtar: "dugun_davet_cumlesi", etiket: "Düğün davet cümlesi",
+    ipucu: "Boşsa: «Düğünümüzde sizleri de aramızda görmekten mutluluk duyarız.»", cok_satir: true },
+
+  { anahtar: "kina_tarih", etiket: "Kına — tarihi", ipucu: "GG.AA.YYYY — boş bırakırsan kına bölümü görünmez", cok_satir: false },
+  { anahtar: "kina_saat",  etiket: "Kına — saati",  ipucu: "örn. 20:00 (boşsa 19:00)", cok_satir: false },
+  { anahtar: "kina_yer",   etiket: "Kına — yer adı", ipucu: "örn. Gelinin evi / Kına salonu", cok_satir: false },
+  { anahtar: "kina_adres", etiket: "Kına — adresi", ipucu: "Harita butonları için", cok_satir: false },
+
+  { anahtar: "nisan_sonra_tesekkur", etiket: "Nişan sonrası — teşekkür metni",
+    ipucu: "Boşsa hazır metin kullanılır. Boş satırla paragraf ayır.", cok_satir: true },
+  { anahtar: "dugun_sonra_tesekkur", etiket: "Düğün sonrası — teşekkür metni",
+    ipucu: "Boşsa hazır metin kullanılır. Boş satırla paragraf ayır.", cok_satir: true },
 
   { anahtar: "damat_bicim", etiket: "Damadın ailesi nasıl yazılsın?", ipucu: "", cok_satir: false,
     secenekler: [

@@ -1,22 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { googleTakvimLinki } from "@/lib/takvim";
+import { googleTakvimLinki, type TakvimOlayi } from "@/lib/takvim";
 
-export default function TakvimeEkle() {
-  const [hedefLink, setHedefLink] = useState("/takvim.ics");
+export default function TakvimeEkle({
+  olay,
+  icsYol = "/takvim.ics",
+}: {
+  /** Verilmezse mevcut nisan olayi. */
+  olay?: TakvimOlayi;
+  icsYol?: string;
+}) {
+  const [hedefLink, setHedefLink] = useState(icsYol);
   const [hedefTarget, setHedefTarget] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     if (/Android/i.test(ua)) {
-      setHedefLink(googleTakvimLinki());
+      setHedefLink(googleTakvimLinki(olay));
       setHedefTarget("_blank");
     } else {
-      setHedefLink("/takvim.ics");
+      setHedefLink(icsYol);
       setHedefTarget(undefined);
     }
-  }, []);
+  }, [olay, icsYol]);
 
   return (
     <div className="tema2-takvim-kapsul">

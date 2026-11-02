@@ -92,8 +92,32 @@ export function anSil(id: string): boolean {
     const y = anDosyaYolu(ad);
     if (y) { try { fs.rmSync(y, { force: true }); } catch { /* dosya zaten yoksa sorun degil */ } }
   }
+  // Onbellekteki kucuk boylar da gitsin — silinen fotograf yan yolda kalmasin.
+  for (const w of KUCUK_BOYUTLAR) {
+    try { fs.rmSync(kucukYolu(kayit.id, w), { force: true }); } catch { /* yoksa sorun degil */ }
+  }
   db().prepare("DELETE FROM anlar WHERE id = ?").run(id);
   return true;
+}
+
+/**
+ * Fotografin KUCUK boylari (slayt ve mozaik icin).
+ *
+ * Tam boy dosya 2048 px; 150 fotografli bir sayfada hepsini indirmek telefonda
+ * onlarca MB demek. Kucuk boy istek aninda uretilir ve diskte saklanir.
+ * Genislik BEYAZ LISTEDE: istemci istedigi boyutu uretemesin (disk/CPU).
+ */
+export const KUCUK_BOYUTLAR = [480, 960] as const;
+export type KucukBoyut = (typeof KUCUK_BOYUTLAR)[number];
+
+export function kucukBoyutMu(w: number): w is KucukBoyut {
+  return (KUCUK_BOYUTLAR as readonly number[]).includes(w);
+}
+
+/** Kayit kimligi sunucuda uretilmis UUID; yine de yalniz guvenli karakterler. */
+export function kucukYolu(id: string, w: number): string {
+  const guvenli = id.replace(/[^a-zA-Z0-9-]/g, "");
+  return path.join(ANLAR_KOK, ".kucuk", `${guvenli}-${w}.webp`);
 }
 
 export function anDosyaYolu(dosya: string): string | null {

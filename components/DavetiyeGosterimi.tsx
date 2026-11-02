@@ -1,4 +1,4 @@
-import { CFG, TARIH_METNI, SAAT_METNI, haritaLinkleri, gunModu } from "@/lib/config";
+import { CFG } from "@/lib/config";
 import { sahneYolu } from "@/lib/sahneler";
 import { metin, ebeveynSatirlari } from "@/lib/metin";
 import Zarf from "@/components/Zarf";
@@ -6,7 +6,7 @@ import AltinCerceve from "@/components/AltinCerceve";
 import IsimUydur from "@/components/IsimUydur";
 import KatilimButonu from "@/components/KatilimButonu";
 import FotoYukleButonu from "@/components/FotoYukleButonu";
-import { yuklemeAcikMi, YUKLEME_MESAJI } from "@/lib/yukleme";
+import { yuklemeAcikMi, yuklemeMesaji } from "@/lib/yukleme";
 import { galeriAcikMi } from "@/lib/galeri";
 import { anlariListele } from "@/lib/anlar";
 import GaleriButonu from "@/components/GaleriButonu";
@@ -21,6 +21,14 @@ import WhatsappPaylasButonu from "./WhatsappPaylasButonu";
 import { davetliGetirToken } from "@/lib/davetliler";
 import { misafirAdiFormatla, whatsappMesajiUret } from "@/lib/whatsapp";
 import { siteUrl, DEFAULT_DAVETIYE_SLUG } from "@/lib/site";
+import { adminMi } from "@/lib/admin";
+import { dugunMu, sonrasiMi, turu } from "@/lib/asama";
+import { asamaCoz, etkinlikOku, gunModuEtkinlik, takvimOlayi } from "@/lib/etkinlik";
+import { VARSAYILAN_TESEKKUR } from "@/lib/sonrasi-metin";
+import KinaBolumu from "@/components/KinaBolumu";
+import SonrasiSayfa from "@/components/SonrasiSayfa";
+import AsamaSerit from "@/components/AsamaSerit";
+import type { SlaytOge } from "@/components/AnilarSlayt";
 
 export type DavetiyeGosterimiProps = {
   slug?: string;
@@ -28,18 +36,27 @@ export type DavetiyeGosterimiProps = {
   guest?: string;
   temaOzel?: string;
   videoModu?: boolean;
+  /** ?asama= ile onizleme (yalnizca gelistirmede ya da yonetici icin gecerli). */
+  asamaOzel?: string;
 };
 
-export default function DavetiyeGosterimi({
+/** Bos birakilirsa dugun davet cumlesi. Nisan icin davet_cumlesi aynen kullanilir. */
+const DUGUN_DAVET_VARSAYILAN = "Düğünümüzde sizleri de aramızda görmekten mutluluk duyarız.";
+
+export default async function DavetiyeGosterimi({
   slug,
   token,
   guest,
   temaOzel,
   videoModu,
+  asamaOzel,
 }: DavetiyeGosterimiProps) {
-  const harita = haritaLinkleri();
+  const { asama, onizleme } = await asamaCoz(asamaOzel);
+  const etk = etkinlikOku(asama);
+  const dugun = dugunMu(asama);
+  const harita = etk.harita;
   const yuklemeAcik = yuklemeAcikMi();
-  const mod = gunModu();
+  const mod = gunModuEtkinlik(etk);
   const kapakYolu = sahneYolu("01-kapak");
   const ciftYolu = sahneYolu("02-cift");
   const gelinPng = sahneYolu("06-gelin");
@@ -67,9 +84,11 @@ export default function DavetiyeGosterimi({
   const tel = metin("iletisim_tel");
 
   const basHarf = (ad: string) => (ad.trim()[0] ?? "").toLocaleUpperCase("tr");
-  const zarfSatir = metin("zarf_toren");
+  const zarfSatir = dugun ? "Düğün törenimizde" : metin("zarf_toren");
   const zarfDavet = metin("zarf_notu");
-  const davetCumlesi = metin("davet_cumlesi");
+  const davetCumlesi = dugun
+    ? metin("dugun_davet_cumlesi") || DUGUN_DAVET_VARSAYILAN
+    : metin("davet_cumlesi");
   const yemek = metin("yemek_notu");
   const otopark = metin("otopark_notu");
   const fotoNotu = metin("foto_notu");
@@ -129,12 +148,58 @@ export default function DavetiyeGosterimi({
     sablon: ozelSablon,
     gelin: gelinAd,
     damat: damatAd,
-    tarih: TARIH_METNI,
-    saat: SAAT_METNI,
-    salon: CFG.SALON_AD,
+    tarih: etk.tarih?.metin ?? "",
+    saat: etk.tarih?.saatMetni ?? "",
+    salon: etk.salonAd,
     url: paylasimUrl,
     misafir: misafirAd || undefined,
   });
+
+  /* Onizleme seridi: yalniz ?asama= ile bakilinca. Ziyaretcide render edilmez,
+     yani nisan oncesi cikti degismez. */
+  const serit = onizleme ? <AsamaSerit asama={asama} eksik={dugun ? etk.eksik : []} /> : null;
+
+  /* ============ SONRASI: Nişanlandık / Evlendik ============
+     Davetiyenin yerine geçer: katılım sorulmaz, tarih/salon/geri sayım yok. */
+  if (sonrasiMi(asama)) {
+    const tur = turu(asama);
+    const tesekkur =
+      metin(tur === "dugun" ? "dugun_sonra_tesekkur" : "nisan_sonra_tesekkur") ||
+      VARSAYILAN_TESEKKUR[tur];
+
+    /* Galeri kapaliyken /api/an/* misafire 404 doner; bu yuzden liste de
+       BOS gonderilir (kirik gorsel yerine bolum hic cizilmez). Kronolojik:
+       eskiden yeniye — aksam baslangictan sona dogru akar. */
+    const ogeler: SlaytOge[] = galeriAcik
+      ? anlariListele(500)
+          .filter((a) => a.gizli === 0)
+          .reverse()
+          .map((a) => ({ id: a.id, tur: a.tur, yukleyen: a.yukleyen, g: a.genislik, y: a.yukseklik }))
+      : [];
+    const yoneticiyim = onizleme || (await adminMi());
+
+    return (
+      <>
+        {token && <DavetliGoruntulendiIzleyici token={token} />}
+        <MuzikCalar aktif={muzikAktif && muzik.var} sesDosyasi={muzik.url || "/api/muzik/ses"} />
+        <SonrasiSayfa
+          tur={tur}
+          gelinAd={gelinAd}
+          damatAd={damatAd}
+          tarihKisa={etk.tarih?.kisa ?? null}
+          ciftYolu={ciftYolu}
+          tesekkur={tesekkur}
+          misafirAd={misafirAd}
+          ogeler={ogeler}
+          galeriKapali={!galeriAcik}
+          yoneticiyim={yoneticiyim}
+          yuklemeAcik={yuklemeAcik}
+          yuklemeMesaji={yuklemeMesaji()}
+        />
+        {serit}
+      </>
+    );
+  }
 
   return (
     <>
@@ -155,7 +220,7 @@ export default function DavetiyeGosterimi({
           gelinAd={gelinAd}
           damatAd={damatAd}
           davetCumlesi={davetCumlesi}
-          tepeBaslik={tema3Baslik}
+          tepeBaslik={tema3Baslik || (dugun ? etk.kicker : "")}
           askSozu={tema3AskSozu}
           kiyafetKodu={tema3KiyafetKodu}
           hediyeNotu={tema3HediyeNotu}
@@ -166,7 +231,7 @@ export default function DavetiyeGosterimi({
           otopark={otopark}
           fotoNotu={fotoNotu}
           yuklemeAcik={yuklemeAcik}
-          yuklemeMesaji={YUKLEME_MESAJI}
+          yuklemeMesaji={yuklemeMesaji()}
           galeriAcik={galeriAcik}
           ciftYolu={ciftYolu}
           anlar={anlar}
@@ -177,6 +242,16 @@ export default function DavetiyeGosterimi({
           paylasimUrl={paylasimUrl}
           whatsappMesaj={whatsappMesaj}
           muzikUrl={muzikAktif && muzik.url ? muzik.url : "/tema3/muzik.mp3"}
+          {...(dugun
+            ? {
+                salonAd: etk.salonAd,
+                salonAdres: etk.salonAdres,
+                harita: etk.harita,
+                hedefTarih: etk.tarih?.iso,
+                geriSayimGoster: !!etk.tarih,
+                programGoster: false,
+              }
+            : {})}
         />
       ) : tema === "tema2" ? (
         /* ================= TEMA 2 — SARAY KAPISI AÇILIŞI & ÖZEL DİZİLİM ================= */
@@ -213,6 +288,9 @@ export default function DavetiyeGosterimi({
             oncekiRsvp={oncekiRsvp}
             paylasimUrl={paylasimUrl}
             whatsappMesaj={whatsappMesaj}
+            etk={etk}
+            takvimOlay={takvimOlayi(etk, gelinAd, damatAd)}
+            icsYol={onizleme ? `/takvim.ics?asama=${asama}` : "/takvim.ics"}
           />
         </KapiAcilis>
       ) : (
@@ -273,24 +351,29 @@ export default function DavetiyeGosterimi({
                   </div>
                 )}
 
-                <p className="tarih bel bel-3">
-                  {mod === "gun" ? <strong>Bugün!</strong> : TARIH_METNI} ·{" "}
-                  <span className="saat">{SAAT_METNI}</span>
-                </p>
-                <p className="salon bel bel-3">{CFG.SALON_AD}</p>
-                <p className="salon-adres bel bel-3">{CFG.SALON_ADRES}</p>
+                {etk.tarih && (
+                  <p className="tarih bel bel-3">
+                    {mod === "gun" ? <strong>Bugün!</strong> : etk.tarih.metin} ·{" "}
+                    <span className="saat">{etk.tarih.saatMetni}</span>
+                  </p>
+                )}
+                {etk.salonAd && <p className="salon bel bel-3">{etk.salonAd}</p>}
+                {etk.salonAdres && <p className="salon-adres bel bel-3">{etk.salonAdres}</p>}
+                {etk.kina && <KinaBolumu kina={etk.kina} />}
 
                 {/* Tek sutun: haritalar yan yana, altinda tek tek digerleri */}
                 <div className="eylemler bel bel-4">
-                  <div className="harita-ikili">
-                    <a className="btn" href={harita.google} target="_blank" rel="noreferrer">
-                      Google Haritalar
-                    </a>
-                    <a className="btn" href={harita.apple} target="_blank" rel="noreferrer">
-                      Apple Haritalar
-                    </a>
-                  </div>
-                  <a className="btn btn-birincil" href="/api/ics">
+                  {harita && (
+                    <div className="harita-ikili">
+                      <a className="btn" href={harita.google} target="_blank" rel="noreferrer">
+                        Google Haritalar
+                      </a>
+                      <a className="btn" href={harita.apple} target="_blank" rel="noreferrer">
+                        Apple Haritalar
+                      </a>
+                    </div>
+                  )}
+                  <a className="btn btn-birincil" href={onizleme ? `/api/ics?asama=${asama}` : "/api/ics"}>
                     Takvime ekle
                   </a>
                   <KatilimButonu
@@ -301,7 +384,7 @@ export default function DavetiyeGosterimi({
                     oncekiRsvp={oncekiRsvp}
                   />
                   <WhatsappPaylasButonu url={paylasimUrl} mesaj={whatsappMesaj} />
-                  <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
+                  <FotoYukleButonu acik={yuklemeAcik} mesaj={yuklemeMesaji()} />
                   {galeriAcik && <GaleriButonu anlar={anlar} />}
                   {fotoNotu && <p className="foto-notu">{fotoNotu}</p>}
                 </div>
@@ -310,6 +393,7 @@ export default function DavetiyeGosterimi({
           </div>
         </Zarf>
       )}
+      {serit}
     </>
   );
 }

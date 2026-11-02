@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { metin } from "@/lib/metin";
-import { CFG, TARIH_METNI, SAAT_METNI } from "@/lib/config";
+import { CFG } from "@/lib/config";
+import { kayitliAsama, etkinlikOku } from "@/lib/etkinlik";
+import { sonrasiMi } from "@/lib/asama";
 import { davetliGetirToken } from "@/lib/davetliler";
 import { misafirAdiFormatla } from "@/lib/whatsapp";
 
@@ -33,6 +35,23 @@ export async function GET(req: NextRequest) {
 
     const gelin = metin("gelin_ad") || CFG.GELIN;
     const damat = metin("damat_ad") || CFG.DAMAT;
+
+    /* Karttaki yazilar KAYITLI asamaya gore (onizleme degil: bu gorsel
+       WhatsApp tarafindan cekiliyor, oturumu yok). Nisan oncesinde onceki
+       yazilarla birebir ayni. */
+    const asama = kayitliAsama();
+    const etk = etkinlikOku(asama);
+    const sonra = sonrasiMi(asama);
+    const kartBaslik = sonra
+      ? (etk.tur === "dugun" ? "EVLENDİK" : "NİŞANLANDIK")
+      : `${etk.adi.toLocaleUpperCase("tr")} DAVETİYESİ`;
+    const tarihSatiri = etk.tarih ? `${etk.tarih.metin} · ${etk.tarih.saatMetni}` : "";
+    // Sonrasinda salon satiri anlamsiz; davette salon yoksa (dugun, girilmemis) da yazma.
+    const salonSatiri = sonra || !etk.salonAd
+      ? ""
+      : etk.tur === "nisan"
+        ? `${etk.salonAd} — Pendik / İstanbul`
+        : etk.salonAd;
 
     return new ImageResponse(
       (
@@ -117,7 +136,7 @@ export async function GET(req: NextRequest) {
               fontWeight: 600,
             }}
           >
-            NİŞAN DAVETİYESİ
+            {kartBaslik}
           </div>
 
           {/* Kisiye Ozel Misafir Karsilama Rozeti (Varsa) */}
@@ -183,7 +202,7 @@ export async function GET(req: NextRequest) {
               letterSpacing: "1px",
             }}
           >
-            {TARIH_METNI} · {SAAT_METNI}
+            {tarihSatiri}
           </div>
 
           {/* Salon Bilgisi */}
@@ -194,7 +213,7 @@ export async function GET(req: NextRequest) {
               letterSpacing: "0.5px",
             }}
           >
-            {CFG.SALON_AD} — Pendik / İstanbul
+            {salonSatiri}
           </div>
         </div>
       ),

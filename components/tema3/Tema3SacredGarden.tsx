@@ -40,6 +40,15 @@ export interface Tema3Props {
   paylasimUrl?: string;
   whatsappMesaj?: string;
   muzikUrl?: string;
+  /* DUGUN asamasi icin — verilmezse hepsi mevcut nisan davranisidir. */
+  salonAd?: string;
+  salonAdres?: string;
+  harita?: { google: string; apple: string } | null;
+  /** ISO. Verilmezse mevcut nisan tarihi; geriSayimGoster=false ise hic gosterilmez. */
+  hedefTarih?: string;
+  geriSayimGoster?: boolean;
+  /** Programda yalniz nisana ozel ornek akis var; dugunde gizlenir. */
+  programGoster?: boolean;
 }
 
 export default function Tema3SacredGarden({
@@ -66,6 +75,12 @@ export default function Tema3SacredGarden({
   paylasimUrl,
   whatsappMesaj,
   muzikUrl,
+  salonAd,
+  salonAdres,
+  harita,
+  hedefTarih,
+  geriSayimGoster = true,
+  programGoster = true,
 }: Tema3Props) {
   const [acildi, setAcildi] = useState(false);
   const muzikRef = useRef<HTMLAudioElement>(null);
@@ -103,11 +118,11 @@ export default function Tema3SacredGarden({
           davetCumlesi={davetCumlesi}
         />
 
-        <Tema3GeriSayim />
+        {geriSayimGoster && <Tema3GeriSayim hedefTarih={hedefTarih} />}
 
-        <Tema3ProgramAkisi />
+        {programGoster && <Tema3ProgramAkisi />}
 
-        <Tema3Mekan />
+        <Tema3Mekan salon={salonAd} adres={salonAdres} harita={harita} />
 
         <Tema3Notlar
           kiyafetKodu={kiyafetKodu}

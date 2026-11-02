@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CFG } from "@/lib/config";
 import { metin } from "@/lib/metin";
-import { yuklemeAcikMi, YUKLEME_MESAJI } from "@/lib/yukleme";
+import { yuklemeAcikMi, yuklemeMesaji } from "@/lib/yukleme";
 import { sahneYolu } from "@/lib/sahneler";
 import AnYukle from "@/components/AnYukle";
 
@@ -63,7 +63,7 @@ export default function Yukle() {
             <div className="an-kapali-kutu">
               <span className="an-kapali-ikon" aria-hidden="true">✨</span>
               <h2 className="an-sayfa-baslik">Yüklemeler Henüz Açılmadı</h2>
-              <p className="an-sayfa-aciklama">{YUKLEME_MESAJI}</p>
+              <p className="an-sayfa-aciklama">{yuklemeMesaji()}</p>
               <p className="an-kapali-not">
                 Tören günü masalarda yer alan karekodu okutarak doğrudan bu sayfadan fotoğraflarınızı kolayca yükleyebilirsiniz.
               </p>

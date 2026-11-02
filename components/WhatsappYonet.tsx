@@ -19,7 +19,6 @@ import {
   VARSAYILAN_WHATSAPP_SABLONU,
 } from "@/lib/whatsapp";
 import { siteUrl, DEFAULT_DAVETIYE_SLUG, telefonNormalize } from "@/lib/site";
-import { TARIH_METNI, SAAT_METNI, CFG } from "@/lib/config";
 import { TARAF_ETIKET, type DavetliTaraf } from "@/lib/taraf";
 
 export default function WhatsappYonet({
@@ -29,6 +28,8 @@ export default function WhatsappYonet({
   gelin,
   damat,
   davetliler: baslangicDavetliler,
+  etkinlik,
+  etkinlikAdi,
 }: {
   baslangicSlug: string;
   baslangicMesaj: string;
@@ -36,6 +37,10 @@ export default function WhatsappYonet({
   gelin: string;
   damat: string;
   davetliler: Davetli[];
+  /** Kayıtlı aşamanın tarihi/salonu. Nişanda config'tekilerle aynı; düğünde düğünün. */
+  etkinlik: { tarih: string; saat: string; salon: string };
+  /** "Nişan" | "Düğün" — paylaşım kartı başlığı için. */
+  etkinlikAdi: string;
 }) {
   const KALP = "❤️";
   const sanitizeMesaj = (txt: string) =>
@@ -216,17 +221,17 @@ export default function WhatsappYonet({
       ? whatsappVideoMesajiUret({
           gelin,
           damat,
-          tarih: TARIH_METNI,
-          saat: SAAT_METNI,
-          salon: CFG.SALON_AD,
+          tarih: etkinlik.tarih,
+          saat: etkinlik.saat,
+          salon: etkinlik.salon,
           url: siteUrl(`/davet/${slug}?g=${secili.token}`),
         })
       : whatsappVideoMesajiUret({
           gelin,
           damat,
-          tarih: TARIH_METNI,
-          saat: SAAT_METNI,
-          salon: CFG.SALON_AD,
+          tarih: etkinlik.tarih,
+          saat: etkinlik.saat,
+          salon: etkinlik.salon,
           url: siteUrl(`/davet/${slug}`),
         });
 
@@ -236,9 +241,9 @@ export default function WhatsappYonet({
           sablon: mesajSablonu,
           gelin,
           damat,
-          tarih: TARIH_METNI,
-          saat: SAAT_METNI,
-          salon: CFG.SALON_AD,
+          tarih: etkinlik.tarih,
+          saat: etkinlik.saat,
+          salon: etkinlik.salon,
           url: siteUrl(`/davet/${slug}?g=${secili.token}`),
           misafir: secili.ad_soyad,
         })
@@ -336,9 +341,9 @@ export default function WhatsappYonet({
     sablon: mesajSablonu,
     gelin,
     damat,
-    tarih: TARIH_METNI,
-    saat: SAAT_METNI,
-    salon: CFG.SALON_AD,
+    tarih: etkinlik.tarih,
+    saat: etkinlik.saat,
+    salon: etkinlik.salon,
     url: genelUrl,
   });
   const genelWpUrl = whatsappGonderUrl({ mesaj: genelMesaj });
@@ -352,9 +357,9 @@ export default function WhatsappYonet({
     sablon: mesajSablonu,
     gelin,
     damat,
-    tarih: TARIH_METNI,
-    saat: SAAT_METNI,
-    salon: CFG.SALON_AD,
+    tarih: etkinlik.tarih,
+    saat: etkinlik.saat,
+    salon: etkinlik.salon,
     url: aktifUrl,
     misafir: aktifDavetli?.ad_soyad,
   });
@@ -362,9 +367,9 @@ export default function WhatsappYonet({
   const aktifVideoMesaj = whatsappVideoMesajiUret({
     gelin,
     damat,
-    tarih: TARIH_METNI,
-    saat: SAAT_METNI,
-    salon: CFG.SALON_AD,
+    tarih: etkinlik.tarih,
+    saat: etkinlik.saat,
+    salon: etkinlik.salon,
     url: aktifUrl,
   });
 
@@ -569,9 +574,9 @@ export default function WhatsappYonet({
                   sablon: mesajSablonu,
                   gelin,
                   damat,
-                  tarih: TARIH_METNI,
-                  saat: SAAT_METNI,
-                  salon: CFG.SALON_AD,
+                  tarih: etkinlik.tarih,
+                  saat: etkinlik.saat,
+                  salon: etkinlik.salon,
                   url: kisiselUrl,
                   misafir: d.ad_soyad,
                 });
@@ -917,9 +922,9 @@ export default function WhatsappYonet({
                 />
               </div>
               <div className="whatsapp-kart-govde">
-                <div className="whatsapp-kart-baslik">{gelin} ❤️ {damat} — Nişan Davetiyesi</div>
+                <div className="whatsapp-kart-baslik">{gelin} ❤️ {damat} — {etkinlikAdi} Davetiyesi</div>
                 <div className="whatsapp-kart-aciklama">
-                  Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. {TARIH_METNI}
+                  Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. {etkinlik.tarih}
                 </div>
                 <div className="whatsapp-kart-domain">kubranur.omuroz.com.tr</div>
               </div>

@@ -5,6 +5,8 @@ import { sahneDurumu } from "@/lib/sahneler";
 import { tumMetinler } from "@/lib/metin";
 import { yuklemeAcikMi, yuklemeModu } from "@/lib/yukleme";
 import MetinDuzenle from "@/components/MetinDuzenle";
+import AsamaOnizleme from "@/components/AsamaOnizleme";
+import { kayitliAsama, etkinlikOku } from "@/lib/etkinlik";
 import SahneYukle from "@/components/SahneYukle";
 import AdminSekmeler from "@/components/AdminSekmeler";
 import GaleriYonet from "@/components/GaleriYonet";
@@ -48,7 +50,12 @@ export default async function Admin() {
   const hazir = sahneler.filter((s) => s.yol).length;
   const muzik = muzikDurumu();
   const metinler = tumMetinler();
-  const bosMetin = Object.values(metinler).filter((v) => !v.trim()).length;
+  /* Düğün/kına/teşekkür/aşama alanları İSTEĞE BAĞLI: boş olmaları bir eksik
+     değil. Sayıya katılsalar «N boş» rozeti kalıcı olarak şişerdi. */
+  const ISTEGE_BAGLI = /^(dugun_|kina_|nisan_sonra_|asama$)/;
+  const bosMetin = Object.entries(metinler).filter(
+    ([anahtar, v]) => !v.trim() && !ISTEGE_BAGLI.test(anahtar),
+  ).length;
 
   const anlar = anlariListele(500);
   const anOzet = anSayisi();
@@ -62,6 +69,7 @@ export default async function Admin() {
      arada durmasi "siradaki kim" sorusunu her seferinde goz taramasina
      ceviriyordu. */
   const bekleyenler = davetliler.filter((d) => d.gonderildi_mi !== 1);
+  const aktifEtk = etkinlikOku(kayitliAsama());
   const gonderilenler = davetliler.filter((d) => d.gonderildi_mi === 1);
 
   return (
@@ -167,6 +175,12 @@ export default async function Admin() {
                   gelin={metinler["gelin_ad"] || "Kübranur"}
                   damat={metinler["damat_ad"] || "Ömür"}
                   davetliler={bekleyenler}
+                  etkinlik={{
+                    tarih: aktifEtk.tarih?.metin ?? "",
+                    saat: aktifEtk.tarih?.saatMetni ?? "",
+                    salon: aktifEtk.salonAd,
+                  }}
+                  etkinlikAdi={aktifEtk.adi}
                 />
               </>
             ),
@@ -237,7 +251,10 @@ export default async function Admin() {
             id: "davetiye",
             etiket: "Davetiye",
             icerik: (
-              <MetinDuzenle degerler={metinler} sekme="davetiye" kaydetEtiketi="Davetiyeyi kaydet" />
+              <>
+                <AsamaOnizleme aktif={kayitliAsama()} dugunEksik={etkinlikOku("dugun_oncesi").eksik} />
+                <MetinDuzenle degerler={metinler} sekme="davetiye" kaydetEtiketi="Davetiyeyi kaydet" />
+              </>
             ),
           },
 

@@ -10,6 +10,12 @@ export type MetinSekme = "davetiye" | "metinler" | "genel";
 const GRUPLAR: { sekme: MetinSekme; baslik: string; not?: string; anahtarlar: string[] }[] = [
   {
     sekme: "davetiye",
+    baslik: "Site Aşaması",
+    not: "Misafirlerin göreceği sayfa. Hangisini seçersen sadece o görünür; «Nişan öncesi» bugünkü davetiyedir. Seçmeden önce aşağıdaki «Önizle» bağlantılarıyla bakabilirsin.",
+    anahtarlar: ["asama"],
+  },
+  {
+    sekme: "davetiye",
     baslik: "Tasarım ve Tema Seçimi",
     not: "Davetiyenin misafirlere nasıl açılacağını buradan seçebilirsin. Fon müziği dosyasını 'Fotoğraf & Müzik' sekmesinden doğrudan yükleyebilirsin.",
     anahtarlar: ["tema_secimi", "muzik_acik"],
@@ -40,6 +46,25 @@ const GRUPLAR: { sekme: MetinSekme; baslik: string; not?: string; anahtarlar: st
 
   { sekme: "metinler", baslik: "Davetiye metni", anahtarlar: ["davet_cumlesi", "zarf_toren", "zarf_notu", "kapanis", "foto_notu"] },
   { sekme: "metinler", baslik: "Salon ve iletişim", anahtarlar: ["yemek_notu", "otopark_notu", "iletisim_tel"] },
+
+  {
+    sekme: "metinler",
+    baslik: "Düğün bilgileri — «Düğün öncesi» aşaması için",
+    not: "Tarihi GG.AA.YYYY yaz (12.09.2027); gün adını kendisi hesaplar. Düğün aşamasını seçmeden önce tarih ve salonu doldur, yoksa davetiyede o alanlar boş kalır.",
+    anahtarlar: ["dugun_tarih", "dugun_saat", "dugun_salon", "dugun_adres", "dugun_davet_cumlesi"],
+  },
+  {
+    sekme: "metinler",
+    baslik: "Kına — «Düğün öncesi» davetiyesinde ek bölüm",
+    not: "İsteğe bağlı. Kına tarihini boş bırakırsan kına bölümü hiç görünmez.",
+    anahtarlar: ["kina_tarih", "kina_saat", "kina_yer", "kina_adres"],
+  },
+  {
+    sekme: "metinler",
+    baslik: "Teşekkür metinleri — «Sonrası» aşamaları için",
+    not: "Boş bırakırsan hazır bir teşekkür metni kullanılır. Paragraflar arasında boş satır bırak.",
+    anahtarlar: ["nisan_sonra_tesekkur", "dugun_sonra_tesekkur"],
+  },
 
   {
     sekme: "genel",

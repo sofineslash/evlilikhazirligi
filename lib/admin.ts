@@ -176,7 +176,9 @@ export async function metinleriKaydet(_prev: unknown, form: FormData) {
   for (const alan of METIN_ALANLARI) {
     const v = form.get(alan.anahtar);
     if (v === null) continue;
-    metinYaz(alan.anahtar, String(v).trim().slice(0, 600));
+    // Teşekkür metinleri üç paragraf; 600 karakter fazla dar, ortadan kesilirdi.
+    const sinir = alan.anahtar.endsWith("_tesekkur") ? 2000 : 600;
+    metinYaz(alan.anahtar, String(v).trim().slice(0, sinir));
     n++;
   }
   revalidatePath("/");

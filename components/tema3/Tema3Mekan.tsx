@@ -5,12 +5,16 @@ import { haritaLinkleri, CFG } from "@/lib/config";
 interface Props {
   salon?: string;
   adres?: string;
+  /** Verilmezse mevcut (nisan) salon haritasi. */
+  harita?: { google: string; apple: string } | null;
 }
 
-export default function Tema3Mekan({ salon, adres }: Props) {
-  const harita = haritaLinkleri();
-  const mekanAdi = salon || CFG.SALON_AD;
-  const mekanAdres = adres || CFG.SALON_ADRES;
+export default function Tema3Mekan({ salon, adres, harita: haritaProp }: Props) {
+  const harita = haritaProp ?? haritaLinkleri();
+  /* `typeof === "string"`: dugunde salon henuz girilmediyse BOS gelir ve bos
+     kalmali — `||` kullanilirsa nisan salonu sessizce gorunurdu. */
+  const mekanAdi = typeof salon === "string" ? salon : CFG.SALON_AD;
+  const mekanAdres = typeof adres === "string" ? adres : CFG.SALON_ADRES;
 
   return (
     <section className="tema3-bolum-kapsul">

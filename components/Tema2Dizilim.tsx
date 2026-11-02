@@ -5,10 +5,13 @@ import FotoYukleButonu from "./FotoYukleButonu";
 import GaleriButonu from "./GaleriButonu";
 import GeriSayim from "./GeriSayim";
 import HatiraNotlariKutusu from "./HatiraNotlariKutusu";
-import { CFG, haritaLinkleri } from "@/lib/config";
+import KinaBolumu from "./KinaBolumu";
+import type { Etkinlik } from "@/lib/etkinlik";
+import type { TakvimOlayi } from "@/lib/takvim";
+import { buyuk } from "@/lib/tarih-tr";
 import type { EbeveynBlok } from "@/lib/metin";
 import type { HatiraNotu } from "@/lib/hatira";
-import { YUKLEME_MESAJI } from "@/lib/yukleme";
+import { yuklemeMesaji } from "@/lib/yukleme";
 
 export default function Tema2Dizilim({
   gelinAd,
@@ -35,6 +38,9 @@ export default function Tema2Dizilim({
   oncekiRsvp,
   paylasimUrl,
   whatsappMesaj,
+  etk,
+  takvimOlay,
+  icsYol,
 }: {
   gelinAd: string;
   damatAd: string;
@@ -60,8 +66,12 @@ export default function Tema2Dizilim({
   oncekiRsvp?: { ad: string; durum: string; kisi: number };
   paylasimUrl?: string;
   whatsappMesaj?: string;
+  /** Aktif etkinlik: tarih, salon, harita, kina (nisanda config'tekiyle ayni). */
+  etk: Etkinlik;
+  takvimOlay?: TakvimOlayi | null;
+  icsYol?: string;
 }) {
-  const harita = haritaLinkleri();
+  const harita = etk.harita;
 
   return (
     <div className="tema2-sahne-merkez">
@@ -90,7 +100,7 @@ export default function Tema2Dizilim({
               <span className="tema2-sus-cizgi" />
             </div>
 
-            <div className="tema2-kicker">NİŞANLANIYORUZ</div>
+            <div className="tema2-kicker">{etk.kicker}</div>
 
             {/* İSİMLER VE KÜBRANUR & ÖMÜR FİGÜRLERİ */}
             <div className="isim-alani tema2-isim-kapsayici">
@@ -120,25 +130,27 @@ export default function Tema2Dizilim({
           </div>
 
           {/* SÜTUNLU ŞIK TARİH BLOĞU */}
+          {etk.tarih && (
           <div className="tema2-tarih-kutusu">
             <div className="tema2-tarih-kolon">
-              <span className="tema2-tarih-ay">EKİM</span>
-              <span className="tema2-tarih-yil">2026</span>
+              <span className="tema2-tarih-ay">{buyuk(etk.tarih.ayAdi)}</span>
+              <span className="tema2-tarih-yil">{etk.tarih.yil}</span>
             </div>
 
             <div className="tema2-tarih-ayrac" />
 
             <div className="tema2-tarih-kolon tema2-tarih-orta">
-              <span className="tema2-tarih-buyuk-gun">29</span>
+              <span className="tema2-tarih-buyuk-gun">{etk.tarih.gun}</span>
             </div>
 
             <div className="tema2-tarih-ayrac" />
 
             <div className="tema2-tarih-kolon">
-              <span className="tema2-tarih-gun-ad">PERŞEMBE</span>
-              <span className="tema2-tarih-saat">19:00</span>
+              <span className="tema2-tarih-gun-ad">{buyuk(etk.tarih.gunAdi)}</span>
+              <span className="tema2-tarih-saat">{etk.tarih.saatMetni}</span>
             </div>
           </div>
+          )}
 
           {/* AŞAĞI KAYDIR GÖSTERGESİ */}
           <div className="tema2-kaydir-ipucu" aria-hidden="true">
@@ -191,11 +203,13 @@ export default function Tema2Dizilim({
           )}
 
           {/* TÖREN VE SALON BÖLÜMÜ */}
+          {(etk.salonAd || etk.salonAdres || yemek || otopark) && (
           <div className="tema2-salon-bolum">
-            <h2 className="salon tema2-salon">{CFG.SALON_AD}</h2>
-            <p className="salon-adres tema2-salon-adres">{CFG.SALON_ADRES}</p>
+            {etk.salonAd && <h2 className="salon tema2-salon">{etk.salonAd}</h2>}
+            {etk.salonAdres && <p className="salon-adres tema2-salon-adres">{etk.salonAdres}</p>}
 
             {/* HARİTALAR (İki Buton Yan Yana) */}
+            {harita && (
             <div className="harita-ikili">
               <a
                 href={harita.google}
@@ -242,6 +256,7 @@ export default function Tema2Dizilim({
                 <span>Apple Haritalar</span>
               </a>
             </div>
+            )}
 
             {(yemek || otopark) && (
               <div className="tema2-notlar">
@@ -250,6 +265,14 @@ export default function Tema2Dizilim({
               </div>
             )}
           </div>
+          )}
+
+          {/* KINA — yalnızca düğün öncesi ve kına tarihi girilmişse */}
+          {etk.kina && (
+            <div className="tema2-salon-bolum tema2-kina-kart">
+              <KinaBolumu kina={etk.kina} />
+            </div>
+          )}
 
           {/* EYLEMLER (Katılım, Fotoğraf Yükle, Galeri) */}
           <div className="eylemler tema2-eylemler">
@@ -260,18 +283,20 @@ export default function Tema2Dizilim({
               izinliKisi={izinliKisi}
               oncekiRsvp={oncekiRsvp}
             />
-            <FotoYukleButonu acik={yuklemeAcik} mesaj={YUKLEME_MESAJI} />
+            <FotoYukleButonu acik={yuklemeAcik} mesaj={yuklemeMesaji()} />
             {(galeriAcik ?? true) && <GaleriButonu anlar={anlar} />}
             {fotoNotu && <p className="foto-notu tema2-foto-notu">{fotoNotu}</p>}
           </div>
 
           {/* GERİ SAYIM — BÜYÜK GÜNE KADAR CANLI GERİ SAYIM */}
-          <GeriSayim />
+          {etk.tarih && <GeriSayim hedefTarih={etk.tarih.iso} />}
 
           {/* TAKVİME EKLE BUTONU */}
-          <div className="tema2-takvim-satiri">
-            <TakvimeEkle />
-          </div>
+          {etk.tarih && (
+            <div className="tema2-takvim-satiri">
+              <TakvimeEkle olay={takvimOlay ?? undefined} icsYol={icsYol} />
+            </div>
+          )}
 
           {/* SİZDEN GELEN HATIRA NOTLARI — ASIR KONTEYNERİ İLE AYNI BOYUT VE STİLDE */}
           <HatiraNotlariKutusu notlar={hatiraNotlari ?? []} />

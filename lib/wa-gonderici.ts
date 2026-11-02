@@ -20,7 +20,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Browser, BrowserContext, Page } from "playwright";
-import { CFG, TARIH_METNI, SAAT_METNI } from "./config";
+import { CFG } from "./config";
+import { kayitliAsama, etkinlikOku } from "./etkinlik";
 import { metin } from "./metin";
 import { siteUrl, DEFAULT_DAVETIYE_SLUG, telefonNormalize } from "./site";
 import { whatsappVideoMesajiUret } from "./whatsapp";
@@ -779,12 +780,14 @@ export type GonderSecenek = {
 function mesajlariHazirla(d: Davetli, slug: string) {
   const gelinAd = metin("gelin_ad") || CFG.GELIN;
   const damatAd = metin("damat_ad") || CFG.DAMAT;
+  const etk = etkinlikOku(kayitliAsama());
   const url = siteUrl(`/davet/${slug}?g=${d.token}`);
   return {
     url,
     videoMesaj: whatsappVideoMesajiUret({
       gelin: gelinAd, damat: damatAd,
-      tarih: TARIH_METNI, saat: SAAT_METNI, salon: CFG.SALON_AD,
+      // Kayıtlı aşamanın tarihi/salonu: düğün aşamasında nişan tarihi gitmesin.
+      tarih: etk.tarih?.metin ?? "", saat: etk.tarih?.saatMetni ?? "", salon: etk.salonAd,
       url,
     }),
   };

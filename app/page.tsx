@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { metin } from "@/lib/metin";
-import { CFG, TARIH_METNI, SAAT_METNI } from "@/lib/config";
+import { CFG } from "@/lib/config";
+import { asamaCoz, etkinlikOku, metaMetinleri } from "@/lib/etkinlik";
 import { sahneYolu } from "@/lib/sahneler";
 import { davetliGetirToken } from "@/lib/davetliler";
 import { misafirAdiFormatla } from "@/lib/whatsapp";
@@ -10,14 +11,14 @@ import DavetiyeGosterimi from "@/components/DavetiyeGosterimi";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ guest?: string; misafir?: string; g?: string; tema?: string; video?: string }>;
+  searchParams: Promise<{ guest?: string; misafir?: string; g?: string; tema?: string; video?: string; asama?: string }>;
 };
 
 /**
  * Ana sayfa icin de WhatsApp crawler'ina server-side zengin Open Graph karti saglar.
  */
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { guest, misafir, g: token } = await searchParams;
+  const { guest, misafir, g: token, asama: asamaParam } = await searchParams;
   const guestQuery = guest || misafir;
 
   let misafirAd = "";
@@ -33,13 +34,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const damat = metin("damat_ad") || CFG.DAMAT;
   const ciftBaslik = `${gelin} ❤️ ${damat}`;
 
-  const baslik = misafirAd
-    ? `Sayın ${misafirAd} — Davetlisiniz 💌 | ${ciftBaslik}`
-    : `${ciftBaslik} — Nişan Davetiyesi`;
-
-  const aciklama = misafirAd
-    ? `Sayın ${misafirAd}, özel günümüzde sizleri de aramızda görmekten mutluluk duyarız. ${TARIH_METNI}, ${SAAT_METNI} — ${CFG.SALON_AD}`
-    : `Davetlisiniz! Özel günümüzde sizleri de aramızda görmekten onur ve mutluluk duyarız. ${TARIH_METNI}, ${SAAT_METNI} — ${CFG.SALON_AD}`;
+  // Başlık/açıklama aşamaya göre; nişan öncesinde önceki metinlerle birebir aynı.
+  const { asama } = await asamaCoz(asamaParam);
+  const etk = etkinlikOku(asama);
+  const meta = metaMetinleri({ asama, etk, ciftBaslik, misafirAd });
+  const { baslik, aciklama } = meta;
 
   const paylasimParam = token
     ? `?g=${encodeURIComponent(token)}`
@@ -69,7 +68,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       title: baslik,
       description: aciklama,
       url: tamUrl,
-      siteName: `${ciftBaslik} Davetiyesi`,
+      siteName: meta.siteAdi,
       locale: "tr_TR",
       type: "website",
       images: [
@@ -77,19 +76,24 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
           url: ogGorselUrl,
           width: 1200,
           height: 630,
-          alt: `${ciftBaslik} Nişan Davetiyesi`,
+          alt: meta.ogAlt,
           type: "image/png",
         },
       ],
-      videos: [
-        {
-          url: siteUrl("/davetiye-video.mp4"),
-          secureUrl: siteUrl("/davetiye-video.mp4"),
-          type: "video/mp4",
-          width: 720,
-          height: 1280,
-        },
-      ],
+      // Davet videosu yalniz davet asamalarinda; "sonrasi"nda davet videosu yaniltici.
+      ...(meta.video
+        ? {
+            videos: [
+              {
+                url: siteUrl("/davetiye-video.mp4"),
+                secureUrl: siteUrl("/davetiye-video.mp4"),
+                type: "video/mp4",
+                width: 720,
+                height: 1280,
+              },
+            ],
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
@@ -102,7 +106,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Page({ searchParams }: Props) {
-  const { guest, misafir, g: token, tema, video } = await searchParams;
+  const { guest, misafir, g: token, tema, video, asama } = await searchParams;
   const guestQuery = guest || misafir;
 
   return (
@@ -111,6 +115,7 @@ export default async function Page({ searchParams }: Props) {
       guest={guestQuery}
       temaOzel={tema}
       videoModu={video === "1"}
+      asamaOzel={asama}
     />
   );
 }

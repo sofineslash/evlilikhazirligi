@@ -3,7 +3,9 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import { db } from "@/lib/db";
 import { adminMi } from "@/lib/admin";
-import { anDosyaYolu, type An } from "@/lib/anlar";
+import path from "node:path";
+import sharp from "sharp";
+import { anDosyaYolu, kucukBoyutMu, kucukYolu, type An } from "@/lib/anlar";
 import { galeriAcikMi } from "@/lib/galeri";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ export const dynamic = "force-dynamic";
  *
  * ?kapak=1 -> videonun kapak karesi (JPEG)
  * ?indir=1 -> tarayici goruntulemek yerine indirir
+ * ?w=480|960 -> fotografin kucuk boyu (slayt/mozaik icin; yalniz beyaz liste)
  */
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -96,6 +99,29 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     return new NextResponse(akis as unknown as ReadableStream, {
       headers: { ...ortak, "Accept-Ranges": "bytes", "Content-Length": String(boyut) },
     });
+  }
+
+  /* KUCUK BOY: yalnizca fotograf, indirme degil, beyaz listedeki genislikler.
+     Ilk istekte uretilip diske yazilir; sonrakiler dosyadan gelir. */
+  const w = Number(url.searchParams.get("w"));
+  if (!kapakIste && !indir && kayit.tur === "foto" && kucukBoyutMu(w)) {
+    const hedef = kucukYolu(kayit.id, w);
+    if (!fs.existsSync(hedef)) {
+      try {
+        await fsp.mkdir(path.dirname(hedef), { recursive: true });
+        // Gecici ada yaz, sonra rename: yarim dosya asla servis edilmesin.
+        const gecici = `${hedef}.${process.pid}.${Date.now()}.tmp`;
+        await sharp(yol).rotate().resize({ width: w, withoutEnlargement: true }).webp({ quality: 78 }).toFile(gecici);
+        await fsp.rename(gecici, hedef);
+      } catch (e) {
+        // Uretilemezse sessizce tam boya dus: gorsel hic gelmemesinden iyi.
+        console.error("kucuk boy uretilemedi", e);
+      }
+    }
+    if (fs.existsSync(hedef)) {
+      const k = await fsp.readFile(hedef);
+      return new NextResponse(new Uint8Array(k), { headers: ortak });
+    }
   }
 
   const veri = await fsp.readFile(yol);
