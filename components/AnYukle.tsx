@@ -39,6 +39,27 @@ const rawMu = (d: File) =>
 const boyut = (b: number) =>
   b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`;
 
+/**
+ * Dosyayi (ya da dilimini) BELLEGE okur; istege bellekteki kopya gider.
+ *
+ * Android galeri secicisi ve bulut yedekli fotograflar dosyayi secimden
+ * sonra degistirebiliyor (konum bilgisi silinir, boyut kayar). Dogrudan
+ * File gonderilince Chrome bunu yakalayip istegi "ERR_UPLOAD_FILE_CHANGED"
+ * ile dusuruyor — kullanici "Bağlantı kesildi" goruyordu — ya da dilimler
+ * bozuk gidiyor ve video "açılamadı" oluyordu. Bellekteki kopya o
+ * kontrole takilmaz; okunamiyorsa sebep acikca soylenir.
+ */
+class OkumaHatasi extends Error {}
+async function oku(parca: Blob, tur: string): Promise<Blob> {
+  try {
+    return new Blob([await parca.arrayBuffer()], { type: tur });
+  } catch {
+    throw new OkumaHatasi(
+      "Dosya telefondan okunamadı. Önce telefona indirip tekrar seçin ya da “Dosyalar”dan seçin.",
+    );
+  }
+}
+
 type Cevap = { ok: boolean; kod: number; veri: Record<string, unknown> };
 
 /* crypto.randomUUID() yalnizca GUVENLI BAGLAMDA (https / localhost) var.
@@ -165,7 +186,11 @@ export default function AnYukle() {
 
     for (let i = 0; i < toplam; i++) {
       const bas = i * PARCA_BAYT;
-      const parca = k.dosya.slice(bas, Math.min(bas + PARCA_BAYT, k.dosya.size));
+      const parca = await oku(
+        k.dosya.slice(bas, Math.min(bas + PARCA_BAYT, k.dosya.size)),
+        "application/octet-stream",
+      );
+      if (parca.size === 0) return "Dosya okunamadı, tekrar seçin.";
       const sonMu = i === toplam - 1;
 
       /* Her parca 3 kez denenir, aralar acilarak. Mobil baglantida tek bir
@@ -208,18 +233,20 @@ export default function AnYukle() {
     const kimlik = encodeURIComponent(ad.trim());
 
     for (const k of kalemler) {
-      if (k.durum !== "bekliyor") continue;
+      if (!gonderilebilir(k)) continue;
       guncelle(k.anahtar, { durum: "gonderiliyor", mesaj: undefined, yuzde: 0 });
       const son = { v: 0 };
 
       try {
         if (k.dosya.size <= TEK_ISTEK_SINIRI) {
-          const y = await istek("/api/an", k.dosya, {
+          const govde = await oku(k.dosya, k.dosya.type || "application/octet-stream");
+          if (govde.size === 0) throw new OkumaHatasi("Dosya okunamadı, tekrar seçin.");
+          const y = await istek("/api/an", govde, {
             // Basliklar latin-1; Turkce harfler icin kodlaniyor.
             "x-yukleyen": kimlik,
             "content-type": k.dosya.type || "application/octet-stream",
           }, (bayt) => yuzdeYaz(k.anahtar, son,
-            Math.min(99, Math.round((bayt / k.dosya.size) * 100))));
+            Math.min(99, Math.round((bayt / govde.size) * 100))));
           if (y.ok && y.veri.ok) {
             guncelle(k.anahtar, {
               durum: "tamam", yuzde: 100, kazanc: Number(y.veri.kazanc) || undefined,
@@ -231,14 +258,24 @@ export default function AnYukle() {
           const hata = await parcaliGonder(k, kimlik);
           if (hata) guncelle(k.anahtar, { durum: "hata", mesaj: hata });
         }
-      } catch {
-        guncelle(k.anahtar, { durum: "hata", mesaj: "Bağlantı kesildi. Tekrar deneyin." });
+      } catch (e) {
+        guncelle(k.anahtar, {
+          durum: "hata",
+          mesaj: e instanceof OkumaHatasi ? e.message : "Bağlantı kesildi. Tekrar deneyin.",
+        });
       }
     }
     setCalisiyor(false);
   };
 
-  const bekleyen = kalemler.filter((k) => k.durum === "bekliyor").length;
+  /* Kopan/okunamayan dosya "hata"da kalip dugmeyi pasif birakiyordu:
+     "Tekrar deneyin" deniyor ama denenemiyordu. Boyut sinirini asanlar
+     tekrar denenmez — ayni hatayi alirlar. */
+  const gonderilebilir = (k: Kalem) =>
+    k.dosya.size <= (k.video ? VIDEO_MAX_BAYT : FOTO_MAX_BAYT) &&
+    (k.durum === "bekliyor" || k.durum === "hata");
+  const bekleyen = kalemler.filter(gonderilebilir).length;
+  const hataVar = kalemler.some((k) => k.durum === "hata" && gonderilebilir(k));
   const tamam = kalemler.filter((k) => k.durum === "tamam").length;
 
   return (
@@ -337,7 +374,9 @@ export default function AnYukle() {
               ) : (
                 <>
                   <span aria-hidden="true">✨</span>
-                  <span>{bekleyen > 0 ? `Yüklemeyi Başlat (${bekleyen})` : "Tamamlandı"}</span>
+                  <span>{bekleyen > 0
+                      ? `${hataVar ? "Tekrar Dene" : "Yüklemeyi Başlat"} (${bekleyen})`
+                      : "Tamamlandı"}</span>
                 </>
               )}
             </button>
