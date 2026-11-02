@@ -4641,3 +4641,49 @@ body:has(.sn) { background: #120c07; }
 @media (max-width: 600px) {
   .katilim-textarea { font-size: 16px; }
 }
+
+/* ---------- Yukleme listesi: tam boy onizleme, toplam, cikarma ---------- */
+.an-ozet { margin: .8rem 0 0; font-size: .9rem; font-weight: 600; color: var(--sessiz); }
+.an-onizle {
+  position: relative; flex: none; padding: 0; border: 0; background: none;
+  width: 56px; height: 56px; border-radius: 8px; cursor: zoom-in;
+}
+.an-onizle img, .an-onizle video { display: block; }
+.an-onizle-ikon {
+  position: absolute; right: 3px; bottom: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .55); color: #fff; font-size: 12px; line-height: 1;
+  pointer-events: none;
+}
+.an-onizle:focus-visible { outline: 3px solid var(--zit); outline-offset: 2px; }
+.an-cikar {
+  flex: none; width: 44px; height: 44px; margin: -.4rem -.2rem -.4rem 0;
+  border: 0; background: none; border-radius: 50%;
+  color: var(--sessiz); font-size: 1rem; cursor: pointer;
+}
+.an-cikar:hover { background: var(--kagit-koyu); }
+.an-cikar:disabled { opacity: .4; cursor: default; }
+.an-cikar:focus-visible { outline: 3px solid var(--zit); outline-offset: 2px; }
+
+.an-buyuk {
+  position: fixed; inset: 0; z-index: 3000;
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; border: 0; padding: 3.5rem .75rem 1rem;
+  flex-direction: column; align-items: center; justify-content: center; gap: .75rem;
+  background: rgba(10, 8, 6, .97);
+}
+.an-buyuk[open] { display: flex; }
+.an-buyuk img, .an-buyuk video {
+  max-width: 100%; max-height: calc(100dvh - 7.5rem);
+  object-fit: contain; border-radius: 6px;
+  /* Parmakla buyutme (pinch) acik kalsin */
+  touch-action: pinch-zoom;
+}
+.an-buyuk-alt { margin: 0; color: #e9e1d4; font-size: .85rem; text-align: center; word-break: break-all; }
+.an-buyuk-kapat {
+  position: absolute; top: max(.6rem, env(safe-area-inset-top)); right: .6rem;
+  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .16); color: #fff; font-size: 1.1rem; cursor: pointer;
+}
+.an-buyuk-kapat:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }

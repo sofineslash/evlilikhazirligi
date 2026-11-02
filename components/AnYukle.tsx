@@ -37,7 +37,9 @@ const rawMu = (d: File) =>
   d.type.includes("nikon") ||
   d.type.includes("sony");
 const boyut = (b: number) =>
-  b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`;
+  b >= 1024 * 1024 * 1024 ? `${(b / 1024 / 1024 / 1024).toFixed(2)} GB`
+  : b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB`
+  : `${Math.round(b / 1024)} KB`;
 
 /**
  * Dosyayi (ya da dilimini) BELLEGE okur; istege bellekteki kopya gider.
@@ -134,6 +136,23 @@ export default function AnYukle() {
     if (window.matchMedia("(pointer: fine)").matches) setKabul(KABUL_RAW);
   }, []);
   const urlRef = useRef<string[]>([]);
+  /* Tam boy onizleme: 56 px'lik kirpilmis kare fotografin ne oldugunu
+     gostermiyordu; secilenleri yuklemeden once gorebilsinler.
+     Kendi <dialog>'u: yukleme alani zaten bir modal dialog icinde acilabiliyor
+     ve acik dialog "top layer"da — z-index ile ustune cikilamaz. showModal()
+     ikincisini de ustte aciyor; Esc, odak tuzagi ve odagin geri donusu
+     tarayicidan geliyor. */
+  const [buyuk, setBuyuk] = useState<string | null>(null);
+  const buyukRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = buyukRef.current;
+    if (buyuk && d && !d.open) d.showModal();
+  }, [buyuk]);
+
+  const cikar = (anahtar: string) => {
+    setKalemler((k) => k.filter((x) => x.anahtar !== anahtar));
+    setBuyuk((b) => (b === anahtar ? null : b));
+  };
 
   useEffect(() => {
     const url = urlRef;
@@ -274,6 +293,7 @@ export default function AnYukle() {
   const gonderilebilir = (k: Kalem) =>
     k.dosya.size <= (k.video ? VIDEO_MAX_BAYT : FOTO_MAX_BAYT) &&
     (k.durum === "bekliyor" || k.durum === "hata");
+  const buyukKalem = kalemler.find((k) => k.anahtar === buyuk) ?? null;
   const bekleyen = kalemler.filter(gonderilebilir).length;
   const hataVar = kalemler.some((k) => k.durum === "hata" && gonderilebilir(k));
   const tamam = kalemler.filter((k) => k.durum === "tamam").length;
@@ -308,6 +328,10 @@ export default function AnYukle() {
 
       {kalemler.length > 0 && (
         <>
+          <p className="an-ozet">
+            {kalemler.length} dosya · toplam {boyut(kalemler.reduce((t, k) => t + k.dosya.size, 0))}
+            {tamam > 0 && ` · ${tamam} yüklendi`}
+          </p>
           <ul className="an-liste">
             {kalemler.map((k) => (
               <li key={k.anahtar} className={`an-kalem an-${k.durum}`}>
@@ -319,19 +343,29 @@ export default function AnYukle() {
                   <span className="an-yertutucu" aria-hidden="true">
                     {k.video ? "▶" : rawMu(k.dosya) ? "RAW" : "HEIC"}
                   </span>
-                ) : k.video ? (
-                  /* #t=0.1 SART: preload="metadata" tek basina bos bir kare
-                     birakiyor. Ortam parcasi verilince tarayici o ana atlayip
-                     kareyi ciziyor — kucuk kutuda gercek onizleme cikiyor. */
-                  <video
-                    src={`${k.onizleme}#t=0.1`} muted playsInline preload="metadata"
-                    onError={() => guncelle(k.anahtar, { onizlemeYok: true })}
-                  />
                 ) : (
-                  <img
-                    src={k.onizleme} alt=""
-                    onError={() => guncelle(k.anahtar, { onizlemeYok: true })}
-                  />
+                  <button
+                    type="button"
+                    className="an-onizle"
+                    onClick={() => setBuyuk(k.anahtar)}
+                    aria-label={`${k.dosya.name} dosyasını büyüt`}
+                  >
+                    {k.video ? (
+                      /* #t=0.1 SART: preload="metadata" tek basina bos bir kare
+                         birakiyor. Ortam parcasi verilince tarayici o ana atlayip
+                         kareyi ciziyor — kucuk kutuda gercek onizleme cikiyor. */
+                      <video
+                        src={`${k.onizleme}#t=0.1`} muted playsInline preload="metadata"
+                        onError={() => guncelle(k.anahtar, { onizlemeYok: true })}
+                      />
+                    ) : (
+                      <img
+                        src={k.onizleme} alt=""
+                        onError={() => guncelle(k.anahtar, { onizlemeYok: true })}
+                      />
+                    )}
+                    <span className="an-onizle-ikon" aria-hidden="true">⤢</span>
+                  </button>
                 )}
 
                 <div className="an-bilgi">
@@ -355,6 +389,18 @@ export default function AnYukle() {
                     </span>
                   )}
                 </div>
+
+                {k.durum !== "gonderiliyor" && k.durum !== "tamam" && (
+                  <button
+                    type="button"
+                    className="an-cikar"
+                    onClick={() => cikar(k.anahtar)}
+                    disabled={calisiyor}
+                    aria-label={`${k.dosya.name} dosyasını listeden çıkar`}
+                  >
+                    ✕
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -387,6 +433,42 @@ export default function AnYukle() {
             {tamam > 0 && `${tamam} dosya yüklendi. Teşekkür ederiz!`}
           </p>
         </>
+      )}
+
+      {buyukKalem && (
+        <dialog
+          ref={buyukRef}
+          className="an-buyuk"
+          aria-label={buyukKalem.dosya.name}
+          onClose={() => setBuyuk(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) buyukRef.current?.close(); }}
+        >
+          <button
+            type="button"
+            className="an-buyuk-kapat"
+            onClick={() => buyukRef.current?.close()}
+            aria-label="Kapat"
+          >
+            ✕
+          </button>
+          {buyukKalem.video ? (
+            <video
+              src={buyukKalem.onizleme}
+              controls
+              playsInline
+              onError={() => { guncelle(buyukKalem.anahtar, { onizlemeYok: true }); buyukRef.current?.close(); }}
+            />
+          ) : (
+            <img
+              src={buyukKalem.onizleme}
+              alt={buyukKalem.dosya.name}
+              onError={() => { guncelle(buyukKalem.anahtar, { onizlemeYok: true }); buyukRef.current?.close(); }}
+            />
+          )}
+          <p className="an-buyuk-alt">
+            {buyukKalem.dosya.name} · {boyut(buyukKalem.dosya.size)}
+          </p>
+        </dialog>
       )}
     </div>
   );
