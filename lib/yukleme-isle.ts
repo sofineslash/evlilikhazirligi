@@ -15,9 +15,9 @@ import { rawMu } from "./raw";
  * ayrisması sessiz veri bozulmasi demek.
  */
 
-/** Fotograf tavani. RAW kamera fotograflari icin tavan 100 MB. Video icin 600 MB. */
+/** Fotograf tavani. RAW kamera fotograflari icin tavan 100 MB. Video icin 1 GB. */
 export const FOTO_MAX_BAYT = 100 * 1024 * 1024;
-export const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
+export const VIDEO_MAX_BAYT = 1024 * 1024 * 1024;
 
 /**
  * Sihirli baytlardan gercek turu cikarir — istemcinin dedigi MIME'a GUVENILMEZ.
@@ -95,7 +95,7 @@ export async function anKaydetVeIsle(
     return { ok: false, mesaj: "Fotoğraf çok büyük (en fazla 100 MB)." };
   }
   if (video && bayt > VIDEO_MAX_BAYT) {
-    return { ok: false, mesaj: "Video çok büyük (en fazla 600 MB)." };
+    return { ok: false, mesaj: "Video çok büyük (en fazla 1 GB)." };
   }
 
   /* SUNUCUDA ISLE. Ham baytlar diske turev disinda YAZILMAZ.

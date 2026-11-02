@@ -188,7 +188,7 @@ export async function videoIsle(kaynak: Buffer | string): Promise<VideoSonuc> {
     if (bilgi.sure > CFG.VIDEO_MAX_SANIYE) {
       return {
         ok: false,
-        mesaj: `Video çok uzun (${Math.round(bilgi.sure)} sn). En fazla ${CFG.VIDEO_MAX_SANIYE} saniye.`,
+        mesaj: `Video çok uzun (${Math.round(bilgi.sure)} sn). En fazla ${Math.round(CFG.VIDEO_MAX_SANIYE / 60)} dakika.`,
       };
     }
 
@@ -204,7 +204,7 @@ export async function videoIsle(kaynak: Buffer | string): Promise<VideoSonuc> {
       "-c:a", "aac", "-b:a", "128k",
       "-map_metadata", "-1",        // GPS ve cihaz bilgisi dusurulur
       cikti,
-    ], { maxBuffer: 8 * 1024 * 1024, timeout: 10 * 60_000 });
+    ], { maxBuffer: 8 * 1024 * 1024, timeout: 20 * 60_000 });
 
     // Kapak karesi: 1. saniye (0. kare cogu videoda siyah geliyor)
     await calistir(FFMPEG, [

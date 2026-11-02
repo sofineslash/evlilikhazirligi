@@ -111,7 +111,7 @@ Veritabanı dosyası `data/nisan.db` (Docker'da `/srv/data/nisan.db`) altında b
 ### 5.3. Medya ve Video İşleme Boru Hattı (`lib/yukleme-isle.ts` & `lib/video.ts`)
 * Dosya uzantısı yerine ilk baytlara (`magic bytes`) bakılarak tür doğrulanır.
 * HEIC/HEIF fotoğraflar `heic-convert` ile kayıpsız JPEG tamponuna çevrilir; ardından `sharp` ile WebP'ye dönüştürülüp EXIF/GPS bilgileri tamamen silinir.
-* Videolar 600 MB / 60 saniye tavanına tabidir. FFmpeg ile kısa kenarı 1080p olacak şekilde H.264/AAC kodlanır, `+faststart` eklenir ve 1. saniyeden JPEG kapak karesi oluşturulur.
+* Videolar 1 GB / 5 dakika tavanına tabidir. FFmpeg ile kısa kenarı 1080p olacak şekilde H.264/AAC kodlanır, `+faststart` eklenir ve 1. saniyeden JPEG kapak karesi oluşturulur.
 * iOS Safari uyumluluğu için HTTP 206 `Range` akışı desteklenir.
 
 ### 5.4. Yönetici ve Oturum Güvenliği (`lib/admin.ts` & `lib/session.ts`)

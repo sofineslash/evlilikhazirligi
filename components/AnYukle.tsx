@@ -23,7 +23,7 @@ type Kalem = {
    sasiriyoruz. Video icin ayri: 1 dakikalik 4K kayit rahat 300 MB.
    RAW kamera fotograflari (30-80 MB) icin 100 MB. */
 const FOTO_MAX_BAYT = 100 * 1024 * 1024;
-const VIDEO_MAX_BAYT = 600 * 1024 * 1024;
+const VIDEO_MAX_BAYT = 1024 * 1024 * 1024;
 /** Parca boyu — sunucudaki PARCA_MAX ile AYNI. */
 const PARCA_BAYT = 8 * 1024 * 1024;
 /** Bunun ustundeki dosyalar parcalanarak gonderilir. */
@@ -176,7 +176,7 @@ export default function AnYukle() {
         yuzde: 0,
         durum: d.size > tavan ? "hata" : "bekliyor",
         mesaj: d.size > tavan
-          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "600 MB" : "100 MB"}.`
+          ? `Çok büyük (${boyut(d.size)}). En fazla ${vid ? "1 GB" : "100 MB"}.`
           : undefined,
       });
     }
@@ -215,10 +215,10 @@ export default function AnYukle() {
       /* Her parca 3 kez denenir, aralar acilarak. Mobil baglantida tek bir
          parcanin kopmasi butun yuklemeyi bosa cikarmasin. */
       let cevap: Cevap | null = null;
-      /* Son parca 6 kez: sunucu o istekte videoyu donusturuyor, uzun
+      /* Son parca 12 kez: sunucu o istekte videoyu donusturuyor, uzun
          videoda tunel 100 sn'de baglantiyi kesebiliyor. Her tekrar ayni
          calisan ise katiliyor (sunucuda), yani yeniden islenmez. */
-      const hak = sonMu ? 6 : 3;
+      const hak = sonMu ? 12 : 3;
       for (let deneme = 0; deneme < hak; deneme++) {
         try {
           cevap = await istek("/api/an/parca", parca, {

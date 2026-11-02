@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 /** Tek parca tavani — istemciyle AYNI olmali. */
 const PARCA_MAX = 8 * 1024 * 1024;
 /** Toplam dosya tavani (video). */
-const TOPLAM_MAX = 600 * 1024 * 1024;
+const TOPLAM_MAX = 1024 * 1024 * 1024;
 /** Yarim kalmis yuklemeler bu sureden sonra cope gider. */
 const OLU_PARCA_MS = 6 * 60 * 60 * 1000;
 
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     (await cihazJetonuDogrula(req.headers.get("x-cihaz"))) ??
     (await cihazJetonuDogrula(cerez));
 
-  // Parca basina degil, DOSYA basina sinir olsun diye bol: 600 MB / 8 MB = 75 parca
+  // Parca basina degil, DOSYA basina sinir olsun diye bol: 1 GB / 8 MB = 128 parca
   const hiz = hizKontrol(`parca:${istemciAnahtari(req, cihaz)}`, { adet: 1200, pencere_dk: 30 });
   if (!hiz.ok) return NextResponse.json({ mesaj: hiz.mesaj }, { status: 429 });
 
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
   if (no > 0 && mevcut > baslangic) await fsp.truncate(yol, baslangic);
   if (baslangic + govde.length > TOPLAM_MAX) {
     await fsp.rm(yol, { force: true });
-    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 600 MB)." }, { status: 413 });
+    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 1 GB)." }, { status: 413 });
   }
 
   try {

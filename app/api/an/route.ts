@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
   const uzunluk = Number(req.headers.get("content-length") ?? 0);
   if (uzunluk > VIDEO_MAX_BAYT) {
-    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 600 MB)." }, { status: 413 });
+    return NextResponse.json({ mesaj: "Dosya çok büyük (en fazla 1 GB)." }, { status: 413 });
   }
 
   // Kota: diski doldurup sunucuyu kilitlemeyelim.
