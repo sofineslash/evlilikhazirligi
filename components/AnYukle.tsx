@@ -350,12 +350,10 @@ export default function AnYukle() {
                     {k.video ? "▶" : rawMu(k.dosya) ? "RAW" : "HEIC"}
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    className="an-onizle"
-                    onClick={() => setBuyuk(k.anahtar)}
-                    aria-label={`${k.dosya.name} dosyasını büyüt`}
-                  >
+                  /* Medya DUZ kalir, buyutme dugmesi ustune bindirilir. Medyayi
+                     <button> icine koymak bazi mobil tarayicilarda video karesinin
+                     ve gorselin cizimini bozuyordu. */
+                  <span className="an-onizle">
                     {k.video ? (
                       /* #t=0.1 SART: preload="metadata" tek basina bos bir kare
                          birakiyor. Ortam parcasi verilince tarayici o ana atlayip
@@ -371,7 +369,13 @@ export default function AnYukle() {
                       />
                     )}
                     <span className="an-onizle-ikon" aria-hidden="true">⤢</span>
-                  </button>
+                    <button
+                      type="button"
+                      className="an-onizle-dugme"
+                      onClick={() => setBuyuk(k.anahtar)}
+                      aria-label={`${k.dosya.name} dosyasını büyüt`}
+                    />
+                  </span>
                 )}
 
                 <div className="an-bilgi">

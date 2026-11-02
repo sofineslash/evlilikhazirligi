@@ -4645,10 +4645,17 @@ body:has(.sn) { background: #120c07; }
 /* ---------- Yukleme listesi: tam boy onizleme, toplam, cikarma ---------- */
 .an-ozet { margin: .8rem 0 0; font-size: .9rem; font-weight: 600; color: var(--sessiz); }
 .an-onizle {
-  position: relative; flex: none; padding: 0; border: 0; background: none;
-  width: 56px; height: 56px; border-radius: 8px; cursor: zoom-in;
+  position: relative; flex: none; display: block;
+  width: 56px; height: 56px; border-radius: 8px;
 }
 .an-onizle img, .an-onizle video { display: block; }
+.an-onizle-dugme {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  margin: 0; padding: 0; border: 0; border-radius: 8px;
+  background: transparent; cursor: zoom-in;
+  -webkit-tap-highlight-color: transparent;
+}
+.an-onizle-dugme:focus-visible { outline: 3px solid var(--zit); outline-offset: 2px; }
 .an-onizle-ikon {
   position: absolute; right: 3px; bottom: 3px;
   width: 18px; height: 18px; border-radius: 50%;
@@ -4656,7 +4663,6 @@ body:has(.sn) { background: #120c07; }
   background: rgba(0, 0, 0, .55); color: #fff; font-size: 12px; line-height: 1;
   pointer-events: none;
 }
-.an-onizle:focus-visible { outline: 3px solid var(--zit); outline-offset: 2px; }
 .an-cikar {
   flex: none; width: 44px; height: 44px; margin: -.4rem -.2rem -.4rem 0;
   border: 0; background: none; border-radius: 50%;
